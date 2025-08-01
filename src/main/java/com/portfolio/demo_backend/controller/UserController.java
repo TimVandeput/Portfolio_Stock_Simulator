@@ -3,6 +3,9 @@ package com.portfolio.demo_backend.controller;
 import com.portfolio.demo_backend.dto.UserDTO;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.service.UserService;
+
+import jakarta.validation.Valid;
+
 import com.portfolio.demo_backend.mapper.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO dto) {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO dto) {
         User user = UserMapper.toEntity(dto);
         User saved = userService.createUser(user);
         return ResponseEntity.ok(UserMapper.toDTO(saved));
@@ -40,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO dto) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO dto) {
         User updated = userService.updateUser(id, UserMapper.toEntity(dto));
         return ResponseEntity.ok(UserMapper.toDTO(updated));
     }
