@@ -18,8 +18,8 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#e0e5ec] font-sans">
-      <div className="bg-[#e0e5ec] p-8 rounded-2xl shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#ffffff] w-[340px]">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#e0e5ec] font-sans">
+      <div className="bg-[#e0e5ec] p-8 rounded-2xl shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa] w-[340px]">
         <h1 className="text-2xl font-bold text-center mb-5 text-blue-300">
           Welcome
         </h1>
@@ -43,12 +43,12 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="mt-4 p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#ffffff] transition hover:bg-blue-100"
+            className="mt-4 p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
           >
             Login
           </button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
