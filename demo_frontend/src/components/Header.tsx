@@ -1,91 +1,86 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const navItems = [
-  { name: "GAME", href: "/game" },
+  { name: "Game", href: "/game" },
   { name: "A.I.", href: "/ai" },
-  { name: "ABOUT", href: "/about" },
+  { name: "About", href: "/about" },
 ];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
-  const desktopNavRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
+  const hideNav = pathname === "/login";
+  const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const calc = () => {
-      const nav = desktopNavRef.current;
-      if (!nav) return;
-
+    const applyHeights = () => {
       const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-      if (!isDesktop) {
-        setMaxBtnWidth(null);
+      const header = headerRef.current;
+      if (!header) return;
+
+      if (isDesktop) {
+        header.style.height = "";
         return;
       }
 
-      const btns = nav.querySelectorAll<HTMLButtonElement>("button[data-eq]");
-      let max = 0;
-      btns.forEach((b) => {
-        const prevWidth = b.style.width;
-        b.style.width = "";
-        const w = b.getBoundingClientRect().width;
-        if (w > max) max = w;
-        b.style.width = prevWidth;
-      });
-      setMaxBtnWidth(Math.ceil(max));
+      const footer = document.querySelector("footer") as HTMLElement | null;
+      const footerH = footer?.offsetHeight ?? 64;
+      header.style.height = `${footerH}px`;
     };
 
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [navItems.length]);
+    applyHeights();
+    window.addEventListener("resize", applyHeights);
+    return () => window.removeEventListener("resize", applyHeights);
+  }, []);
 
   return (
-    <header className="sticky top-0 bg-gradient-to-b from-blue-200 to-[#e0e5ec] z-50 w-full py-4 px-0">
-      <div className="relative w-full">
+    <header
+      ref={headerRef}
+      className="sticky top-0 bg-gradient-to-b from-blue-200 to-[#e0e5ec] z-50 w-full md:py-4 py-0"
+    >
+      <div className="relative w-full h-full">
         {/* Hamburger (mobile only) */}
-        <button
-          aria-label="Open menu"
-          onClick={() => setOpen(true)}
-          className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 p-3 mt-2 text-blue-400"
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
+        {!hideNav && (
+          <button
+            aria-label="Open menu"
+            onClick={() => setOpen(true)}
+            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 p-3 mt-2 text-blue-400"
           >
-            <path
-              d="M3 6h18M3 12h18M3 18h18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 6h18M3 12h18M3 18h18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
 
         {/* Desktop nav */}
         <nav
-          ref={desktopNavRef}
-          className="hidden md:flex justify-center gap-6"
+          className={`hidden md:flex justify-center gap-6 ${
+            hideNav ? "opacity-0 pointer-events-none" : ""
+          }`}
         >
           {navItems.map((item) => (
             <Link href={item.href} key={item.name} className="no-underline">
               <button
-                data-eq
-                style={maxBtnWidth ? { width: `${maxBtnWidth}px` } : undefined}
                 className="
-                  p-3
-                  rounded-xl
-                  font-bold
-                  bg-[#e0e5ec]
-                  text-blue-300
-                  shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#f5f8fa]
-                  transition
-                  hover:bg-blue-100
+                  p-3 rounded-xl font-bold
+                  bg-[#e0e5ec] text-blue-300
+                  shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
+                  transition hover:bg-blue-100
                 "
               >
                 {item.name}
@@ -96,7 +91,7 @@ export default function Header() {
       </div>
 
       {/* Mobile drawer */}
-      {open && (
+      {!hideNav && open && (
         <div className="fixed inset-0 z-[60]">
           <div
             className="absolute inset-0 bg-black/50"
@@ -136,8 +131,9 @@ export default function Header() {
                 >
                   <span
                     className="
-                      block p-3 rounded-xl font-bold bg-[#e0e5ec]
-                      text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#ffffff]
+                      block p-3 rounded-xl font-bold
+                      bg-[#e0e5ec] text-blue-300
+                      shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
                       transition hover:bg-blue-100
                     "
                   >
