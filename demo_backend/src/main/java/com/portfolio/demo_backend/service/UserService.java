@@ -1,19 +1,23 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
+import com.portfolio.demo_backend.exception.user.UserNotFoundException;
+import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
-import com.portfolio.demo_backend.exception.user.UserNotFoundException;
-import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final Pattern PWD_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{8,128}$");
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -24,7 +28,7 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        validateAndEncodePassword(user);
         return userRepository.save(user);
     }
 
@@ -40,12 +44,21 @@ public class UserService {
     public User updateUser(Long id, User updatedUser) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
+
         if (updatedUser.getUsername() != null) {
-            user.setUsername(updatedUser.getUsername());
+            String newUsername = updatedUser.getUsername().trim();
+            if (!newUsername.equals(user.getUsername())
+                    && userRepository.findByUsername(newUsername).isPresent()) {
+                throw new UserAlreadyExistsException(newUsername);
+            }
+            user.setUsername(newUsername);
         }
-        if (updatedUser.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            validateAndEncodePassword(updatedUser);
+            user.setPassword(updatedUser.getPassword());
         }
+
         return userRepository.save(user);
     }
 
@@ -54,5 +67,13 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+    }
+
+    private void validateAndEncodePassword(User user) {
+        String rawPassword = user.getPassword();
+        if (!PWD_RULE.matcher(rawPassword).matches()) {
+            throw new WeakPasswordException();
+        }
+        user.setPassword(passwordEncoder.encode(rawPassword));
     }
 }

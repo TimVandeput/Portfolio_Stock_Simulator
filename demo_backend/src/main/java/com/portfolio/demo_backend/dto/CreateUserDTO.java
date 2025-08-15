@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserDTO {
+public class CreateUserDTO {
     private Long id;
 
     @NotBlank(message = "Username is required")

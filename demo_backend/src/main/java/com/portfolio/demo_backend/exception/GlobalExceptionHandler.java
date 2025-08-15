@@ -1,6 +1,7 @@
 package com.portfolio.demo_backend.exception;
 
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
+import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,13 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(WeakPasswordException.class)
+    public ResponseEntity<Map<String, String>> handleWeakPassword(WeakPasswordException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(Exception.class)

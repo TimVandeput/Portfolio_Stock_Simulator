@@ -1,6 +1,7 @@
 package com.portfolio.demo_backend.controller;
 
-import com.portfolio.demo_backend.dto.UserDTO;
+import com.portfolio.demo_backend.dto.CreateUserDTO;
+import com.portfolio.demo_backend.dto.UpdateUserDTO;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.service.UserService;
 
@@ -18,33 +19,37 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO dto) {
+    public ResponseEntity<CreateUserDTO> createUser(@Valid @RequestBody CreateUserDTO dto) {
         User user = UserMapper.toEntity(dto);
         User saved = userService.createUser(user);
         return ResponseEntity.ok(UserMapper.toDTO(saved));
     }
 
     @GetMapping
-    public List<UserDTO> getAllUsers() {
+    public List<CreateUserDTO> getAllUsers() {
         return userService.getAllUsers().stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<CreateUserDTO> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(UserMapper.toDTO(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO dto) {
-        User updated = userService.updateUser(id, UserMapper.toEntity(dto));
+    public ResponseEntity<CreateUserDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserDTO dto) {
+        System.out.println("Updating user with ID: " + id);
+        User updated = userService.updateUser(id, UserMapper.fromUpdateDTO(dto));
         return ResponseEntity.ok(UserMapper.toDTO(updated));
     }
 
