@@ -12,10 +12,13 @@ const navItems = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
   const hideNav = pathname === "/login";
   const headerRef = useRef<HTMLElement | null>(null);
+  const desktopNavRef = useRef<HTMLDivElement | null>(null);
 
+  // Match footer height on mobile
   useEffect(() => {
     const applyHeights = () => {
       const isDesktop = window.matchMedia("(min-width: 768px)").matches;
@@ -36,6 +39,35 @@ export default function Header() {
     window.addEventListener("resize", applyHeights);
     return () => window.removeEventListener("resize", applyHeights);
   }, []);
+
+  // Equalize button widths on desktop
+  useEffect(() => {
+    const calc = () => {
+      const nav = desktopNavRef.current;
+      if (!nav) return;
+
+      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      if (!isDesktop) {
+        setMaxBtnWidth(null);
+        return;
+      }
+
+      const btns = nav.querySelectorAll<HTMLButtonElement>("button[data-eq]");
+      let max = 0;
+      btns.forEach((b) => {
+        const prevWidth = b.style.width;
+        b.style.width = ""; // natural size
+        const w = b.getBoundingClientRect().width;
+        if (w > max) max = w;
+        b.style.width = prevWidth;
+      });
+      setMaxBtnWidth(Math.ceil(max));
+    };
+
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [navItems.length]);
 
   return (
     <header
@@ -69,6 +101,7 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav
+          ref={desktopNavRef}
           className={`hidden md:flex justify-center gap-6 ${
             hideNav ? "opacity-0 pointer-events-none" : ""
           }`}
@@ -76,6 +109,8 @@ export default function Header() {
           {navItems.map((item) => (
             <Link href={item.href} key={item.name} className="no-underline">
               <button
+                data-eq
+                style={maxBtnWidth ? { width: `${maxBtnWidth}px` } : undefined}
                 className="
                   p-3 rounded-xl font-bold
                   bg-[#e0e5ec] text-blue-300
