@@ -1,0 +1,59 @@
+# Monorepo: portfolio/
+#   demo_frontend/ (Next.js)
+#   demo_backend/  (Java/Maven)
+
+# -------------------------
+# Node / JS (any package)
+# -------------------------
+**/node_modules/
+**/.pnp
+.pnp.*
+# Yarn (generally at repo root, but safe anywhere)
+**/.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Testing
+**/coverage/
+
+# Next.js
+**/.next/
+**/out/
+
+# Generic production builds
+**/build/
+
+# Debug logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# Env files (opt-in if needed)
+**/.env*
+.env*
+
+# Vercel
+**/.vercel
+
+# TypeScript
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# -------------------------
+# Java / Maven
+# -------------------------
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+**/dependency-reduced-pom.xml
+
+# -------------------------
+# Editors / OS
+# -------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.pem
