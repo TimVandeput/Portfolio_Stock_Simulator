@@ -47,6 +47,8 @@
 # Java / Maven
 # -------------------------
 **/target/
+**/target/surefire-reports/
+**/target/test-classes/
 **/.mvn/wrapper/maven-wrapper.jar
 **/dependency-reduced-pom.xml
 **/mvnw
