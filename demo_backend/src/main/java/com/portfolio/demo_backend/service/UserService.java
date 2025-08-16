@@ -3,11 +3,13 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
+import com.portfolio.demo_backend.model.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -29,6 +31,13 @@ public class UserService {
             throw new UserAlreadyExistsException(user.getUsername());
         }
         validateAndEncodePassword(user);
+
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            user.setRoles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN));
+        } else {
+            user.setRoles(EnumSet.copyOf(user.getRoles()));
+        }
+
         return userRepository.save(user);
     }
 
