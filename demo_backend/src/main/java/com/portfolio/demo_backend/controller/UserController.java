@@ -3,6 +3,7 @@ package com.portfolio.demo_backend.controller;
 import com.portfolio.demo_backend.dto.CreateUserDTO;
 import com.portfolio.demo_backend.dto.UpdateUserDTO;
 import com.portfolio.demo_backend.model.User;
+import com.portfolio.demo_backend.service.PasscodeService;
 import com.portfolio.demo_backend.service.UserService;
 
 import jakarta.validation.Valid;
@@ -19,13 +20,16 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final PasscodeService passcodeService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasscodeService passcodeService) {
         this.userService = userService;
+        this.passcodeService = passcodeService;
     }
 
     @PostMapping
     public ResponseEntity<CreateUserDTO> createUser(@Valid @RequestBody CreateUserDTO dto) {
+        passcodeService.validate(dto.getPasscode());
         User user = UserMapper.toEntity(dto);
         User saved = userService.createUser(user);
         return ResponseEntity.ok(UserMapper.toDTO(saved));
