@@ -67,13 +67,11 @@ class UserServiceIntegrationTest {
         User saved = userService.createUser(User.builder().username("tim").password("Pass1234").build());
         String oldHash = saved.getPassword();
 
-        // only username
         userService.updateUser(saved.getId(), User.builder().username("onlyname").build());
         User after1 = userRepository.findById(saved.getId()).orElseThrow();
         assertThat(after1.getUsername()).isEqualTo("onlyname");
         assertThat(after1.getPassword()).isEqualTo(oldHash);
 
-        // only password
         userService.updateUser(saved.getId(), User.builder().password("Newpass1").build());
         User after2 = userRepository.findById(saved.getId()).orElseThrow();
         assertThat(after2.getUsername()).isEqualTo("onlyname");

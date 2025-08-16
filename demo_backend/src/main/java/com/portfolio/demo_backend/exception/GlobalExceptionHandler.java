@@ -2,6 +2,9 @@ package com.portfolio.demo_backend.exception;
 
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
+import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
+import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
+import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.exception.user.InvalidPasscodeException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
@@ -41,6 +44,27 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCreds(InvalidCredentialsException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(RoleNotAssignedException.class)
+    public ResponseEntity<Map<String, String>> handleRoleNotAssigned(RoleNotAssignedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidRefresh(InvalidRefreshTokenException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(Exception.class)
