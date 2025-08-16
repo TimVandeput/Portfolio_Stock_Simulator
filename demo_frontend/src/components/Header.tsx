@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const navItems = [
-  { name: "Game", href: "/game" },
+  { name: "GAME", href: "/game" },
   { name: "A.I.", href: "/ai" },
-  { name: "About", href: "/about" },
+  { name: "ABOUT", href: "/about" },
 ];
 
 export default function Header() {
@@ -18,7 +18,6 @@ export default function Header() {
   const headerRef = useRef<HTMLElement | null>(null);
   const desktopNavRef = useRef<HTMLDivElement | null>(null);
 
-  // Match footer height on mobile
   useEffect(() => {
     const applyHeights = () => {
       const isDesktop = window.matchMedia("(min-width: 768px)").matches;
@@ -40,7 +39,6 @@ export default function Header() {
     return () => window.removeEventListener("resize", applyHeights);
   }, []);
 
-  // Equalize button widths on desktop
   useEffect(() => {
     const calc = () => {
       const nav = desktopNavRef.current;
@@ -56,7 +54,7 @@ export default function Header() {
       let max = 0;
       btns.forEach((b) => {
         const prevWidth = b.style.width;
-        b.style.width = ""; // natural size
+        b.style.width = "";
         const w = b.getBoundingClientRect().width;
         if (w > max) max = w;
         b.style.width = prevWidth;
@@ -170,6 +168,7 @@ export default function Header() {
                       bg-[#e0e5ec] text-blue-300
                       shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
                       transition hover:bg-blue-100
+                      text-center
                     "
                   >
                     {item.name}
