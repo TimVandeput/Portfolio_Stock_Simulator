@@ -8,7 +8,8 @@
 **/node_modules/
 **/.pnp
 .pnp.*
-# Yarn (generally at repo root, but safe anywhere)
+
+# Yarn
 **/.yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -48,6 +49,8 @@
 **/target/
 **/.mvn/wrapper/maven-wrapper.jar
 **/dependency-reduced-pom.xml
+**/mvnw
+**/mvnw.cmd
 
 # -------------------------
 # Editors / OS
