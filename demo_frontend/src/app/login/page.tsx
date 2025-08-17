@@ -1,23 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import PasswordInput from "@/components/input/PasswordInput";
+import NeumorphicButton from "@/components/button/NeumorphicButton";
+import NeumorphicInput from "@/components/input/NeumorphicInput";
+import ErrorMessage from "@/components/error/ErrorMessage";
 
 export default function LoginPage() {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const [rUser, setRUser] = useState("");
   const [rPass, setRPass] = useState("");
-  const [showRPass, setShowRPass] = useState(false);
   const [rPass2, setRPass2] = useState("");
-  const [showRPass2, setShowRPass2] = useState(false);
   const [rCode, setRCode] = useState("");
-  const [showRCode, setShowRCode] = useState(false);
   const [rError, setRError] = useState("");
 
   useEffect(() => {
@@ -28,8 +27,7 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLoginSubmit = () => {
     setError("");
     if (!username || !password) {
       setError("Please enter your username and password.");
@@ -38,8 +36,7 @@ export default function LoginPage() {
     alert(`Logged in as ${username} (simulation)`);
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegisterSubmit = () => {
     setRError("");
     if (!rUser || !rPass || !rPass2 || !rCode) {
       setRError("Please fill in all fields.");
@@ -95,39 +92,23 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-5 flex flex-col flex-1">
-              <input
+              <NeumorphicInput
                 type="text"
                 placeholder="Username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
+                onChange={setUsername}
+                className="my-2"
               />
 
-              <div className="relative my-2">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 pr-12 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+              <PasswordInput
+                placeholder="Password"
+                value={password}
+                onChange={setPassword}
+                className="my-2"
+              />
 
               <div className="mt-auto flex flex-col">
-                <div className="text-red-300 text-sm text-center h-5 mb-2 transition-all">
-                  {error ? (
-                    error
-                  ) : (
-                    <span className="opacity-0">placeholder</span>
-                  )}
-                </div>
+                <ErrorMessage message={error} />
                 <button
                   type="button"
                   onClick={handleLoginSubmit}
@@ -170,73 +151,37 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-5 flex flex-col flex-1">
-              <input
+              <NeumorphicInput
                 type="text"
                 placeholder="Username"
                 value={rUser}
-                onChange={(e) => setRUser(e.target.value)}
-                className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
+                onChange={setRUser}
+                className="my-2"
               />
 
-              <div className="relative my-2">
-                <input
-                  type={showRPass ? "text" : "password"}
-                  placeholder="Password"
-                  value={rPass}
-                  onChange={(e) => setRPass(e.target.value)}
-                  className="w-full p-3 pr-12 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRPass(!showRPass)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
-                >
-                  {showRPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+              <PasswordInput
+                placeholder="Password"
+                value={rPass}
+                onChange={setRPass}
+                className="my-2"
+              />
 
-              <div className="relative my-2">
-                <input
-                  type={showRPass2 ? "text" : "password"}
-                  placeholder="Confirm password"
-                  value={rPass2}
-                  onChange={(e) => setRPass2(e.target.value)}
-                  className="w-full p-3 pr-12 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRPass2(!showRPass2)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
-                >
-                  {showRPass2 ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+              <PasswordInput
+                placeholder="Confirm password"
+                value={rPass2}
+                onChange={setRPass2}
+                className="my-2"
+              />
 
-              <div className="relative my-2">
-                <input
-                  type={showRCode ? "text" : "password"}
-                  placeholder="Passcode"
-                  value={rCode}
-                  onChange={(e) => setRCode(e.target.value)}
-                  className="w-full p-3 pr-12 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRCode(!showRCode)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
-                >
-                  {showRCode ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+              <PasswordInput
+                placeholder="Passcode"
+                value={rCode}
+                onChange={setRCode}
+                className="my-2"
+              />
 
               <div className="mt-auto flex flex-col">
-                <div className="text-red-300 text-sm text-center h-5 mb-2 transition-all">
-                  {rError ? (
-                    rError
-                  ) : (
-                    <span className="opacity-0">placeholder</span>
-                  )}
-                </div>
+                <ErrorMessage message={rError} />
                 <button
                   type="button"
                   onClick={handleRegisterSubmit}
