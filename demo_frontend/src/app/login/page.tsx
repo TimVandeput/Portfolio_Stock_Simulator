@@ -58,19 +58,27 @@ export default function LoginPage() {
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
+            ${isFlipped ? "rotate-y-180" : ""}
           `}
-          style={{ transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
+          style={{
+            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
         >
+          {/* LOGIN SIDE */}
           <div
-            className="
+            className={`
               absolute inset-0
               bg-[#e0e5ec] rounded-2xl
-              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
               p-8
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-            "
+              ${
+                isFlipped
+                  ? ""
+                  : "shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
+              }
+            `}
           >
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold text-blue-300">Login</h1>
@@ -113,16 +121,21 @@ export default function LoginPage() {
             </form>
           </div>
 
+          {/* REGISTER SIDE */}
           <div
-            className="
+            className={`
               absolute inset-0
               bg-[#e0e5ec] rounded-2xl
-              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
               p-8
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-            "
+              ${
+                isFlipped
+                  ? "shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
+                  : ""
+              }
+            `}
             style={{ transform: "rotateY(180deg)" }}
           >
             <div className="flex justify-between items-start">
@@ -130,7 +143,11 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setIsFlipped(false)}
-                className="p-2 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+                className={`p-2 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
+                  isFlipped
+                    ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
+                    : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
+                }`}
               >
                 Go To Login
               </button>
@@ -177,7 +194,11 @@ export default function LoginPage() {
               </div>
               <button
                 type="submit"
-                className="mt-auto p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+                className={`mt-auto p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
+                  isFlipped
+                    ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
+                    : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
+                }`}
               >
                 Register
               </button>
