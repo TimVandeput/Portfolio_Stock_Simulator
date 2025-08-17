@@ -82,13 +82,12 @@ export default function LoginPage() {
           >
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold text-blue-300">Login</h1>
-              <button
-                type="button"
+              <div
                 onClick={() => setIsFlipped(true)}
-                className="p-2 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+                className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
-                Go To Register
-              </button>
+                Register →
+              </div>
             </div>
 
             <div className="mt-5 flex flex-col flex-1">
@@ -109,13 +108,12 @@ export default function LoginPage() {
 
               <div className="mt-auto flex flex-col">
                 <ErrorMessage message={error} />
-                <button
-                  type="button"
+                <NeumorphicButton
                   onClick={handleLoginSubmit}
-                  className="p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+                  className="text-blue-300"
                 >
                   Login
-                </button>
+                </NeumorphicButton>
               </div>
             </div>
           </div>
@@ -137,17 +135,12 @@ export default function LoginPage() {
           >
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold text-blue-300">Register</h1>
-              <button
-                type="button"
+              <div
                 onClick={() => setIsFlipped(false)}
-                className={`p-2 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
-                  isFlipped
-                    ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
-                    : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
-                }`}
+                className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
-                Go To Login
-              </button>
+                Login →
+              </div>
             </div>
 
             <div className="mt-5 flex flex-col flex-1">
@@ -182,17 +175,12 @@ export default function LoginPage() {
 
               <div className="mt-auto flex flex-col">
                 <ErrorMessage message={rError} />
-                <button
-                  type="button"
+                <NeumorphicButton
                   onClick={handleRegisterSubmit}
-                  className={`p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
-                    isFlipped
-                      ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
-                      : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
-                  }`}
+                  className="text-blue-300"
                 >
                   Register
-                </button>
+                </NeumorphicButton>
               </div>
             </div>
           </div>
