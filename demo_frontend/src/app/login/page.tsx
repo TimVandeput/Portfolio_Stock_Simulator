@@ -73,11 +73,9 @@ export default function LoginPage() {
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-              ${
-                isFlipped
-                  ? ""
-                  : "shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
-              }
+              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
+              transition-shadow duration-500
+              ${isFlipped ? "!shadow-none" : ""}
             `}
           >
             <div className="flex justify-between items-start">
@@ -130,11 +128,9 @@ export default function LoginPage() {
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-              ${
-                isFlipped
-                  ? "shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
-                  : ""
-              }
+              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
+              transition-shadow duration-500
+              ${isFlipped ? "" : "!shadow-none"}
             `}
             style={{ transform: "rotateY(180deg)" }}
           >
