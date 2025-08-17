@@ -107,15 +107,22 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
               />
-              <div className="text-red-300 text-sm text-center mt-2 transition-all h-5">
-                {error ? error : <span className="opacity-0">placeholder</span>}
+
+              <div className="mt-auto flex flex-col">
+                <div className="text-red-300 text-sm text-center h-5 mb-2 transition-all">
+                  {error ? (
+                    error
+                  ) : (
+                    <span className="opacity-0">placeholder</span>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className="p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+                >
+                  Login
+                </button>
               </div>
-              <button
-                type="submit"
-                className="mt-auto p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
-              >
-                Login
-              </button>
             </form>
           </div>
 
@@ -181,23 +188,25 @@ export default function LoginPage() {
                 onChange={(e) => setRCode(e.target.value)}
                 className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
               />
-              <div className="text-red-300 text-sm text-center mt-2 transition-all h-5">
-                {rError ? (
-                  rError
-                ) : (
-                  <span className="opacity-0">placeholder</span>
-                )}
+              <div className="mt-auto flex flex-col">
+                <div className="text-red-300 text-sm text-center h-5 mb-2 transition-all">
+                  {rError ? (
+                    rError
+                  ) : (
+                    <span className="opacity-0">placeholder</span>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className={`p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
+                    isFlipped
+                      ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
+                      : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
+                  }`}
+                >
+                  Register
+                </button>
               </div>
-              <button
-                type="submit"
-                className={`mt-auto p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 transition hover:bg-blue-100 ${
-                  isFlipped
-                    ? "shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]"
-                    : "shadow-[-6px_6px_10px_#c2c8d0,5px_-5px_10px_#e6f0fa]"
-                }`}
-              >
-                Register
-              </button>
             </form>
           </div>
         </div>
