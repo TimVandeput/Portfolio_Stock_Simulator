@@ -3,16 +3,8 @@
 import { useState, useEffect } from "react";
 import { Lightbulb, LightbulbOff } from "lucide-react";
 
-// ==============================
-// COMPONENT DEFINITION
-// ==============================
-
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
-
-  // ==============================
-  // INITIALIZATION
-  // ==============================
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -29,98 +21,130 @@ export default function ThemeToggle() {
   const disableTransitions = () => {
     const loginCards = document.querySelectorAll(".login-card");
     loginCards.forEach((card) => {
-      (card as HTMLElement).style.transition = "none";
+      (card as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
     neumorphicButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "none";
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
     neumorphicInputs.forEach((input) => {
-      (input as HTMLElement).style.transition = "none";
+      (input as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const passwordInputs = document.querySelectorAll(".password-input");
     passwordInputs.forEach((input) => {
-      (input as HTMLElement).style.transition = "none";
+      (input as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const passwordToggleButtons = document.querySelectorAll(
       ".password-toggle-button"
     );
     passwordToggleButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "none";
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
     desktopNavButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "none";
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const hamburgerButtons = document.querySelectorAll(".hamburger-button");
     hamburgerButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "none";
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
 
     const mobileDrawerNavButtons = document.querySelectorAll(
       ".mobile-drawer-nav-button"
     );
     mobileDrawerNavButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "none";
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
     });
   };
 
   const enableTransitions = () => {
     const loginCards = document.querySelectorAll(".login-card");
     loginCards.forEach((card) => {
-      (card as HTMLElement).style.transition = "";
+      (card as HTMLElement).style.removeProperty("transition");
     });
 
     const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
     neumorphicButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "";
+      (button as HTMLElement).style.removeProperty("transition");
     });
 
     const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
     neumorphicInputs.forEach((input) => {
-      (input as HTMLElement).style.transition = "";
+      (input as HTMLElement).style.removeProperty("transition");
     });
 
     const passwordInputs = document.querySelectorAll(".password-input");
     passwordInputs.forEach((input) => {
-      (input as HTMLElement).style.transition = "";
+      (input as HTMLElement).style.removeProperty("transition");
     });
 
     const passwordToggleButtons = document.querySelectorAll(
       ".password-toggle-button"
     );
     passwordToggleButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "";
+      (button as HTMLElement).style.removeProperty("transition");
     });
 
     const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
     desktopNavButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "";
+      (button as HTMLElement).style.removeProperty("transition");
     });
 
     const hamburgerButtons = document.querySelectorAll(".hamburger-button");
     hamburgerButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "";
+      (button as HTMLElement).style.removeProperty("transition");
     });
 
     const mobileDrawerNavButtons = document.querySelectorAll(
       ".mobile-drawer-nav-button"
     );
     mobileDrawerNavButtons.forEach((button) => {
-      (button as HTMLElement).style.transition = "";
+      (button as HTMLElement).style.removeProperty("transition");
     });
   };
 
-  // ==============================
-  // DARK THEME APPLICATION
-  // ==============================
+  // ============
+  // DARK THEME
+  // ============
 
   const applyDarkTheme = () => {
     disableTransitions();
@@ -204,6 +228,17 @@ export default function ThemeToggle() {
         "6px 6px 12px #1e2028, -6px -6px 12px #363a4c";
     });
 
+    let neumorphicButtonStyleElement = document.getElementById(
+      "neumorphic-button-active"
+    );
+    if (!neumorphicButtonStyleElement) {
+      neumorphicButtonStyleElement = document.createElement("style");
+      neumorphicButtonStyleElement.id = "neumorphic-button-active";
+      document.head.appendChild(neumorphicButtonStyleElement);
+    }
+    neumorphicButtonStyleElement.textContent =
+      ".neumorphic-button:active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; } .neumorphic-button:hover { background: #252831 !important; }";
+
     const cursorTrailDots = document.querySelectorAll(".cursor-trail-dot");
     cursorTrailDots.forEach((dot) => {
       (dot as HTMLElement).style.background = "#c4b5fd";
@@ -277,7 +312,7 @@ export default function ThemeToggle() {
       document.head.appendChild(desktopNavStyleElement);
     }
     desktopNavStyleElement.textContent =
-      ".desktop-nav-button:hover { background: #363a4c !important; }";
+      ".desktop-nav-button:hover { background: #252831 !important; } .desktop-nav-button:active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
 
     const hamburgerButtons = document.querySelectorAll(".hamburger-button");
     hamburgerButtons.forEach((button) => {
@@ -323,14 +358,25 @@ export default function ThemeToggle() {
       document.head.appendChild(mobileDrawerStyleElement);
     }
     mobileDrawerStyleElement.textContent =
-      ".mobile-drawer-nav-button:hover { background: #363a4c !important; }";
+      ".mobile-drawer-nav-button:hover { background: #252831 !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
+
+    let themeToggleStyleElement = document.getElementById(
+      "theme-toggle-active"
+    );
+    if (!themeToggleStyleElement) {
+      themeToggleStyleElement = document.createElement("style");
+      themeToggleStyleElement.id = "theme-toggle-active";
+      document.head.appendChild(themeToggleStyleElement);
+    }
+    themeToggleStyleElement.textContent =
+      "button:has(.text-purple-300):active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
 
     setTimeout(enableTransitions, 50);
   };
 
-  // ==============================
-  // LIGHT THEME APPLICATION
-  // ==============================
+  // =============
+  // LIGHT THEME
+  // =============
 
   const applyLightTheme = () => {
     disableTransitions();
@@ -416,6 +462,17 @@ export default function ThemeToggle() {
         "6px 6px 12px rgba(0,0,0,0.25), -6px -6px 12px rgba(255,255,255,0.7)";
     });
 
+    let neumorphicButtonStyleElement = document.getElementById(
+      "neumorphic-button-active"
+    );
+    if (!neumorphicButtonStyleElement) {
+      neumorphicButtonStyleElement = document.createElement("style");
+      neumorphicButtonStyleElement.id = "neumorphic-button-active";
+      document.head.appendChild(neumorphicButtonStyleElement);
+    }
+    neumorphicButtonStyleElement.textContent =
+      ".neumorphic-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
+
     const cursorTrailDots = document.querySelectorAll(".cursor-trail-dot");
     cursorTrailDots.forEach((dot) => {
       (dot as HTMLElement).style.background = "#c4dcfcff";
@@ -489,7 +546,7 @@ export default function ThemeToggle() {
       document.head.appendChild(desktopNavStyleElement);
     }
     desktopNavStyleElement.textContent =
-      ".desktop-nav-button:hover { background: rgb(191 219 254) !important; }";
+      ".desktop-nav-button:hover { background: rgb(191 219 254) !important; } .desktop-nav-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
 
     const hamburgerButtons = document.querySelectorAll(".hamburger-button");
     hamburgerButtons.forEach((button) => {
@@ -535,7 +592,18 @@ export default function ThemeToggle() {
       document.head.appendChild(mobileDrawerStyleElement);
     }
     mobileDrawerStyleElement.textContent =
-      ".mobile-drawer-nav-button:hover { background: rgb(191 219 254) !important; }";
+      ".mobile-drawer-nav-button:hover { background: rgb(191 219 254) !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
+
+    let themeToggleStyleElement = document.getElementById(
+      "theme-toggle-active"
+    );
+    if (!themeToggleStyleElement) {
+      themeToggleStyleElement = document.createElement("style");
+      themeToggleStyleElement.id = "theme-toggle-active";
+      document.head.appendChild(themeToggleStyleElement);
+    }
+    themeToggleStyleElement.textContent =
+      "button:has(.text-blue-300):active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
 
     setTimeout(enableTransitions, 50);
   };
@@ -557,18 +625,18 @@ export default function ThemeToggle() {
     }
   };
 
-  // ==============================
-  // COMPONENT RENDER
-  // ==============================
-
   return (
     <button
       onClick={toggleTheme}
-      className={`p-3 rounded-xl font-bold transition-all duration-150 ${
-        isDark
-          ? "bg-[#2a2d3a] shadow-[6px_6px_10px_#1e2028,-5px_-5px_10px_#363a4c] hover:bg-[#2e3240]"
-          : "bg-[#e0e5ec] shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] hover:bg-blue-100"
-      }`}
+      className={`p-3 rounded-xl font-bold transition-all duration-150 
+        active:shadow-[inset_2px_2px_5px_rgba(0,0,0,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.7)]
+        active:brightness-95
+        active:translate-y-0.5
+        active:duration-75 ${
+          isDark
+            ? "bg-[#2a2d3a] shadow-[6px_6px_10px_#1e2028,-5px_-5px_10px_#363a4c] hover:bg-[#252831]"
+            : "bg-[#e0e5ec] shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] hover:bg-blue-100"
+        }`}
     >
       {isDark ? (
         <Lightbulb size={20} className="text-purple-300" />
