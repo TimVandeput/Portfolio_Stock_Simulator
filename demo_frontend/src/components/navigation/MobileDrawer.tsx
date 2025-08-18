@@ -19,9 +19,9 @@ export default function MobileDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-[99999]">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="absolute left-0 top-0 h-full w-64 bg-[#e0e5ec] p-6 shadow-[10px_0_15px_#c2c8d0]">
+      <div className="absolute left-0 top-0 bottom-0 w-64 bg-[#e0e5ec] p-6 shadow-[10px_0_15px_#c2c8d0] z-[99999]">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-blue-400">Menu</h2>
           <button
