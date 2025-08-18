@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import HamburgerButton from "@/components/navigation/HamburgerButton";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const navItems = [
   { name: "GAME", href: "/game" },
@@ -72,17 +73,23 @@ export default function Header() {
       ref={headerRef}
       className="sticky top-0 bg-gradient-to-b from-blue-200 to-[#e0e5ec] z-50 w-full md:py-4 py-0"
     >
-      <div className="relative w-full h-full">
-        {!hideNav && (
-          <HamburgerButton onClick={() => setOpen(true)} />
-        )}
+      <div className="relative w-full h-full flex items-center">
+        {!hideNav && <HamburgerButton onClick={() => setOpen(true)} />}
 
-        <DesktopNav
-          navItems={navItems}
-          hideNav={hideNav}
-          maxBtnWidth={maxBtnWidth}
-          onWidthCalculation={handleWidthCalculation}
-        />
+        <div className="flex-1 flex justify-center">
+          <DesktopNav
+            navItems={navItems}
+            hideNav={hideNav}
+            maxBtnWidth={maxBtnWidth}
+            onWidthCalculation={handleWidthCalculation}
+          />
+        </div>
+
+        {!hideNav && (
+          <div className="absolute right-4 md:right-6">
+            <ThemeToggle />
+          </div>
+        )}
       </div>
 
       <MobileDrawer
