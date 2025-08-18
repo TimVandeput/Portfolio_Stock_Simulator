@@ -5,6 +5,7 @@ import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import ErrorMessage from "@/components/error/ErrorMessage";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function LoginPage() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -51,7 +52,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
+    <div className="login-container flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+      
       <div style={{ perspective: "1000px" }}>
         <div
           className={`
@@ -69,6 +75,7 @@ export default function LoginPage() {
           {/* LOGIN SIDE */}
           <div
             className={`
+              login-card
               absolute inset-0
               bg-[#e0e5ec] rounded-2xl
               p-8
@@ -81,13 +88,13 @@ export default function LoginPage() {
             `}
           >
             <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold text-blue-300">Login</h1>
+              <h1 className="login-title text-2xl font-bold text-blue-300">Login</h1>
               <div
                 onClick={() => {
                   setIsFlipped(true);
                   setTimeout(() => setError(""), 500);
                 }}
-                className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
+                className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
                 Register →
               </div>
@@ -124,6 +131,7 @@ export default function LoginPage() {
           {/* REGISTER SIDE */}
           <div
             className={`
+              login-card
               absolute inset-0
               bg-[#e0e5ec] rounded-2xl
               p-8
@@ -137,13 +145,13 @@ export default function LoginPage() {
             style={{ transform: "rotateY(180deg)" }}
           >
             <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold text-blue-300">Register</h1>
+              <h1 className="login-title text-2xl font-bold text-blue-300">Register</h1>
               <div
                 onClick={() => {
                   setIsFlipped(false);
                   setTimeout(() => setRError(""), 500);
                 }}
-                className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
+                className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
                 Login →
               </div>

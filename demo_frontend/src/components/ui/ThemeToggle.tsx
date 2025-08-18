@@ -14,7 +14,23 @@ export default function ThemeToggle() {
     }
   }, []);
 
+  const disableTransitions = () => {
+    const loginCards = document.querySelectorAll(".login-card");
+    loginCards.forEach((card) => {
+      (card as HTMLElement).style.transition = "none";
+    });
+  };
+
+  const enableTransitions = () => {
+    const loginCards = document.querySelectorAll(".login-card");
+    loginCards.forEach((card) => {
+      (card as HTMLElement).style.transition = "";
+    });
+  };
+
   const applyDarkTheme = () => {
+    disableTransitions();
+    
     document.body.style.background = "#2a2d3a";
     document.documentElement.style.background = "#2a2d3a";
 
@@ -37,9 +53,60 @@ export default function ThemeToggle() {
     if (footerText) {
       footerText.style.color = "#c4b5fd";
     }
+
+    const aboutContainer = document.querySelector(
+      ".about-container"
+    ) as HTMLElement;
+    if (aboutContainer) {
+      aboutContainer.style.background = "#2a2d3a";
+    }
+
+    const aboutCard = document.querySelector(".about-card") as HTMLElement;
+    if (aboutCard) {
+      aboutCard.style.background = "#2a2d3a";
+      aboutCard.style.boxShadow =
+        "10px 10px 15px #1e2028, -5px -5px 10px #363a4c";
+    }
+
+    const aboutTitle = document.querySelector(".about-title") as HTMLElement;
+    if (aboutTitle) {
+      aboutTitle.style.color = "#c4b5fd";
+    }
+
+    const aboutText = document.querySelectorAll(".about-text");
+    aboutText.forEach((text) => {
+      (text as HTMLElement).style.color = "#a78bfa";
+    });
+
+    // Login page elements
+    const loginContainer = document.querySelector(".login-container") as HTMLElement;
+    if (loginContainer) {
+      loginContainer.style.background = "#2a2d3a";
+    }
+
+    const loginCards = document.querySelectorAll(".login-card");
+    loginCards.forEach((card) => {
+      (card as HTMLElement).style.background = "#2a2d3a";
+      (card as HTMLElement).style.boxShadow = "10px 10px 15px #1e2028, -5px -5px 10px #363a4c";
+    });
+
+    const loginTitles = document.querySelectorAll(".login-title");
+    loginTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#c4b5fd"; // purple-300
+    });
+
+    const loginLinks = document.querySelectorAll(".login-link");
+    loginLinks.forEach((link) => {
+      (link as HTMLElement).style.color = "#c4b5fd"; // purple-300
+    });
+
+    // Re-enable transitions after a brief delay
+    setTimeout(enableTransitions, 50);
   };
 
   const applyLightTheme = () => {
+    disableTransitions();
+    
     document.body.style.background = "#e0e5ec";
     document.documentElement.style.background = "#e0e5ec";
 
@@ -64,6 +131,55 @@ export default function ThemeToggle() {
     if (footerText) {
       footerText.style.color = "#60a5fa";
     }
+
+    const aboutContainer = document.querySelector(
+      ".about-container"
+    ) as HTMLElement;
+    if (aboutContainer) {
+      aboutContainer.style.background = "#e0e5ec";
+    }
+
+    const aboutCard = document.querySelector(".about-card") as HTMLElement;
+    if (aboutCard) {
+      aboutCard.style.background = "#e0e5ec";
+      aboutCard.style.boxShadow =
+        "10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa";
+    }
+
+    const aboutTitle = document.querySelector(".about-title") as HTMLElement;
+    if (aboutTitle) {
+      aboutTitle.style.color = "#93c5fd";
+    }
+
+    const aboutText = document.querySelectorAll(".about-text");
+    aboutText.forEach((text) => {
+      (text as HTMLElement).style.color = "#60a5fa";
+    });
+
+    // Login page elements
+    const loginContainer = document.querySelector(".login-container") as HTMLElement;
+    if (loginContainer) {
+      loginContainer.style.background = "#e0e5ec";
+    }
+
+    const loginCards = document.querySelectorAll(".login-card");
+    loginCards.forEach((card) => {
+      (card as HTMLElement).style.background = "#e0e5ec";
+      (card as HTMLElement).style.boxShadow = "10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa";
+    });
+
+    const loginTitles = document.querySelectorAll(".login-title");
+    loginTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#93c5fd"; // blue-300
+    });
+
+    const loginLinks = document.querySelectorAll(".login-link");
+    loginLinks.forEach((link) => {
+      (link as HTMLElement).style.color = "#93c5fd"; // blue-300
+    });
+
+    // Re-enable transitions after a brief delay
+    setTimeout(enableTransitions, 50);
   };
 
   const toggleTheme = () => {
