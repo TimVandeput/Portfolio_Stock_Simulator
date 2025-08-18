@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
+import CursorTrail from "@/components/effects/CursorTrail";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e0e5ec] min-h-screen flex flex-col`}
       >
+        <CursorTrail />
         <Header />
         <main className="flex-1 flex flex-col justify-center items-center bg-[#e0e5ec]">
           {children}
