@@ -171,6 +171,13 @@ export default function LoginPage() {
               />
 
               <PasswordInput
+                placeholder="Passcode"
+                value={rCode}
+                onChange={setRCode}
+                className="my-2"
+              />
+
+              <PasswordInput
                 placeholder="Password"
                 value={rPass}
                 onChange={setRPass}
@@ -181,13 +188,6 @@ export default function LoginPage() {
                 placeholder="Confirm password"
                 value={rPass2}
                 onChange={setRPass2}
-                className="my-2"
-              />
-
-              <PasswordInput
-                placeholder="Passcode"
-                value={rCode}
-                onChange={setRCode}
                 className="my-2"
               />
 
