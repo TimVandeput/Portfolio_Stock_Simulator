@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useEffect } from "react";
 
 interface NavItem {
   name: string;
@@ -16,10 +17,22 @@ export default function MobileDrawer({
   navItems,
   onClose,
 }: MobileDrawerProps) {
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      if (isDesktop && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999]">
+    <div className="fixed inset-0 z-[99999] md:hidden">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="absolute left-0 top-0 bottom-0 w-64 bg-[#e0e5ec] p-6 shadow-[10px_0_15px_#c2c8d0] z-[99999]">
         <div className="flex items-center justify-between mb-6">
