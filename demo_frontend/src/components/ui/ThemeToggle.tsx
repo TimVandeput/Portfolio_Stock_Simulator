@@ -30,7 +30,7 @@ export default function ThemeToggle() {
 
   const applyDarkTheme = () => {
     disableTransitions();
-    
+
     document.body.style.background = "#2a2d3a";
     document.documentElement.style.background = "#2a2d3a";
 
@@ -79,7 +79,9 @@ export default function ThemeToggle() {
     });
 
     // Login page elements
-    const loginContainer = document.querySelector(".login-container") as HTMLElement;
+    const loginContainer = document.querySelector(
+      ".login-container"
+    ) as HTMLElement;
     if (loginContainer) {
       loginContainer.style.background = "#2a2d3a";
     }
@@ -87,7 +89,8 @@ export default function ThemeToggle() {
     const loginCards = document.querySelectorAll(".login-card");
     loginCards.forEach((card) => {
       (card as HTMLElement).style.background = "#2a2d3a";
-      (card as HTMLElement).style.boxShadow = "10px 10px 15px #1e2028, -5px -5px 10px #363a4c";
+      (card as HTMLElement).style.boxShadow =
+        "10px 10px 15px #1e2028, -5px -5px 10px #363a4c";
     });
 
     const loginTitles = document.querySelectorAll(".login-title");
@@ -106,7 +109,7 @@ export default function ThemeToggle() {
 
   const applyLightTheme = () => {
     disableTransitions();
-    
+
     document.body.style.background = "#e0e5ec";
     document.documentElement.style.background = "#e0e5ec";
 
@@ -157,7 +160,9 @@ export default function ThemeToggle() {
     });
 
     // Login page elements
-    const loginContainer = document.querySelector(".login-container") as HTMLElement;
+    const loginContainer = document.querySelector(
+      ".login-container"
+    ) as HTMLElement;
     if (loginContainer) {
       loginContainer.style.background = "#e0e5ec";
     }
@@ -165,7 +170,8 @@ export default function ThemeToggle() {
     const loginCards = document.querySelectorAll(".login-card");
     loginCards.forEach((card) => {
       (card as HTMLElement).style.background = "#e0e5ec";
-      (card as HTMLElement).style.boxShadow = "10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa";
+      (card as HTMLElement).style.boxShadow =
+        "10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa";
     });
 
     const loginTitles = document.querySelectorAll(".login-title");

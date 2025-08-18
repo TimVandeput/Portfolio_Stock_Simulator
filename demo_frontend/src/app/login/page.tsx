@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
-      
+
       <div style={{ perspective: "1000px" }}>
         <div
           className={`
@@ -88,7 +88,9 @@ export default function LoginPage() {
             `}
           >
             <div className="flex justify-between items-start">
-              <h1 className="login-title text-2xl font-bold text-blue-300">Login</h1>
+              <h1 className="login-title text-2xl font-bold text-blue-300">
+                Login
+              </h1>
               <div
                 onClick={() => {
                   setIsFlipped(true);
@@ -145,7 +147,9 @@ export default function LoginPage() {
             style={{ transform: "rotateY(180deg)" }}
           >
             <div className="flex justify-between items-start">
-              <h1 className="login-title text-2xl font-bold text-blue-300">Register</h1>
+              <h1 className="login-title text-2xl font-bold text-blue-300">
+                Register
+              </h1>
               <div
                 onClick={() => {
                   setIsFlipped(false);
