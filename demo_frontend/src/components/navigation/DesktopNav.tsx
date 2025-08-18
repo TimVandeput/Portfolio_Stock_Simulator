@@ -40,6 +40,7 @@ export default function DesktopNav({
             data-eq
             style={maxBtnWidth ? { width: `${maxBtnWidth}px` } : undefined}
             className="
+              desktop-nav-button
               p-3 rounded-xl font-bold
               bg-[#e0e5ec] text-blue-300
               shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]

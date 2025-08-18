@@ -3,8 +3,16 @@
 import { useState, useEffect } from "react";
 import { Lightbulb, LightbulbOff } from "lucide-react";
 
+// ==============================
+// COMPONENT DEFINITION
+// ==============================
+
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
+
+  // ==============================
+  // INITIALIZATION
+  // ==============================
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -14,10 +22,53 @@ export default function ThemeToggle() {
     }
   }, []);
 
+  // ==============================
+  // TRANSITION CONTROL
+  // ==============================
+
   const disableTransitions = () => {
     const loginCards = document.querySelectorAll(".login-card");
     loginCards.forEach((card) => {
       (card as HTMLElement).style.transition = "none";
+    });
+
+    const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
+    neumorphicButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "none";
+    });
+
+    const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
+    neumorphicInputs.forEach((input) => {
+      (input as HTMLElement).style.transition = "none";
+    });
+
+    const passwordInputs = document.querySelectorAll(".password-input");
+    passwordInputs.forEach((input) => {
+      (input as HTMLElement).style.transition = "none";
+    });
+
+    const passwordToggleButtons = document.querySelectorAll(
+      ".password-toggle-button"
+    );
+    passwordToggleButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "none";
+    });
+
+    const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
+    desktopNavButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "none";
+    });
+
+    const hamburgerButtons = document.querySelectorAll(".hamburger-button");
+    hamburgerButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "none";
+    });
+
+    const mobileDrawerNavButtons = document.querySelectorAll(
+      ".mobile-drawer-nav-button"
+    );
+    mobileDrawerNavButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "none";
     });
   };
 
@@ -26,7 +77,50 @@ export default function ThemeToggle() {
     loginCards.forEach((card) => {
       (card as HTMLElement).style.transition = "";
     });
+
+    const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
+    neumorphicButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "";
+    });
+
+    const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
+    neumorphicInputs.forEach((input) => {
+      (input as HTMLElement).style.transition = "";
+    });
+
+    const passwordInputs = document.querySelectorAll(".password-input");
+    passwordInputs.forEach((input) => {
+      (input as HTMLElement).style.transition = "";
+    });
+
+    const passwordToggleButtons = document.querySelectorAll(
+      ".password-toggle-button"
+    );
+    passwordToggleButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "";
+    });
+
+    const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
+    desktopNavButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "";
+    });
+
+    const hamburgerButtons = document.querySelectorAll(".hamburger-button");
+    hamburgerButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "";
+    });
+
+    const mobileDrawerNavButtons = document.querySelectorAll(
+      ".mobile-drawer-nav-button"
+    );
+    mobileDrawerNavButtons.forEach((button) => {
+      (button as HTMLElement).style.transition = "";
+    });
   };
+
+  // ==============================
+  // DARK THEME APPLICATION
+  // ==============================
 
   const applyDarkTheme = () => {
     disableTransitions();
@@ -110,8 +204,133 @@ export default function ThemeToggle() {
         "6px 6px 12px #1e2028, -6px -6px 12px #363a4c";
     });
 
+    const cursorTrailDots = document.querySelectorAll(".cursor-trail-dot");
+    cursorTrailDots.forEach((dot) => {
+      (dot as HTMLElement).style.background = "#c4b5fd";
+      (dot as HTMLElement).style.boxShadow = "0 0 6px rgba(196, 181, 253, 0.5)";
+    });
+
+    const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
+    neumorphicInputs.forEach((input) => {
+      (input as HTMLElement).style.background = "#363a4c";
+      (input as HTMLElement).style.color = "#c4b5fd";
+      (input as HTMLElement).style.boxShadow =
+        "inset 1px 1px 3px #1e2028, inset -1px -1px 3px #4a4f65";
+    });
+
+    let styleElement = document.getElementById("neumorphic-input-placeholder");
+    if (!styleElement) {
+      styleElement = document.createElement("style");
+      styleElement.id = "neumorphic-input-placeholder";
+      document.head.appendChild(styleElement);
+    }
+    styleElement.textContent =
+      ".neumorphic-input::placeholder { color: #a78bfa !important; }";
+
+    const passwordInputs = document.querySelectorAll(".password-input");
+    passwordInputs.forEach((input) => {
+      (input as HTMLElement).style.background = "#363a4c";
+      (input as HTMLElement).style.color = "#c4b5fd";
+      (input as HTMLElement).style.boxShadow =
+        "inset 1px 1px 3px #1e2028, inset -1px -1px 3px #4a4f65";
+    });
+
+    const passwordToggleButtons = document.querySelectorAll(
+      ".password-toggle-button"
+    );
+    passwordToggleButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    let passwordStyleElement = document.getElementById(
+      "password-input-placeholder"
+    );
+    if (!passwordStyleElement) {
+      passwordStyleElement = document.createElement("style");
+      passwordStyleElement.id = "password-input-placeholder";
+      document.head.appendChild(passwordStyleElement);
+    }
+    passwordStyleElement.textContent =
+      ".password-input::placeholder { color: #a78bfa !important; }";
+
+    let loginLinkStyleElement = document.getElementById("login-link-hover");
+    if (!loginLinkStyleElement) {
+      loginLinkStyleElement = document.createElement("style");
+      loginLinkStyleElement.id = "login-link-hover";
+      document.head.appendChild(loginLinkStyleElement);
+    }
+    loginLinkStyleElement.textContent =
+      ".login-link:hover { color: #a78bfa !important; border-color: #c4b5fd !important; }";
+
+    const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
+    desktopNavButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#c4b5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #1e2028, -5px -5px 10px #363a4c";
+    });
+
+    let desktopNavStyleElement = document.getElementById("desktop-nav-hover");
+    if (!desktopNavStyleElement) {
+      desktopNavStyleElement = document.createElement("style");
+      desktopNavStyleElement.id = "desktop-nav-hover";
+      document.head.appendChild(desktopNavStyleElement);
+    }
+    desktopNavStyleElement.textContent =
+      ".desktop-nav-button:hover { background: #363a4c !important; }";
+
+    const hamburgerButtons = document.querySelectorAll(".hamburger-button");
+    hamburgerButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    const mobileDrawers = document.querySelectorAll(".mobile-drawer");
+    mobileDrawers.forEach((drawer) => {
+      (drawer as HTMLElement).style.background = "#2a2d3a";
+      (drawer as HTMLElement).style.boxShadow = "10px 0 15px #1e2028";
+    });
+
+    const mobileDrawerTitles = document.querySelectorAll(
+      ".mobile-drawer-title"
+    );
+    mobileDrawerTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    const mobileDrawerCloseButtons = document.querySelectorAll(
+      ".mobile-drawer-close-button"
+    );
+    mobileDrawerCloseButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    const mobileDrawerNavButtons = document.querySelectorAll(
+      ".mobile-drawer-nav-button"
+    );
+    mobileDrawerNavButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#c4b5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #1e2028, -5px -5px 10px #363a4c";
+    });
+
+    let mobileDrawerStyleElement = document.getElementById(
+      "mobile-drawer-nav-hover"
+    );
+    if (!mobileDrawerStyleElement) {
+      mobileDrawerStyleElement = document.createElement("style");
+      mobileDrawerStyleElement.id = "mobile-drawer-nav-hover";
+      document.head.appendChild(mobileDrawerStyleElement);
+    }
+    mobileDrawerStyleElement.textContent =
+      ".mobile-drawer-nav-button:hover { background: #363a4c !important; }";
+
     setTimeout(enableTransitions, 50);
   };
+
+  // ==============================
+  // LIGHT THEME APPLICATION
+  // ==============================
 
   const applyLightTheme = () => {
     disableTransitions();
@@ -197,8 +416,133 @@ export default function ThemeToggle() {
         "6px 6px 12px rgba(0,0,0,0.25), -6px -6px 12px rgba(255,255,255,0.7)";
     });
 
+    const cursorTrailDots = document.querySelectorAll(".cursor-trail-dot");
+    cursorTrailDots.forEach((dot) => {
+      (dot as HTMLElement).style.background = "#c4dcfcff";
+      (dot as HTMLElement).style.boxShadow = "0 0 6px rgba(219, 234, 254, 0.5)";
+    });
+
+    const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
+    neumorphicInputs.forEach((input) => {
+      (input as HTMLElement).style.background = "#e4e8f0";
+      (input as HTMLElement).style.color = "#60a5fa";
+      (input as HTMLElement).style.boxShadow =
+        "inset 1px 1px 3px rgba(0,0,0,0.2), inset -1px -1px 3px rgba(255,255,255,0.6)";
+    });
+
+    let styleElement = document.getElementById("neumorphic-input-placeholder");
+    if (!styleElement) {
+      styleElement = document.createElement("style");
+      styleElement.id = "neumorphic-input-placeholder";
+      document.head.appendChild(styleElement);
+    }
+    styleElement.textContent =
+      ".neumorphic-input::placeholder { color: #93c5fd !important; }";
+
+    const passwordInputs = document.querySelectorAll(".password-input");
+    passwordInputs.forEach((input) => {
+      (input as HTMLElement).style.background = "#e4e8f0";
+      (input as HTMLElement).style.color = "#60a5fa";
+      (input as HTMLElement).style.boxShadow =
+        "inset 1px 1px 3px rgba(0,0,0,0.2), inset -1px -1px 3px rgba(255,255,255,0.6)";
+    });
+
+    const passwordToggleButtons = document.querySelectorAll(
+      ".password-toggle-button"
+    );
+    passwordToggleButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#93c5fd";
+    });
+
+    let passwordStyleElement = document.getElementById(
+      "password-input-placeholder"
+    );
+    if (!passwordStyleElement) {
+      passwordStyleElement = document.createElement("style");
+      passwordStyleElement.id = "password-input-placeholder";
+      document.head.appendChild(passwordStyleElement);
+    }
+    passwordStyleElement.textContent =
+      ".password-input::placeholder { color: #93c5fd !important; }";
+
+    let loginLinkStyleElement = document.getElementById("login-link-hover");
+    if (!loginLinkStyleElement) {
+      loginLinkStyleElement = document.createElement("style");
+      loginLinkStyleElement.id = "login-link-hover";
+      document.head.appendChild(loginLinkStyleElement);
+    }
+    loginLinkStyleElement.textContent =
+      ".login-link:hover { color: #60a5fa !important; border-color: #93c5fd !important; }";
+
+    const desktopNavButtons = document.querySelectorAll(".desktop-nav-button");
+    desktopNavButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#e0e5ec";
+      (button as HTMLElement).style.color = "#93c5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa";
+    });
+
+    let desktopNavStyleElement = document.getElementById("desktop-nav-hover");
+    if (!desktopNavStyleElement) {
+      desktopNavStyleElement = document.createElement("style");
+      desktopNavStyleElement.id = "desktop-nav-hover";
+      document.head.appendChild(desktopNavStyleElement);
+    }
+    desktopNavStyleElement.textContent =
+      ".desktop-nav-button:hover { background: rgb(191 219 254) !important; }";
+
+    const hamburgerButtons = document.querySelectorAll(".hamburger-button");
+    hamburgerButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#60a5fa";
+    });
+
+    const mobileDrawers = document.querySelectorAll(".mobile-drawer");
+    mobileDrawers.forEach((drawer) => {
+      (drawer as HTMLElement).style.background = "#e0e5ec";
+      (drawer as HTMLElement).style.boxShadow = "10px 0 15px #c2c8d0";
+    });
+
+    const mobileDrawerTitles = document.querySelectorAll(
+      ".mobile-drawer-title"
+    );
+    mobileDrawerTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#60a5fa";
+    });
+
+    const mobileDrawerCloseButtons = document.querySelectorAll(
+      ".mobile-drawer-close-button"
+    );
+    mobileDrawerCloseButtons.forEach((button) => {
+      (button as HTMLElement).style.color = "#60a5fa";
+    });
+
+    const mobileDrawerNavButtons = document.querySelectorAll(
+      ".mobile-drawer-nav-button"
+    );
+    mobileDrawerNavButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#e0e5ec";
+      (button as HTMLElement).style.color = "#93c5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa";
+    });
+
+    let mobileDrawerStyleElement = document.getElementById(
+      "mobile-drawer-nav-hover"
+    );
+    if (!mobileDrawerStyleElement) {
+      mobileDrawerStyleElement = document.createElement("style");
+      mobileDrawerStyleElement.id = "mobile-drawer-nav-hover";
+      document.head.appendChild(mobileDrawerStyleElement);
+    }
+    mobileDrawerStyleElement.textContent =
+      ".mobile-drawer-nav-button:hover { background: rgb(191 219 254) !important; }";
+
     setTimeout(enableTransitions, 50);
   };
+
+  // ==============================
+  // THEME TOGGLE HANDLER
+  // ==============================
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
@@ -212,6 +556,10 @@ export default function ThemeToggle() {
       localStorage.setItem("theme", "light");
     }
   };
+
+  // ==============================
+  // COMPONENT RENDER
+  // ==============================
 
   return (
     <button

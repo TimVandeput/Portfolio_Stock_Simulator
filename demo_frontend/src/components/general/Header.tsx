@@ -86,7 +86,7 @@ export default function Header() {
         </div>
 
         {!hideNav && (
-          <div className="absolute right-4 md:right-6">
+          <div className="absolute right-4 md:right-6 hidden md:block">
             <ThemeToggle />
           </div>
         )}

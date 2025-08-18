@@ -8,6 +8,7 @@ export default function CursorTrail() {
 
     for (let i = 0; i < 8; i++) {
       const dot = document.createElement("div");
+      dot.classList.add("cursor-trail-dot");
       dot.style.cssText = `
         position: fixed;
         width: ${8 - i}px;

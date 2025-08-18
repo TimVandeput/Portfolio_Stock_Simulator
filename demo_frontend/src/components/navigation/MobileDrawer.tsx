@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface NavItem {
   name: string;
@@ -55,16 +56,18 @@ export default function MobileDrawer({
         onClick={onClose}
       />
       <div
-        className={`absolute left-0 top-0 bottom-0 w-64 bg-[#e0e5ec] p-6 shadow-[10px_0_15px_#c2c8d0] z-[99999] transition-transform duration-500 ease-in-out ${
+        className={`mobile-drawer absolute left-0 top-0 bottom-0 w-64 bg-[#e0e5ec] p-6 shadow-[10px_0_15px_#c2c8d0] z-[99999] transition-transform duration-500 ease-in-out ${
           isAnimating ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-blue-400">Menu</h2>
+          <h2 className="mobile-drawer-title text-lg font-bold text-blue-400">
+            Menu
+          </h2>
           <button
             aria-label="Close menu"
             onClick={onClose}
-            className="p-2 text-blue-400"
+            className="mobile-drawer-close-button p-2 text-blue-400"
           >
             <svg
               width="28"
@@ -82,6 +85,7 @@ export default function MobileDrawer({
             </svg>
           </button>
         </div>
+
         <nav className="flex flex-col gap-4">
           {navItems.map((item) => (
             <Link
@@ -92,6 +96,7 @@ export default function MobileDrawer({
             >
               <span
                 className="
+                  mobile-drawer-nav-button
                   block p-3 rounded-xl font-bold
                   bg-[#e0e5ec] text-blue-300
                   shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
@@ -108,6 +113,11 @@ export default function MobileDrawer({
             </Link>
           ))}
         </nav>
+
+        {/* Theme Toggle */}
+        <div className="mt-8 flex justify-center">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   );

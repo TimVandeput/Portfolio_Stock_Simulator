@@ -25,7 +25,7 @@ export default function PasswordInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 pr-12 rounded-xl border-none 
+        className="password-input w-full p-3 pr-12 rounded-xl border-none 
           bg-[#e4e8f0] 
           shadow-[inset_1px_1px_3px_rgba(0,0,0,0.2),inset_-1px_-1px_3px_rgba(255,255,255,0.6)]
           focus:outline-none 
@@ -35,7 +35,7 @@ export default function PasswordInput({
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
+        className="password-toggle-button absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-blue-400 transition-colors"
       >
         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
