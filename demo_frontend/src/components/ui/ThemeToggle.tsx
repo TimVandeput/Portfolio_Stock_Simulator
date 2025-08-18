@@ -471,7 +471,7 @@ export default function ThemeToggle() {
       document.head.appendChild(neumorphicButtonStyleElement);
     }
     neumorphicButtonStyleElement.textContent =
-      ".neumorphic-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
+      ".neumorphic-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; } .neumorphic-button:hover { background: #d9e6f9 !important; }";
 
     const cursorTrailDots = document.querySelectorAll(".cursor-trail-dot");
     cursorTrailDots.forEach((dot) => {
