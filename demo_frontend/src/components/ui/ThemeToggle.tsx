@@ -78,7 +78,6 @@ export default function ThemeToggle() {
       (text as HTMLElement).style.color = "#a78bfa";
     });
 
-    // Login page elements
     const loginContainer = document.querySelector(
       ".login-container"
     ) as HTMLElement;
@@ -95,15 +94,22 @@ export default function ThemeToggle() {
 
     const loginTitles = document.querySelectorAll(".login-title");
     loginTitles.forEach((title) => {
-      (title as HTMLElement).style.color = "#c4b5fd"; // purple-300
+      (title as HTMLElement).style.color = "#c4b5fd";
     });
 
     const loginLinks = document.querySelectorAll(".login-link");
     loginLinks.forEach((link) => {
-      (link as HTMLElement).style.color = "#c4b5fd"; // purple-300
+      (link as HTMLElement).style.color = "#c4b5fd";
     });
 
-    // Re-enable transitions after a brief delay
+    const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
+    neumorphicButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#c4b5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 12px #1e2028, -6px -6px 12px #363a4c";
+    });
+
     setTimeout(enableTransitions, 50);
   };
 
@@ -159,7 +165,6 @@ export default function ThemeToggle() {
       (text as HTMLElement).style.color = "#60a5fa";
     });
 
-    // Login page elements
     const loginContainer = document.querySelector(
       ".login-container"
     ) as HTMLElement;
@@ -176,15 +181,22 @@ export default function ThemeToggle() {
 
     const loginTitles = document.querySelectorAll(".login-title");
     loginTitles.forEach((title) => {
-      (title as HTMLElement).style.color = "#93c5fd"; // blue-300
+      (title as HTMLElement).style.color = "#93c5fd";
     });
 
     const loginLinks = document.querySelectorAll(".login-link");
     loginLinks.forEach((link) => {
-      (link as HTMLElement).style.color = "#93c5fd"; // blue-300
+      (link as HTMLElement).style.color = "#93c5fd";
     });
 
-    // Re-enable transitions after a brief delay
+    const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
+    neumorphicButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#e0e5ec";
+      (button as HTMLElement).style.color = "#60a5fa";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 12px rgba(0,0,0,0.25), -6px -6px 12px rgba(255,255,255,0.7)";
+    });
+
     setTimeout(enableTransitions, 50);
   };
 

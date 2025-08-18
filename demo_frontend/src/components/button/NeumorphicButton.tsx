@@ -15,7 +15,7 @@ export default function NeumorphicButton({
     <button
       type={type}
       onClick={onClick}
-      className={`p-3 rounded-xl font-bold 
+      className={`neumorphic-button p-3 rounded-xl font-bold 
         bg-[#e0e5ec] text-blue-400 
         transition 
         hover:bg-[#d9e6f9] 
