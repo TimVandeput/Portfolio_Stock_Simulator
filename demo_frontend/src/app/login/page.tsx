@@ -83,7 +83,10 @@ export default function LoginPage() {
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold text-blue-300">Login</h1>
               <div
-                onClick={() => setIsFlipped(true)}
+                onClick={() => {
+                  setIsFlipped(true);
+                  setTimeout(() => setError(""), 500);
+                }}
                 className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
                 Register →
@@ -136,7 +139,10 @@ export default function LoginPage() {
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold text-blue-300">Register</h1>
               <div
-                onClick={() => setIsFlipped(false)}
+                onClick={() => {
+                  setIsFlipped(false);
+                  setTimeout(() => setRError(""), 500);
+                }}
                 className="cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
                 Login →
