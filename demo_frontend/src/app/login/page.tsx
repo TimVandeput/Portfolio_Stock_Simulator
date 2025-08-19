@@ -1,22 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import RoleSelector from "@/components/button/RoleSelector";
-import { register } from "@/lib/api/auth";
-import type { RegisterRequest, Role } from "@/types";
+import { register, login } from "@/lib/api/auth";
+import type { RegisterRequest, LoginRequest, Role } from "@/types";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role>("ROLE_USER");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [rUser, setRUser] = useState("");
   const [rPass, setRPass] = useState("");
@@ -36,13 +40,42 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleLoginSubmit = () => {
+  const handleLoginSubmit = async () => {
     setError("");
+    setSuccess("");
     if (!username || !password) {
       setError("Please enter your username and password.");
       return;
     }
-    alert(`Logged in as ${username} (simulation)`);
+
+    setIsLoggingIn(true);
+
+    try {
+      const loginData: LoginRequest = {
+        username,
+        password,
+        chosenRole: selectedRole,
+      };
+
+      const response = await login(loginData);
+
+      setSuccess(`Login successful! Welcome, ${response.username}!`);
+
+      setUsername("");
+      setPassword("");
+
+      setTimeout(() => {
+        router.push("/about");
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.body?.message ||
+        "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   const handleRegisterSubmit = async () => {
@@ -69,7 +102,7 @@ export default function LoginPage() {
       const response = await register(registerData);
 
       setRStatus({
-        message: `Registration successful! Welcome, ${response.username}! Please log in.`,
+        message: `Registration successful! Please log in.`,
         type: "success",
       });
 
@@ -135,7 +168,10 @@ export default function LoginPage() {
               <div
                 onClick={() => {
                   setIsFlipped(true);
-                  setTimeout(() => setError(""), 500);
+                  setTimeout(() => {
+                    setError("");
+                    setSuccess("");
+                  }, 500);
                 }}
                 className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
@@ -167,13 +203,21 @@ export default function LoginPage() {
 
               <div className="mt-auto flex flex-col">
                 <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
-                  <StatusMessage message={error} className="mb-0" />
+                  {error && <StatusMessage message={error} className="mb-0" />}
+                  {success && (
+                    <StatusMessage
+                      message={success}
+                      type="success"
+                      className="mb-0"
+                    />
+                  )}
                 </div>
                 <NeumorphicButton
                   onClick={handleLoginSubmit}
                   className="text-blue-300"
+                  disabled={isLoggingIn}
                 >
-                  Login
+                  {isLoggingIn ? "Logging in..." : "Login"}
                 </NeumorphicButton>
               </div>
             </div>
