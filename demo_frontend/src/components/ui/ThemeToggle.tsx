@@ -851,7 +851,7 @@ export default function ThemeToggle() {
 
     const modalTitles = document.querySelectorAll(".confirmation-modal-title");
     modalTitles.forEach((title) => {
-      (title as HTMLElement).style.color = "#3b82f6";
+      (title as HTMLElement).style.color = "#60a5fa";
     });
 
     const modalMessages = document.querySelectorAll(
