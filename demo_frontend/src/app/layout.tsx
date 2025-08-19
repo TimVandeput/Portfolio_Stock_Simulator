@@ -25,6 +25,83 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="bg-[#e0e5ec]">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Create loading screen immediately
+                const savedTheme = localStorage.getItem('theme');
+                const isDark = savedTheme === 'dark';
+                
+                // Create loading overlay
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'theme-loading';
+                loadingOverlay.style.cssText = \`
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  z-index: 99999;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: \${isDark ? '#2a2d3a' : '#e0e5ec'};
+                  color: \${isDark ? '#c4b5fd' : '#60a5fa'};
+                \`;
+                
+                loadingOverlay.innerHTML = \`
+                  <div style="text-align: center;">
+                    <div style="
+                      width: 32px;
+                      height: 32px;
+                      border: 3px solid \${isDark ? '#363a4c' : '#c2c8d0'};
+                      border-top: 3px solid \${isDark ? '#c4b5fd' : '#60a5fa'};
+                      border-radius: 50%;
+                      animation: spin 1s linear infinite;
+                      margin: 0 auto 12px;
+                    "></div>
+                    <p style="margin: 0; font-size: 14px;">Loading...</p>
+                  </div>
+                  <style>
+                    @keyframes spin {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                  </style>
+                \`;
+                
+                document.documentElement.appendChild(loadingOverlay);
+                
+                // Set theme class immediately
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+                
+                // Function to remove loading screen when theme is applied
+                window.removeThemeLoading = function() {
+                  const overlay = document.getElementById('theme-loading');
+                  if (overlay) {
+                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 0.2s ease';
+                    setTimeout(() => overlay.remove(), 200);
+                  }
+                };
+                
+                // Auto-remove after 2 seconds as fallback
+                setTimeout(() => {
+                  if (window.removeThemeLoading) {
+                    window.removeThemeLoading();
+                  }
+                }, 2000);
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e0e5ec] min-h-screen flex flex-col`}
       >

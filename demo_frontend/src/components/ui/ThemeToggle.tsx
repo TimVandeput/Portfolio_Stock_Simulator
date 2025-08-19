@@ -544,7 +544,14 @@ export default function ThemeToggle() {
     themeToggleStyleElement.textContent =
       "button:has(.text-purple-300):active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
 
-    setTimeout(enableTransitions, 50);
+    setTimeout(() => {
+      enableTransitions();
+      // Remove loading screen when dark theme is fully applied
+      if (typeof window !== 'undefined') {
+        const removeFunc = (window as any).removeThemeLoading;
+        if (removeFunc) removeFunc();
+      }
+    }, 50);
   };
 
   // =============
@@ -881,7 +888,14 @@ export default function ThemeToggle() {
         "6px 6px 10px #c2c8d0, -6px -6px 10px #fefffe";
     });
 
-    setTimeout(enableTransitions, 50);
+    setTimeout(() => {
+      enableTransitions();
+      // Remove loading screen when light theme is fully applied
+      if (typeof window !== 'undefined') {
+        const removeFunc = (window as any).removeThemeLoading;
+        if (removeFunc) removeFunc();
+      }
+    }, 50);
   };
 
   // ==============================
