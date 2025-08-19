@@ -380,7 +380,7 @@ export default function ThemeToggle() {
       document.head.appendChild(mobileDrawerStyleElement);
     }
     mobileDrawerStyleElement.textContent =
-      ".mobile-drawer-nav-button:hover { background: #252831 !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
+      ".mobile-drawer { background: #2a2d3a !important; box-shadow: 10px 0 15px #1e2028 !important; } .mobile-drawer-title { color: #c4b5fd !important; } .mobile-drawer-close-button { color: #c4b5fd !important; } .mobile-drawer-nav-button { background: #2a2d3a !important; color: #c4b5fd !important; box-shadow: 6px 6px 10px #1e2028, -5px -5px 10px #363a4c !important; } .mobile-drawer-nav-button:hover { background: #252831 !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c !important; }";
 
     let themeToggleStyleElement = document.getElementById(
       "theme-toggle-active"
@@ -636,7 +636,7 @@ export default function ThemeToggle() {
       document.head.appendChild(mobileDrawerStyleElement);
     }
     mobileDrawerStyleElement.textContent =
-      ".mobile-drawer-nav-button:hover { background: rgb(191 219 254) !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
+      ".mobile-drawer { background: #e0e5ec !important; box-shadow: 10px 0 15px #c2c8d0 !important; } .mobile-drawer-title { color: #60a5fa !important; } .mobile-drawer-close-button { color: #60a5fa !important; } .mobile-drawer-nav-button { background: #e0e5ec !important; color: #93c5fd !important; box-shadow: 6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa !important; } .mobile-drawer-nav-button:hover { background: rgb(191 219 254) !important; } .mobile-drawer-nav-button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
 
     let themeToggleStyleElement = document.getElementById(
       "theme-toggle-active"
