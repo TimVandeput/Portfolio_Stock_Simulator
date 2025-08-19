@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import HamburgerButton from "@/components/navigation/HamburgerButton";
+import HamburgerButton from "@/components/button/HamburgerButton";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import LogoutButton from "@/components/ui/LogoutButton";
+import LogoutButton from "@/components/button/LogoutButton";
 
 const navItems = [
   { name: "GAME", href: "/game" },

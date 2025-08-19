@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { logout } from "@/lib/api/auth";
-import ConfirmationModal from "./ConfirmationModal";
+import ConfirmationModal from "../ui/ConfirmationModal";
 
 export default function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
