@@ -113,11 +113,6 @@ export default function MobileDrawer({
             </Link>
           ))}
         </nav>
-
-        {/* Theme Toggle */}
-        <div className="mt-8 flex justify-center">
-          <ThemeToggle />
-        </div>
       </div>
     </div>
   );
