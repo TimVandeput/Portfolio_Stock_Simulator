@@ -71,7 +71,7 @@ export default function Header() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 bg-gradient-to-b from-blue-200 to-[#e0e5ec] z-50 w-full md:py-4 py-0"
+      className="sticky top-0 bg-gradient-to-b from-blue-300 to-[#e0e5ec] z-50 w-full md:py-4 py-0"
     >
       <div className="relative w-full h-full flex items-center">
         {!hideNav && <HamburgerButton onClick={() => setOpen(true)} />}
