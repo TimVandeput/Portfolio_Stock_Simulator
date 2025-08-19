@@ -16,7 +16,6 @@ export default function LogoutButton() {
   };
 
   const handleConfirmLogout = async () => {
-    setShowConfirmation(false);
     setIsLoggingOut(true);
 
     try {
@@ -25,8 +24,6 @@ export default function LogoutButton() {
     } catch (error) {
       console.error("Logout failed:", error);
       router.push("/login");
-    } finally {
-      setIsLoggingOut(false);
     }
   };
 
@@ -55,11 +52,13 @@ export default function LogoutButton() {
         isOpen={showConfirmation}
         title="Confirm Logout"
         message="Are you sure you want to logout? You will need to login again to access your account."
-        confirmText="Yes, Logout"
+        confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
         cancelText="Cancel"
         onConfirm={handleConfirmLogout}
         onCancel={handleCancelLogout}
         confirmButtonClass="bg-red-500 hover:bg-red-600 text-white"
+        confirmDisabled={isLoggingOut}
+        cancelDisabled={isLoggingOut}
       />
     </>
   );
