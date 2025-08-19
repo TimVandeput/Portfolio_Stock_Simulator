@@ -92,6 +92,12 @@ export default function Header() {
             <LogoutButton />
           </div>
         )}
+
+        {hideNav && (
+          <div className="absolute right-4 md:right-6 flex gap-4 items-center">
+            <ThemeToggle />
+          </div>
+        )}
       </div>
 
       <MobileDrawer

@@ -128,10 +128,6 @@ export default function LoginPage() {
 
   return (
     <div className="login-container flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
-      <div className="absolute top-6 right-6 z-50">
-        <ThemeToggle />
-      </div>
-
       <div style={{ perspective: "1000px" }}>
         <div
           className={`
