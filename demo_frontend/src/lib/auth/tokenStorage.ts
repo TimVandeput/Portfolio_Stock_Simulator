@@ -1,4 +1,4 @@
-import { Role } from "@/types/auth";
+import { Role } from "@/types";
 
 let _accessToken: string | null = null;
 let _refreshToken: string | null = null;
@@ -54,7 +54,6 @@ export function getAuthenticatedAs() {
   return _authenticatedAs;
 }
 
-// A simple refresh lock so we don't stampede the refresh endpoint
 let refreshPromise: Promise<string> | null = null;
 export function getRefreshLock() {
   return refreshPromise;

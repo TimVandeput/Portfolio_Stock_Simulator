@@ -3,7 +3,7 @@ import type {
   RegistrationResponse,
   LoginRequest,
   AuthResponse,
-} from "@/types/auth";
+} from "@/types";
 import { HttpClient } from "@/lib/api/http";
 import { setTokens, clearTokens } from "@/lib/auth/tokenStorage";
 
@@ -26,7 +26,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
-  // Server requires the refresh token in body
   const refreshToken = localStorage.getItem("auth.refresh");
   if (refreshToken) {
     await client.post<void>("/api/auth/logout", { refreshToken });

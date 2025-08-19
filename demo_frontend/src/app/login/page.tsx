@@ -6,6 +6,8 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { register } from "@/lib/api/auth";
+import type { RegisterRequest } from "@/types";
 
 export default function LoginPage() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -19,6 +21,8 @@ export default function LoginPage() {
   const [rPass2, setRPass2] = useState("");
   const [rCode, setRCode] = useState("");
   const [rError, setRError] = useState("");
+  const [rSuccess, setRSuccess] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -37,23 +41,59 @@ export default function LoginPage() {
     alert(`Logged in as ${username} (simulation)`);
   };
 
-  const handleRegisterSubmit = () => {
+  const handleRegisterSubmit = async () => {
     setRError("");
+    setRSuccess("");
+
     if (!rUser || !rPass || !rPass2 || !rCode) {
       setRError("Please fill in all fields.");
+      setRSuccess("");
       return;
     }
     if (rPass !== rPass2) {
       setRError("Passwords do not match.");
+      setRSuccess("");
       return;
     }
-    alert(`Registered ${rUser} with passcode ${rCode} (simulation)`);
-    setIsFlipped(false);
+
+    setIsRegistering(true);
+
+    try {
+      const registerData: RegisterRequest = {
+        username: rUser,
+        password: rPass,
+        passcode: rCode,
+      };
+
+      const response = await register(registerData);
+
+      setRSuccess(
+        `Registration successful! Welcome, ${response.username}! Please log in.`
+      );
+
+      setRUser("");
+      setRPass("");
+      setRPass2("");
+      setRCode("");
+
+      setTimeout(() => {
+        setIsFlipped(false);
+        setRSuccess("");
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.body?.message ||
+        "Registration failed. Please try again.";
+      setRError(errorMessage);
+      setRSuccess("");
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   return (
     <div className="login-container flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
-      {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
@@ -153,7 +193,10 @@ export default function LoginPage() {
               <div
                 onClick={() => {
                   setIsFlipped(false);
-                  setTimeout(() => setRError(""), 500);
+                  setTimeout(() => {
+                    setRError("");
+                    setRSuccess("");
+                  }, 500);
                 }}
                 className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
               >
@@ -192,12 +235,16 @@ export default function LoginPage() {
               />
 
               <div className="mt-auto flex flex-col">
-                <StatusMessage message={rError} />
+                <StatusMessage
+                  message={rError || rSuccess}
+                  type={rError ? "error" : rSuccess ? "success" : "error"}
+                />
                 <NeumorphicButton
                   onClick={handleRegisterSubmit}
                   className="text-blue-300"
+                  disabled={isRegistering}
                 >
-                  Register
+                  {isRegistering ? "Registering..." : "Register"}
                 </NeumorphicButton>
               </div>
             </div>

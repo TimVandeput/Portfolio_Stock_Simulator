@@ -1,4 +1,4 @@
-import type { RefreshRequest, AuthResponse } from "@/types/auth";
+import type { RefreshRequest, AuthResponse } from "@/types";
 import {
   getAccessToken,
   getRefreshToken,
@@ -35,8 +35,7 @@ export class HttpClient {
   private baseUrl: string;
 
   constructor(opts?: HttpClientOptions) {
-    this.baseUrl = opts?.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? ""; // e.g. "http://localhost:8080"
-    // Load persisted tokens on the client the first time any client is constructed
+    this.baseUrl = opts?.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
     if (typeof window !== "undefined") {
       loadTokensFromStorage();
     }

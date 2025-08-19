@@ -1,9 +1,11 @@
+import type { Role } from "./auth";
+
 export interface CreateUserDTO {
   id?: number;
   username: string;
   password: string;
   passcode: string;
-  roles?: ("ROLE_USER" | "ROLE_ADMIN")[];
+  roles?: Role[];
 }
 
 export interface UpdateUserDTO {
@@ -14,5 +16,5 @@ export interface UpdateUserDTO {
 export interface UserDTO {
   id: number;
   username: string;
-  roles: ("ROLE_USER" | "ROLE_ADMIN")[];
+  roles: Role[];
 }
