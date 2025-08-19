@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
-import ErrorMessage from "@/components/error/ErrorMessage";
+import StatusMessage from "@/components/status/StatusMessage";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function LoginPage() {
@@ -119,7 +119,7 @@ export default function LoginPage() {
               />
 
               <div className="mt-auto flex flex-col">
-                <ErrorMessage message={error} />
+                <StatusMessage message={error} />
                 <NeumorphicButton
                   onClick={handleLoginSubmit}
                   className="text-blue-300"
@@ -192,7 +192,7 @@ export default function LoginPage() {
               />
 
               <div className="mt-auto flex flex-col">
-                <ErrorMessage message={rError} />
+                <StatusMessage message={rError} />
                 <NeumorphicButton
                   onClick={handleRegisterSubmit}
                   className="text-blue-300"
