@@ -37,6 +37,15 @@ export default function ThemeToggle() {
       );
     });
 
+    const roleSelectorButtons = document.querySelectorAll(".role-selector-button");
+    roleSelectorButtons.forEach((button) => {
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
+    });
+
     const neumorphicInputs = document.querySelectorAll(".neumorphic-input");
     neumorphicInputs.forEach((input) => {
       (input as HTMLElement).style.setProperty(
@@ -104,6 +113,11 @@ export default function ThemeToggle() {
 
     const neumorphicButtons = document.querySelectorAll(".neumorphic-button");
     neumorphicButtons.forEach((button) => {
+      (button as HTMLElement).style.removeProperty("transition");
+    });
+
+    const roleSelectorButtons = document.querySelectorAll(".role-selector-button");
+    roleSelectorButtons.forEach((button) => {
       (button as HTMLElement).style.removeProperty("transition");
     });
 
@@ -226,6 +240,19 @@ export default function ThemeToggle() {
       (button as HTMLElement).style.color = "#c4b5fd";
       (button as HTMLElement).style.boxShadow =
         "6px 6px 12px #1e2028, -6px -6px 12px #363a4c";
+    });
+
+    const roleSelectorButtons = document.querySelectorAll(".role-selector-button");
+    roleSelectorButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#c4b5fd";
+      (button as HTMLElement).style.boxShadow =
+        "3px 3px 8px #1e2028, -3px -3px 8px #363a4c";
+    });
+
+    const roleSelectorTitles = document.querySelectorAll(".role-selector-title");
+    roleSelectorTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#c4b5fd";
     });
 
     let neumorphicButtonStyleElement = document.getElementById(
@@ -482,6 +509,19 @@ export default function ThemeToggle() {
       (button as HTMLElement).style.color = "#60a5fa";
       (button as HTMLElement).style.boxShadow =
         "6px 6px 12px rgba(0,0,0,0.25), -6px -6px 12px rgba(255,255,255,0.7)";
+    });
+
+    const roleSelectorButtons = document.querySelectorAll(".role-selector-button");
+    roleSelectorButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#e0e5ec";
+      (button as HTMLElement).style.color = "#60a5fa";
+      (button as HTMLElement).style.boxShadow =
+        "3px 3px 8px rgba(0,0,0,0.15), -3px -3px 8px rgba(255,255,255,0.7)";
+    });
+
+    const roleSelectorTitles = document.querySelectorAll(".role-selector-title");
+    roleSelectorTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#93c5fd";
     });
 
     let neumorphicButtonStyleElement = document.getElementById(
