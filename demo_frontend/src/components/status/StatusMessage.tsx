@@ -13,7 +13,8 @@ export default function StatusMessage({
 
   return (
     <div
-      className={`${textColor} text-sm text-center min-h-5 transition-all ${className}`}
+      key={`${message}-${type}`}
+      className={`${textColor} text-sm text-center min-h-5 transition-opacity duration-200 ${className}`}
     >
       {message ? message : <span className="opacity-0">placeholder</span>}
     </div>

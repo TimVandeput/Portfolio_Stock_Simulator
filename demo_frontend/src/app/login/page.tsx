@@ -20,7 +20,10 @@ export default function LoginPage() {
   const [rPass, setRPass] = useState("");
   const [rPass2, setRPass2] = useState("");
   const [rCode, setRCode] = useState("");
-  const [rStatus, setRStatus] = useState<{ message: string; type: "error" | "success" } | null>(null);
+  const [rStatus, setRStatus] = useState<{
+    message: string;
+    type: "error" | "success";
+  } | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function LoginPage() {
   };
 
   const handleRegisterSubmit = async () => {
+    // Clear status completely
     setRStatus(null);
 
     if (!rUser || !rPass || !rPass2 || !rCode) {
@@ -65,7 +69,7 @@ export default function LoginPage() {
 
       setRStatus({
         message: `Registration successful! Welcome, ${response.username}! Please log in.`,
-        type: "success"
+        type: "success",
       });
 
       setRUser("");
@@ -156,10 +160,7 @@ export default function LoginPage() {
 
               <div className="mt-auto flex flex-col">
                 <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
-                  <StatusMessage
-                    message={error}
-                    className="mb-0"
-                  />
+                  <StatusMessage message={error} className="mb-0" />
                 </div>
                 <NeumorphicButton
                   onClick={handleLoginSubmit}
@@ -236,11 +237,13 @@ export default function LoginPage() {
 
               <div className="mt-auto flex flex-col">
                 <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
-                  <StatusMessage
-                    message={rStatus?.message || ""}
-                    type={rStatus?.type || "error"}
-                    className="mb-0"
-                  />
+                  {rStatus && (
+                    <StatusMessage
+                      message={rStatus.message}
+                      type={rStatus.type}
+                      className="mb-0"
+                    />
+                  )}
                 </div>
                 <NeumorphicButton
                   onClick={handleRegisterSubmit}
