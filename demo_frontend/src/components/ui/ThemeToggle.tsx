@@ -11,8 +11,24 @@ export default function ThemeToggle() {
     if (savedTheme === "dark") {
       setIsDark(true);
       applyDarkTheme();
+    } else {
+      applyLightTheme();
     }
-  }, []);
+
+    const handleThemeChange = () => {
+      if (isDark) {
+        applyDarkTheme();
+      } else {
+        applyLightTheme();
+      }
+    };
+
+    window.addEventListener("themeChanged", handleThemeChange);
+
+    return () => {
+      window.removeEventListener("themeChanged", handleThemeChange);
+    };
+  }, [isDark]);
 
   // ==============================
   // TRANSITION CONTROL
@@ -476,6 +492,47 @@ export default function ThemeToggle() {
       (icon as HTMLElement).style.color = "#f87171";
     });
 
+    const confirmationModals = document.querySelectorAll(".confirmation-modal");
+    confirmationModals.forEach((modal) => {
+      (modal as HTMLElement).style.background = "#2a2d3a";
+      (modal as HTMLElement).style.boxShadow =
+        "10px 10px 15px #1e2028, -5px -5px 10px #363a4c";
+    });
+
+    const confirmationModalTitles = document.querySelectorAll(
+      ".confirmation-modal-title"
+    );
+    confirmationModalTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    const confirmationModalMessages = document.querySelectorAll(
+      ".confirmation-modal-message"
+    );
+    confirmationModalMessages.forEach((message) => {
+      (message as HTMLElement).style.color = "#c4b5fd";
+    });
+
+    const confirmationModalCancelButtons = document.querySelectorAll(
+      ".confirmation-modal-cancel"
+    );
+    confirmationModalCancelButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#c4b5fd";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #1e2028, -5px -5px 10px #363a4c";
+    });
+
+    const confirmationModalConfirmButtons = document.querySelectorAll(
+      ".confirmation-modal-confirm"
+    );
+    confirmationModalConfirmButtons.forEach((button) => {
+      (button as HTMLElement).style.background = "#2a2d3a";
+      (button as HTMLElement).style.color = "#f87171";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #1e2028, -5px -5px 10px #363a4c";
+    });
+
     let themeToggleStyleElement = document.getElementById(
       "theme-toggle-active"
     );
@@ -784,6 +841,45 @@ export default function ThemeToggle() {
     }
     themeToggleStyleElement.textContent =
       "button:has(.text-blue-300):active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.7) !important; }";
+
+    const confirmationModals = document.querySelectorAll(".confirmation-modal");
+    confirmationModals.forEach((modal) => {
+      (modal as HTMLElement).style.backgroundColor = "#e0e5ec";
+      (modal as HTMLElement).style.boxShadow =
+        "10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa";
+    });
+
+    const modalTitles = document.querySelectorAll(".confirmation-modal-title");
+    modalTitles.forEach((title) => {
+      (title as HTMLElement).style.color = "#3b82f6";
+    });
+
+    const modalMessages = document.querySelectorAll(
+      ".confirmation-modal-message"
+    );
+    modalMessages.forEach((message) => {
+      (message as HTMLElement).style.color = "#60a5fa";
+    });
+
+    const modalCancelButtons = document.querySelectorAll(
+      ".confirmation-modal-cancel"
+    );
+    modalCancelButtons.forEach((button) => {
+      (button as HTMLElement).style.backgroundColor = "#e0e5ec";
+      (button as HTMLElement).style.color = "#60a5fa";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #c2c8d0, -6px -6px 10px #fefffe";
+    });
+
+    const modalConfirmButtons = document.querySelectorAll(
+      ".confirmation-modal-confirm"
+    );
+    modalConfirmButtons.forEach((button) => {
+      (button as HTMLElement).style.backgroundColor = "#e0e5ec";
+      (button as HTMLElement).style.color = "#dc2626";
+      (button as HTMLElement).style.boxShadow =
+        "6px 6px 10px #c2c8d0, -6px -6px 10px #fefffe";
+    });
 
     setTimeout(enableTransitions, 50);
   };
