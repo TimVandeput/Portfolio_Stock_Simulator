@@ -462,14 +462,12 @@ export default function ThemeToggle() {
 
     const header = document.querySelector("header");
     if (header) {
-      header.style.background =
-        "linear-gradient(to bottom, #93c5fd, #e0e5ec)";
+      header.style.background = "linear-gradient(to bottom, #93c5fd, #e0e5ec)";
     }
 
     const footer = document.querySelector("footer");
     if (footer) {
-      footer.style.background =
-        "linear-gradient(to top, #93c5fd, #e0e5ec)";
+      footer.style.background = "linear-gradient(to top, #93c5fd, #e0e5ec)";
     }
 
     const footerText = document.querySelector("footer span") as HTMLElement;
