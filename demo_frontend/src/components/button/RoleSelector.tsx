@@ -29,8 +29,8 @@ export default function RoleSelector({
             transition-all duration-200
             ${
               selectedRole === "ROLE_USER"
-                ? "bg-[#d9e6f9] text-blue-600 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-                : "bg-[#e0e5ec] text-blue-400 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
+                ? "bg-[#d9e6f9] text-blue-400 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+                : "bg-[#e0e5ec] text-blue-300 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
             }
           `}
         >
@@ -45,8 +45,8 @@ export default function RoleSelector({
             transition-all duration-200
             ${
               selectedRole === "ROLE_ADMIN"
-                ? "bg-[#d9e6f9] text-blue-600 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-                : "bg-[#e0e5ec] text-blue-400 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
+                ? "bg-[#d9e6f9] text-blue-400 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+                : "bg-[#e0e5ec] text-blue-300 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
             }
           `}
         >

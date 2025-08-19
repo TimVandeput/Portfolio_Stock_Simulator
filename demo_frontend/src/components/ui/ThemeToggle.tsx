@@ -551,12 +551,12 @@ export default function ThemeToggle() {
     roleSelectorLightStyleElement.textContent = `
       .role-selector-button {
         background: #e0e5ec !important;
-        color: #60a5fa !important;
+        color: #93c5fd !important;
         box-shadow: 3px 3px 8px rgba(0,0,0,0.15), -3px -3px 8px rgba(255,255,255,0.7) !important;
       }
       .role-selector-button.bg-\\[\\#d9e6f9\\] {
         background: #d9e6f9 !important;
-        color: #2563eb !important;
+        color: #60a5fa !important;
         box-shadow: inset 2px 2px 5px rgba(0,0,0,0.15), inset -2px -2px 5px rgba(255,255,255,0.7) !important;
       }
       .role-selector-title {
