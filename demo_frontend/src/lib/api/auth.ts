@@ -28,7 +28,31 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 export async function logout(): Promise<void> {
   const refreshToken = localStorage.getItem("auth.refresh");
   if (refreshToken) {
-    await client.post<void>("/api/auth/logout", { refreshToken });
+    try {
+      await client.post<void>("/api/auth/logout", { refreshToken });
+    } catch (error) {
+      // Continue with cleanup even if API call fails
+      console.warn("Logout API call failed, but continuing with token cleanup:", error);
+    }
   }
+  
+  // Clear tokens using the tokenStorage function
   clearTokens();
+  
+  // Also clear any other potential token keys (keeping theme)
+  const keysToRemove = [
+    'token',
+    'refreshToken',
+    'accessToken', 
+    'auth.token',
+    'authToken',
+    'jwt',
+    'bearerToken'
+  ];
+  
+  keysToRemove.forEach(key => {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+    }
+  });
 }
