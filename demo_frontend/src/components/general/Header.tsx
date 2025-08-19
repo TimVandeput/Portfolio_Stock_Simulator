@@ -6,6 +6,7 @@ import HamburgerButton from "@/components/navigation/HamburgerButton";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import LogoutButton from "@/components/ui/LogoutButton";
 
 const navItems = [
   { name: "GAME", href: "/game" },
@@ -86,8 +87,9 @@ export default function Header() {
         </div>
 
         {!hideNav && (
-          <div className="absolute right-4 md:right-6 md:block">
+          <div className="absolute right-4 md:right-6 flex gap-4 items-center">
             <ThemeToggle />
+            <LogoutButton />
           </div>
         )}
       </div>
