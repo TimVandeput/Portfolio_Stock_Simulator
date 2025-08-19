@@ -29,8 +29,7 @@ public class User {
     @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "user_roles", 
-                     joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
