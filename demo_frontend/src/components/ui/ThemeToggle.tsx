@@ -253,6 +253,17 @@ export default function ThemeToggle() {
         "inset 1px 1px 3px #1e2028, inset -1px -1px 3px #4a4f65";
     });
 
+    let neumorphicInputStyleElement = document.getElementById(
+      "neumorphic-input-focus"
+    );
+    if (!neumorphicInputStyleElement) {
+      neumorphicInputStyleElement = document.createElement("style");
+      neumorphicInputStyleElement.id = "neumorphic-input-focus";
+      document.head.appendChild(neumorphicInputStyleElement);
+    }
+    neumorphicInputStyleElement.textContent =
+      ".neumorphic-input:focus { background: #2e3142 !important; }";
+
     let styleElement = document.getElementById("neumorphic-input-placeholder");
     if (!styleElement) {
       styleElement = document.createElement("style");
@@ -269,6 +280,17 @@ export default function ThemeToggle() {
       (input as HTMLElement).style.boxShadow =
         "inset 1px 1px 3px #1e2028, inset -1px -1px 3px #4a4f65";
     });
+
+    let passwordInputStyleElement = document.getElementById(
+      "password-input-focus"
+    );
+    if (!passwordInputStyleElement) {
+      passwordInputStyleElement = document.createElement("style");
+      passwordInputStyleElement.id = "password-input-focus";
+      document.head.appendChild(passwordInputStyleElement);
+    }
+    passwordInputStyleElement.textContent =
+      ".password-input:focus { background: #2e3142 !important; }";
 
     const passwordToggleButtons = document.querySelectorAll(
       ".password-toggle-button"
@@ -487,6 +509,17 @@ export default function ThemeToggle() {
         "inset 1px 1px 3px rgba(0,0,0,0.2), inset -1px -1px 3px rgba(255,255,255,0.6)";
     });
 
+    let neumorphicInputStyleElement = document.getElementById(
+      "neumorphic-input-focus"
+    );
+    if (!neumorphicInputStyleElement) {
+      neumorphicInputStyleElement = document.createElement("style");
+      neumorphicInputStyleElement.id = "neumorphic-input-focus";
+      document.head.appendChild(neumorphicInputStyleElement);
+    }
+    neumorphicInputStyleElement.textContent =
+      ".neumorphic-input:focus { background: #e0e4ec !important; }";
+
     let styleElement = document.getElementById("neumorphic-input-placeholder");
     if (!styleElement) {
       styleElement = document.createElement("style");
@@ -503,6 +536,17 @@ export default function ThemeToggle() {
       (input as HTMLElement).style.boxShadow =
         "inset 1px 1px 3px rgba(0,0,0,0.2), inset -1px -1px 3px rgba(255,255,255,0.6)";
     });
+
+    let passwordInputStyleElement = document.getElementById(
+      "password-input-focus"
+    );
+    if (!passwordInputStyleElement) {
+      passwordInputStyleElement = document.createElement("style");
+      passwordInputStyleElement.id = "password-input-focus";
+      document.head.appendChild(passwordInputStyleElement);
+    }
+    passwordInputStyleElement.textContent =
+      ".password-input:focus { background: #e0e4ec !important; }";
 
     const passwordToggleButtons = document.querySelectorAll(
       ".password-toggle-button"
