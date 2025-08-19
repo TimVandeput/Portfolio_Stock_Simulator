@@ -6,6 +6,7 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import RoleSelector from "@/components/button/RoleSelector";
 import { register } from "@/lib/api/auth";
 import type { RegisterRequest, Role } from "@/types";
 
@@ -45,7 +46,6 @@ export default function LoginPage() {
   };
 
   const handleRegisterSubmit = async () => {
-    // Clear status completely
     setRStatus(null);
 
     if (!rUser || !rPass || !rPass2 || !rCode) {
@@ -159,44 +159,11 @@ export default function LoginPage() {
                 className="my-2"
               />
 
-              <div className="my-4">
-                <p className="text-blue-300 text-sm mb-2 font-medium text-justify">
-                  Please select your role before logging in. It is recommended
-                  to start with Admin.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("ROLE_USER")}
-                    className={`
-                      flex-1 p-3 rounded-xl font-medium text-sm
-                      transition-all duration-200
-                      ${
-                        selectedRole === "ROLE_USER"
-                          ? "bg-[#d9e6f9] text-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-                          : "bg-[#e0e5ec] text-blue-400 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
-                      }
-                    `}
-                  >
-                    User
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("ROLE_ADMIN")}
-                    className={`
-                      flex-1 p-3 rounded-xl font-medium text-sm
-                      transition-all duration-200
-                      ${
-                        selectedRole === "ROLE_ADMIN"
-                          ? "bg-[#d9e6f9] text-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.15),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-                          : "bg-[#e0e5ec] text-blue-400 shadow-[3px_3px_8px_rgba(0,0,0,0.15),-3px_-3px_8px_rgba(255,255,255,0.7)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.2),-2px_-2px_6px_rgba(255,255,255,0.8)]"
-                      }
-                    `}
-                  >
-                    Admin
-                  </button>
-                </div>
-              </div>
+              <RoleSelector
+                selectedRole={selectedRole}
+                onRoleChange={setSelectedRole}
+                className="my-4"
+              />
 
               <div className="mt-auto flex flex-col">
                 <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
