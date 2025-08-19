@@ -20,8 +20,7 @@ export default function LoginPage() {
   const [rPass, setRPass] = useState("");
   const [rPass2, setRPass2] = useState("");
   const [rCode, setRCode] = useState("");
-  const [rError, setRError] = useState("");
-  const [rSuccess, setRSuccess] = useState("");
+  const [rStatus, setRStatus] = useState<{ message: string; type: "error" | "success" } | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
@@ -42,17 +41,14 @@ export default function LoginPage() {
   };
 
   const handleRegisterSubmit = async () => {
-    setRError("");
-    setRSuccess("");
+    setRStatus(null);
 
     if (!rUser || !rPass || !rPass2 || !rCode) {
-      setRError("Please fill in all fields.");
-      setRSuccess("");
+      setRStatus({ message: "Please fill in all fields.", type: "error" });
       return;
     }
     if (rPass !== rPass2) {
-      setRError("Passwords do not match.");
-      setRSuccess("");
+      setRStatus({ message: "Passwords do not match.", type: "error" });
       return;
     }
 
@@ -67,9 +63,10 @@ export default function LoginPage() {
 
       const response = await register(registerData);
 
-      setRSuccess(
-        `Registration successful! Welcome, ${response.username}! Please log in.`
-      );
+      setRStatus({
+        message: `Registration successful! Welcome, ${response.username}! Please log in.`,
+        type: "success"
+      });
 
       setRUser("");
       setRPass("");
@@ -78,15 +75,14 @@ export default function LoginPage() {
 
       setTimeout(() => {
         setIsFlipped(false);
-        setRSuccess("");
+        setRStatus(null);
       }, 2000);
     } catch (error: any) {
       const errorMessage =
         error?.message ||
         error?.body?.message ||
         "Registration failed. Please try again.";
-      setRError(errorMessage);
-      setRSuccess("");
+      setRStatus({ message: errorMessage, type: "error" });
     } finally {
       setIsRegistering(false);
     }
@@ -159,7 +155,12 @@ export default function LoginPage() {
               />
 
               <div className="mt-auto flex flex-col">
-                <StatusMessage message={error} />
+                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
+                  <StatusMessage
+                    message={error}
+                    className="mb-0"
+                  />
+                </div>
                 <NeumorphicButton
                   onClick={handleLoginSubmit}
                   className="text-blue-300"
@@ -194,8 +195,7 @@ export default function LoginPage() {
                 onClick={() => {
                   setIsFlipped(false);
                   setTimeout(() => {
-                    setRError("");
-                    setRSuccess("");
+                    setRStatus(null);
                   }, 500);
                 }}
                 className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
@@ -235,10 +235,13 @@ export default function LoginPage() {
               />
 
               <div className="mt-auto flex flex-col">
-                <StatusMessage
-                  message={rError || rSuccess}
-                  type={rError ? "error" : rSuccess ? "success" : "error"}
-                />
+                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
+                  <StatusMessage
+                    message={rStatus?.message || ""}
+                    type={rStatus?.type || "error"}
+                    className="mb-0"
+                  />
+                </div>
                 <NeumorphicButton
                   onClick={handleRegisterSubmit}
                   className="text-blue-300"

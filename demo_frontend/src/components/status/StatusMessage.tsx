@@ -10,10 +10,10 @@ export default function StatusMessage({
   className = "",
 }: StatusMessageProps) {
   const textColor = type === "error" ? "text-red-300" : "text-green-400";
-  
+
   return (
     <div
-      className={`${textColor} text-sm text-center h-5 mb-2 transition-all ${className}`}
+      className={`${textColor} text-sm text-center min-h-5 transition-all ${className}`}
     >
       {message ? message : <span className="opacity-0">placeholder</span>}
     </div>
