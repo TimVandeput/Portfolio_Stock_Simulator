@@ -105,6 +105,26 @@ export default function ThemeToggle() {
         "important"
       );
     });
+
+    const logoutButtons = document.querySelectorAll(".logout-button");
+    logoutButtons.forEach((button) => {
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
+    });
+
+    const themeToggleButtons = document.querySelectorAll(
+      "button:has(.text-purple-300), button:has(.text-blue-300)"
+    );
+    themeToggleButtons.forEach((button) => {
+      (button as HTMLElement).style.setProperty(
+        "transition",
+        "none",
+        "important"
+      );
+    });
   };
 
   const enableTransitions = () => {
@@ -156,6 +176,18 @@ export default function ThemeToggle() {
       ".mobile-drawer-nav-button"
     );
     mobileDrawerNavButtons.forEach((button) => {
+      (button as HTMLElement).style.removeProperty("transition");
+    });
+
+    const logoutButtons = document.querySelectorAll(".logout-button");
+    logoutButtons.forEach((button) => {
+      (button as HTMLElement).style.removeProperty("transition");
+    });
+
+    const themeToggleButtons = document.querySelectorAll(
+      "button:has(.text-purple-300), button:has(.text-blue-300)"
+    );
+    themeToggleButtons.forEach((button) => {
       (button as HTMLElement).style.removeProperty("transition");
     });
   };
