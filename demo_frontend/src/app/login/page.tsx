@@ -127,7 +127,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-container flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
+    <div
+      className="login-container flex-1 w-full flex items-center justify-center font-sans px-6 py-6"
+      style={{ backgroundColor: "var(--bg-primary)" }}
+    >
       <div style={{ perspective: "1000px" }}>
         <div
           className={`
@@ -147,18 +150,24 @@ export default function LoginPage() {
             className={`
               login-card
               absolute inset-0
-              bg-[#e0e5ec] rounded-2xl
+              rounded-2xl
               p-8
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
               transition-shadow duration-500
               ${isFlipped ? "!shadow-none" : ""}
             `}
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              boxShadow: isFlipped ? "none" : "var(--shadow-large)",
+            }}
           >
             <div className="flex justify-between items-start">
-              <h1 className="login-title text-2xl font-bold text-blue-300">
+              <h1
+                className="login-title text-2xl font-bold"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 Login
               </h1>
               <div
@@ -169,7 +178,11 @@ export default function LoginPage() {
                     setSuccess("");
                   }, 500);
                 }}
-                className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
+                className="login-link cursor-pointer transition-colors duration-200 text-sm font-medium border-b border-transparent"
+                style={{
+                  color: "var(--text-secondary)",
+                  borderColor: "transparent",
+                }}
               >
                 Register →
               </div>
@@ -210,7 +223,6 @@ export default function LoginPage() {
                 </div>
                 <NeumorphicButton
                   onClick={handleLoginSubmit}
-                  className="text-blue-300"
                   disabled={isLoggingIn}
                 >
                   {isLoggingIn ? "Logging in..." : "Login"}
@@ -224,19 +236,25 @@ export default function LoginPage() {
             className={`
               login-card
               absolute inset-0
-              bg-[#e0e5ec] rounded-2xl
+              rounded-2xl
               p-8
               overflow-hidden
               [backface-visibility:hidden]
               flex flex-col h-full
-              shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa]
               transition-shadow duration-500
               ${isFlipped ? "" : "!shadow-none"}
             `}
-            style={{ transform: "rotateY(180deg)" }}
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              boxShadow: isFlipped ? "var(--shadow-large)" : "none",
+              transform: "rotateY(180deg)",
+            }}
           >
             <div className="flex justify-between items-start">
-              <h1 className="login-title text-2xl font-bold text-blue-300">
+              <h1
+                className="login-title text-2xl font-bold"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 Register
               </h1>
               <div
@@ -246,7 +264,11 @@ export default function LoginPage() {
                     setRStatus(null);
                   }, 500);
                 }}
-                className="login-link cursor-pointer text-blue-300 hover:text-blue-400 transition-colors duration-200 text-sm font-medium border-b border-transparent hover:border-blue-300"
+                className="login-link cursor-pointer transition-colors duration-200 text-sm font-medium border-b border-transparent"
+                style={{
+                  color: "var(--text-secondary)",
+                  borderColor: "transparent",
+                }}
               >
                 Login →
               </div>
@@ -294,7 +316,6 @@ export default function LoginPage() {
                 </div>
                 <NeumorphicButton
                   onClick={handleRegisterSubmit}
-                  className="text-blue-300"
                   disabled={isRegistering}
                 >
                   {isRegistering ? "Registering..." : "Register"}

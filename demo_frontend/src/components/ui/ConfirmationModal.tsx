@@ -69,25 +69,17 @@ export default function ConfirmationModal({
         onClick={onCancel}
       />
 
-      <div className="confirmation-modal relative rounded-2xl p-8 max-w-md mx-4">
-        <h2 className="confirmation-modal-title text-xl font-bold mb-4">
-          {title}
-        </h2>
+      <div className="modal-base relative rounded-2xl p-8 max-w-md mx-4">
+        <h2 className="modal-title text-xl font-bold mb-4">{title}</h2>
 
-        <p className="confirmation-modal-message mb-6 leading-relaxed">
-          {message}
-        </p>
+        <p className="modal-text mb-6 leading-relaxed">{message}</p>
 
         <div className="flex gap-4 justify-center">
           <button
             onClick={cancelDisabled ? undefined : onCancel}
             disabled={cancelDisabled}
-            className={`confirmation-modal-cancel px-8 py-3 rounded-xl font-medium transition-all duration-150
-              ${
-                cancelDisabled
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-[4px_4px_8px_#c2c8d0,-3px_-3px_8px_#e6f0fa] active:shadow-[inset_2px_2px_5px_rgba(0,0,0,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.7)] active:brightness-95 active:translate-y-0.5 active:duration-75"
-              }`}
+            className={`neu-button px-8 py-3 rounded-xl font-medium
+              ${cancelDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {cancelText}
           </button>
@@ -95,11 +87,11 @@ export default function ConfirmationModal({
           <button
             onClick={confirmDisabled ? undefined : onConfirm}
             disabled={confirmDisabled}
-            className={`confirmation-modal-confirm px-8 py-3 rounded-xl font-medium transition-all duration-150
+            className={`px-8 py-3 rounded-xl font-medium transition-all duration-150 bg-red-500 hover:bg-red-600 text-white
               ${
                 confirmDisabled
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-[4px_4px_8px_#c2c8d0,-3px_-3px_8px_#e6f0fa] active:shadow-[inset_2px_2px_5px_rgba(0,0,0,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.7)] active:brightness-95 active:translate-y-0.5 active:duration-75"
+                  : "active:translate-y-0.5 active:duration-75"
               }`}
           >
             {confirmText}

@@ -9,12 +9,13 @@ export default function StatusMessage({
   type = "error",
   className = "",
 }: StatusMessageProps) {
-  const textColor = type === "error" ? "text-red-300" : "text-green-400";
-
   return (
     <div
       key={`${message}-${type}`}
-      className={`${textColor} text-sm text-center min-h-5 transition-opacity duration-200 ${className}`}
+      className={`text-sm text-center min-h-5 transition-opacity duration-200 ${className}`}
+      style={{
+        color: type === "error" ? "var(--logout-icon)" : "var(--success-text)",
+      }}
     >
       {message ? message : <span className="opacity-0">placeholder</span>}
     </div>

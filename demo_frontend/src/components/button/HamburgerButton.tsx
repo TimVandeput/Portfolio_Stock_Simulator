@@ -7,7 +7,8 @@ export default function HamburgerButton({ onClick }: HamburgerButtonProps) {
     <button
       aria-label="Open menu"
       onClick={onClick}
-      className="hamburger-button md:hidden absolute left-4 top-1/2 -translate-y-1/2 p-3 mt-2 text-blue-400"
+      className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 p-3 mt-2"
+      style={{ color: "var(--text-primary)" }}
     >
       <svg
         width="28"

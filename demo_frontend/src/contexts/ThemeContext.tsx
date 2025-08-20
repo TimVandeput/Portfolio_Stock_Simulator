@@ -24,6 +24,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleTheme = () => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      *, *::before, *::after {
+        transition: none !important;
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+      }
+    `;
+    document.head.appendChild(style);
+
     const newIsDark = !isDark;
     setIsDark(newIsDark);
 
@@ -34,6 +44,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+
+    setTimeout(() => {
+      document.head.removeChild(style);
+    }, 50);
   };
 
   return (

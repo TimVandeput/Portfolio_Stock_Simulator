@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,17 +25,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="bg-[#e0e5ec]">
+    <html lang="en">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Create loading screen immediately
                 const savedTheme = localStorage.getItem('theme');
                 const isDark = savedTheme === 'dark';
                 
-                // Create loading overlay
                 const loadingOverlay = document.createElement('div');
                 loadingOverlay.id = 'theme-loading';
                 loadingOverlay.style.cssText = \`
@@ -74,14 +73,12 @@ export default function RootLayout({
                 
                 document.documentElement.appendChild(loadingOverlay);
                 
-                // Set theme class immediately
                 if (isDark) {
                   document.documentElement.classList.add('dark');
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
                 
-                // Function to remove loading screen when theme is applied
                 window.removeThemeLoading = function() {
                   const overlay = document.getElementById('theme-loading');
                   if (overlay) {
@@ -91,7 +88,6 @@ export default function RootLayout({
                   }
                 };
                 
-                // Auto-remove after 2 seconds as fallback
                 setTimeout(() => {
                   if (window.removeThemeLoading) {
                     window.removeThemeLoading();
@@ -103,14 +99,16 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e0e5ec] min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <CursorTrail />
-        <Header />
-        <main className="flex-1 flex flex-col justify-center items-center bg-[#e0e5ec]">
-          {children}
-        </main>
-        <Footer />
+        <ThemeProvider>
+          <CursorTrail />
+          <Header />
+          <main className="flex-1 flex flex-col justify-center items-center">
+            {children}
+          </main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -4,9 +4,17 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="sticky bottom-0 z-10 w-full bg-gradient-to-t from-blue-300 to-[#e0e5ec] h-18 flex items-center justify-center shadow-lg">
+    <footer
+      className="sticky bottom-0 z-10 w-full h-18 flex items-center justify-center"
+      style={{
+        background: "var(--gradient-footer)",
+      }}
+    >
       <div className="flex justify-center pt-4">
-        <span className="text-blue-400 font-semibold">
+        <span
+          className="font-semibold"
+          style={{ color: "var(--text-primary)" }}
+        >
           &copy; Tim Vandeput {year}
         </span>
       </div>

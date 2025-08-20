@@ -1,26 +1,135 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light theme (default) */
+  --bg-primary: #e0e5ec;
+  --bg-surface: #e0e5ec;
+  --text-primary: #60a5fa;
+  --text-secondary: #93c5fd;
+  --text-accent: #7c3aed;
+  --border-color: #c2c8d0;
+
+  /* Gradients */
+  --gradient-header: linear-gradient(to bottom, #93c5fd, #e0e5ec);
+  --gradient-footer: linear-gradient(to top, #93c5fd, #e0e5ec);
+
+  /* Neumorphic shadows */
+  --shadow-neu: 6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa;
+  --shadow-neu-inset: inset 2px 2px 5px rgba(0, 0, 0, 0.25),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+  --shadow-neu-hover: 4px 4px 8px #c2c8d0, -3px -3px 8px #e6f0fa;
+  --shadow-large: 10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa;
+
+  /* Button colors */
+  --btn-bg: #e0e5ec;
+  --btn-text: #60a5fa;
+  --btn-hover: rgb(191 219 254);
+
+  /* Modal colors */
+  --modal-bg: #e0e5ec;
+  --modal-title: #60a5fa;
+  --modal-text: #60a5fa;
+
+  /* Form colors */
+  --input-bg: #e0e5ec;
+  --input-text: #60a5fa;
+
+  /* Special elements */
+  --logout-icon: #ef4444;
+  --confirm-btn: #dc2626;
+  --success-text: #22c55e;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  /* Dark theme */
+  --bg-primary: #2a2d3a;
+  --bg-surface: #2a2d3a;
+  --text-primary: #c4b5fd;
+  --text-secondary: #a78bfa;
+  --text-accent: #7c3aed;
+  --border-color: #363a4c;
+
+  /* Gradients */
+  --gradient-header: linear-gradient(to bottom, #7c3aed, #2a2d3a);
+  --gradient-footer: linear-gradient(to top, #7c3aed, #2a2d3a);
+
+  /* Neumorphic shadows */
+  --shadow-neu: 6px 6px 10px #1e2028, -5px -5px 10px #363a4c;
+  --shadow-neu-inset: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c;
+  --shadow-neu-hover: 4px 4px 8px #1e2028, -3px -3px 8px #363a4c;
+  --shadow-large: 10px 10px 15px #1e2028, -5px -5px 10px #363a4c;
+
+  /* Button colors */
+  --btn-bg: #2a2d3a;
+  --btn-text: #c4b5fd;
+  --btn-hover: #252831;
+
+  /* Modal colors */
+  --modal-bg: #2a2d3a;
+  --modal-title: #c4b5fd;
+  --modal-text: #c4b5fd;
+
+  /* Form colors */
+  --input-bg: #2a2d3a;
+  --input-text: #c4b5fd;
+
+  /* Special elements */
+  --logout-icon: #f87171;
+  --confirm-btn: #f87171;
+  --success-text: #34d399;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Apply the CSS variables */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Utility classes for common patterns */
+.neu-button {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: var(--shadow-neu);
+  transition: all 0.15s ease;
+}
+
+.neu-button:hover {
+  background: var(--btn-hover);
+  box-shadow: var(--shadow-neu-hover);
+}
+
+.neu-button:active {
+  box-shadow: var(--shadow-neu-inset);
+  transform: translateY(0.125rem);
+}
+
+.role-selected {
+  background: var(--btn-hover);
+  color: var(--btn-text);
+  box-shadow: var(--shadow-neu-inset);
+}
+
+.neu-card {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-large);
+}
+
+.neu-input {
+  background: var(--input-bg);
+  color: var(--input-text);
+  box-shadow: var(--shadow-neu-inset);
+}
+
+.modal-base {
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-large);
+}
+
+.modal-title {
+  color: var(--modal-title);
+}
+
+.modal-text {
+  color: var(--modal-text);
 }
