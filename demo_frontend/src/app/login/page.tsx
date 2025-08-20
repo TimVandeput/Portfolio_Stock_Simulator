@@ -1,11 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import PasswordInput from "@/components/input/PasswordInput";
+import NeumorphicButton from "@/components/button/NeumorphicButton";
+import NeumorphicInput from "@/components/input/NeumorphicInput";
+import StatusMessage from "@/components/status/StatusMessage";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import RoleSelector from "@/components/button/RoleSelector";
+import { register, login } from "@/lib/api/auth";
+import type { RegisterRequest, LoginRequest, Role } from "@/types";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [isFlipped, setIsFlipped] = useState(false);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [selectedRole, setSelectedRole] = useState<Role>("ROLE_USER");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const [rUser, setRUser] = useState("");
+  const [rPass, setRPass] = useState("");
+  const [rPass2, setRPass2] = useState("");
+  const [rCode, setRCode] = useState("");
+  const [rStatus, setRStatus] = useState<{
+    message: string;
+    type: "error" | "success";
+  } | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -15,47 +40,290 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLoginSubmit = async () => {
     setError("");
+    setSuccess("");
     if (!username || !password) {
       setError("Please enter your username and password.");
       return;
     }
-    alert(`Logged in as ${username} (simulation)`);
+
+    setIsLoggingIn(true);
+
+    try {
+      const loginData: LoginRequest = {
+        username,
+        password,
+        chosenRole: selectedRole,
+      };
+
+      const response = await login(loginData);
+
+      setSuccess(`Login successful! Welcome, ${response.username}!`);
+
+      setUsername("");
+      setPassword("");
+
+      setTimeout(() => {
+        router.push("/about");
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.body?.message ||
+        "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleRegisterSubmit = async () => {
+    setRStatus(null);
+
+    if (!rUser || !rPass || !rPass2 || !rCode) {
+      setRStatus({ message: "Please fill in all fields.", type: "error" });
+      return;
+    }
+    if (rPass !== rPass2) {
+      setRStatus({ message: "Passwords do not match.", type: "error" });
+      return;
+    }
+
+    setIsRegistering(true);
+
+    try {
+      const registerData: RegisterRequest = {
+        username: rUser,
+        password: rPass,
+        passcode: rCode,
+      };
+
+      const response = await register(registerData);
+
+      setRStatus({
+        message: `Registration successful! Please log in.`,
+        type: "success",
+      });
+
+      setRUser("");
+      setRPass("");
+      setRPass2("");
+      setRCode("");
+
+      setTimeout(() => {
+        setIsFlipped(false);
+        setRStatus(null);
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.body?.message ||
+        "Registration failed. Please try again.";
+      setRStatus({ message: errorMessage, type: "error" });
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   return (
-    <div className="flex-1 w-full flex items-center justify-center bg-[#e0e5ec] font-sans px-6 py-6">
-      <div className="bg-[#e0e5ec] p-8 rounded-2xl shadow-[10px_10px_15px_#c2c8d0,-5px_-5px_10px_#e6f0fa] w-[340px]">
-        <h1 className="text-2xl font-bold text-center mb-5 text-blue-300">
-          Welcome
-        </h1>
-        <form className="flex flex-col" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="my-2 p-3 rounded-xl border-none bg-[#e0e5ec] shadow-inner focus:outline-none text-blue-400 placeholder-blue-300"
-          />
-          <div className="text-red-300 text-sm text-center mt-2 transition-all h-5">
-            {error ? error : <span className="opacity-0">placeholder</span>}
-          </div>
-          <button
-            type="submit"
-            className="mt-4 p-3 rounded-xl font-bold bg-[#e0e5ec] text-blue-300 shadow-[6px_6px_10px_#c2c8d0,-5px_-5px_10px_#e6f0fa] transition hover:bg-blue-100"
+    <div
+      className="login-container flex-1 w-full flex items-center justify-center font-sans px-6 py-6"
+      style={{ backgroundColor: "var(--bg-primary)" }}
+    >
+      <div style={{ perspective: "1000px" }}>
+        <div
+          className={`
+            relative
+            w-[340px] h-[460px]
+            transition-transform duration-500
+            [transform-style:preserve-3d]
+            rounded-2xl
+            ${isFlipped ? "rotate-y-180" : ""}
+          `}
+          style={{
+            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
+        >
+          {/* LOGIN SIDE */}
+          <div
+            className={`
+              login-card
+              absolute inset-0
+              rounded-2xl
+              p-8
+              overflow-hidden
+              [backface-visibility:hidden]
+              flex flex-col h-full
+              transition-shadow duration-500
+              ${isFlipped ? "!shadow-none" : ""}
+            `}
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              boxShadow: isFlipped ? "none" : "var(--shadow-large)",
+            }}
           >
-            Login
-          </button>
-        </form>
+            <div className="flex justify-between items-start">
+              <h1
+                className="login-title text-2xl font-bold"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Login
+              </h1>
+              <div
+                onClick={() => {
+                  setIsFlipped(true);
+                  setTimeout(() => {
+                    setError("");
+                    setSuccess("");
+                  }, 500);
+                }}
+                className="login-link cursor-pointer transition-colors duration-200 text-sm font-medium border-b border-transparent"
+                style={{
+                  color: "var(--text-secondary)",
+                  borderColor: "transparent",
+                }}
+              >
+                Register →
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col flex-1">
+              <NeumorphicInput
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={setUsername}
+                className="my-2"
+              />
+
+              <PasswordInput
+                placeholder="Password"
+                value={password}
+                onChange={setPassword}
+                className="my-2"
+              />
+
+              <RoleSelector
+                selectedRole={selectedRole}
+                onRoleChange={setSelectedRole}
+                className="my-4"
+              />
+
+              <div className="mt-auto flex flex-col">
+                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
+                  {error && <StatusMessage message={error} className="mb-0" />}
+                  {success && (
+                    <StatusMessage
+                      message={success}
+                      type="success"
+                      className="mb-0"
+                    />
+                  )}
+                </div>
+                <NeumorphicButton
+                  onClick={handleLoginSubmit}
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? "Logging in..." : "Login"}
+                </NeumorphicButton>
+              </div>
+            </div>
+          </div>
+
+          {/* REGISTER SIDE */}
+          <div
+            className={`
+              login-card
+              absolute inset-0
+              rounded-2xl
+              p-8
+              overflow-hidden
+              [backface-visibility:hidden]
+              flex flex-col h-full
+              transition-shadow duration-500
+              ${isFlipped ? "" : "!shadow-none"}
+            `}
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              boxShadow: isFlipped ? "var(--shadow-large)" : "none",
+              transform: "rotateY(180deg)",
+            }}
+          >
+            <div className="flex justify-between items-start">
+              <h1
+                className="login-title text-2xl font-bold"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Register
+              </h1>
+              <div
+                onClick={() => {
+                  setIsFlipped(false);
+                  setTimeout(() => {
+                    setRStatus(null);
+                  }, 500);
+                }}
+                className="login-link cursor-pointer transition-colors duration-200 text-sm font-medium border-b border-transparent"
+                style={{
+                  color: "var(--text-secondary)",
+                  borderColor: "transparent",
+                }}
+              >
+                Login →
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col flex-1">
+              <NeumorphicInput
+                type="text"
+                placeholder="Username"
+                value={rUser}
+                onChange={setRUser}
+                className="my-2"
+              />
+
+              <PasswordInput
+                placeholder="Passcode"
+                value={rCode}
+                onChange={setRCode}
+                className="my-2"
+              />
+
+              <PasswordInput
+                placeholder="Password"
+                value={rPass}
+                onChange={setRPass}
+                className="my-2"
+              />
+
+              <PasswordInput
+                placeholder="Confirm password"
+                value={rPass2}
+                onChange={setRPass2}
+                className="my-2"
+              />
+
+              <div className="mt-auto flex flex-col">
+                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
+                  {rStatus && (
+                    <StatusMessage
+                      message={rStatus.message}
+                      type={rStatus.type}
+                      className="mb-0"
+                    />
+                  )}
+                </div>
+                <NeumorphicButton
+                  onClick={handleRegisterSubmit}
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? "Registering..." : "Register"}
+                </NeumorphicButton>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
