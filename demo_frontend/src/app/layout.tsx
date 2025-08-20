@@ -30,47 +30,6 @@ export default function RootLayout({
   const handleCancelLogout = () => setShowConfirmation(false);
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true);
-    // Show loading overlay immediately with correct theme
-    if (typeof window !== "undefined") {
-      const isDark = document.documentElement.classList.contains('dark');
-      const overlay = document.createElement('div');
-      overlay.id = 'logout-loading';
-      overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 99999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: ${isDark ? '#2a2d3a' : '#e0e5ec'};
-        color: ${isDark ? '#c4b5fd' : '#60a5fa'};
-        transition: opacity 0.2s ease;
-      `;
-      overlay.innerHTML = `
-        <div style="text-align: center;">
-          <div style="
-            width: 32px;
-            height: 32px;
-            border: 3px solid ${isDark ? '#363a4c' : '#c2c8d0'};
-            border-top: 3px solid ${isDark ? '#c4b5fd' : '#60a5fa'};
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
-          "></div>
-          <p style="margin: 0; font-size: 14px;">Logging out...</p>
-        </div>
-        <style>
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        </style>
-      `;
-      document.body.appendChild(overlay);
-    }
     try {
       await logout();
       window.location.href = "/login";
@@ -83,76 +42,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const savedTheme = localStorage.getItem('theme');
-                const isDark = savedTheme === 'dark';
-                
-                const loadingOverlay = document.createElement('div');
-                loadingOverlay.id = 'theme-loading';
-                loadingOverlay.style.cssText = \`
-                  position: fixed;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  z-index: 99999;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  background: \${isDark ? '#2a2d3a' : '#e0e5ec'};
-                  color: \${isDark ? '#c4b5fd' : '#60a5fa'};
-                \`;
-                
-                loadingOverlay.innerHTML = \`
-                  <div style="text-align: center;">
-                    <div style="
-                      width: 32px;
-                      height: 32px;
-                      border: 3px solid \${isDark ? '#363a4c' : '#c2c8d0'};
-                      border-top: 3px solid \${isDark ? '#c4b5fd' : '#60a5fa'};
-                      border-radius: 50%;
-                      animation: spin 1s linear infinite;
-                      margin: 0 auto 12px;
-                    "></div>
-                    <p style="margin: 0; font-size: 14px;">Loading...</p>
-                  </div>
-                  <style>
-                    @keyframes spin {
-                      0% { transform: rotate(0deg); }
-                      100% { transform: rotate(360deg); }
-                    }
-                  </style>
-                \`;
-                
-                document.documentElement.appendChild(loadingOverlay);
-                
-                if (isDark) {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-                
-                window.removeThemeLoading = function() {
-                  const overlay = document.getElementById('theme-loading');
-                  if (overlay) {
-                    overlay.style.opacity = '0';
-                    overlay.style.transition = 'opacity 0.2s ease';
-                    setTimeout(() => overlay.remove(), 200);
-                  }
-                };
-                
-                setTimeout(() => {
-                  if (window.removeThemeLoading) {
-                    window.removeThemeLoading();
-                  }
-                }, 2000);
-              })();
-            `,
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
