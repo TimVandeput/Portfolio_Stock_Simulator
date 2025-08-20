@@ -7,7 +7,7 @@ type LoaderProps = {
 
 export default function Loader({ cover = "page", className }: LoaderProps) {
   const overlayClasses = `grid place-items-center ${className ?? ""}`;
-  const styleOverlay = { backgroundColor: "var(--bg-primary)" } as const; // background follows theme
+  const styleOverlay = { backgroundColor: "var(--bg-primary)" } as const;
   const styleSpinner = {
     borderColor: "var(--loader-spinner)",
     borderTopColor: "transparent",

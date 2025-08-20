@@ -1,4 +1,3 @@
-// Cookie helpers
 function setCookie(name: string, value: string) {
   document.cookie = `${name}=${value}; path=/`;
 }
@@ -55,7 +54,7 @@ export function clearTokens() {
     removeCookie(REFRESH_KEY);
     removeCookie(AS_KEY);
   }
-  // Cookie helpers
+
   function setCookie(name: string, value: string) {
     document.cookie = `${name}=${value}; path=/`;
   }

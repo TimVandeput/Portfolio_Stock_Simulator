@@ -39,17 +39,16 @@ export default function RootLayout({
   const handleCancelLogout = () => setShowConfirmation(false);
 
   const handleConfirmLogout = async () => {
-    setIsLoggingOut(true); // show overlay immediately
+    setIsLoggingOut(true);
     try {
       await logout();
-      router.replace("/login"); // client-side nav so loading.tsx can appear too
+      router.replace("/login");
     } catch {
       setIsLoggingOut(false);
       setShowConfirmation(false);
     }
   };
 
-  // When we arrive at /login, clear flags so loader/modal disappear
   useEffect(() => {
     if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
       setIsLoggingOut(false);
@@ -70,9 +69,7 @@ export default function RootLayout({
             isLoggingOut={isLoggingOut}
           />
 
-          {/* Keep header/footer visible; loader only covers the main content */}
           <main className="flex-1 w-full flex flex-col justify-center items-center">
-            {/* Make this wrapper relative so the content-only loader can position itself */}
             <div className="relative w-full h-full flex items-center justify-center">
               {showConfirmation ? (
                 <ConfirmationModal
@@ -91,7 +88,6 @@ export default function RootLayout({
                 children
               )}
 
-              {/* Loader only covers the main content area (header/footer remain visible) */}
               {isLoggingOut && <Loader cover="content" />}
             </div>
           </main>

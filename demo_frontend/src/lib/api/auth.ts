@@ -26,7 +26,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
-  // Cookie helpers scoped to logout
   function getCookie(name: string) {
     const match = document.cookie.match(
       new RegExp("(^| )" + name + "=([^;]+)")
