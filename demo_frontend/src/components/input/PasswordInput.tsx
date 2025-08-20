@@ -25,9 +25,8 @@ export default function PasswordInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="password-input w-full p-3 pr-12 rounded-xl border-none focus:outline-none"
+        className="neumorphic-input w-full p-3 pr-12 rounded-xl border-none focus:outline-none"
         style={{
-          backgroundColor: "var(--input-bg)",
           boxShadow: "var(--shadow-neu-inset)",
           color: "var(--input-text)",
         }}

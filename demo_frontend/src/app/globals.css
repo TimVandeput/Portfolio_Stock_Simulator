@@ -34,6 +34,7 @@
 
   /* Form colors */
   --input-bg: #e0e5ec;
+  --input-bg-active: rgb(191 219 254);
   --input-text: #60a5fa;
 
   /* Special elements */
@@ -75,6 +76,7 @@
 
   /* Form colors */
   --input-bg: #2a2d3a;
+  --input-bg-active: #252831;
   --input-text: #c4b5fd;
 
   /* Special elements */
@@ -125,10 +127,14 @@ body {
   box-shadow: var(--shadow-large);
 }
 
-.neu-input {
+.neumorphic-input {
   background: var(--input-bg);
   color: var(--input-text);
   box-shadow: var(--shadow-neu-inset);
+}
+
+.neumorphic-input:focus {
+  background: var(--input-bg-active);
 }
 
 .modal-base {

@@ -21,7 +21,6 @@ export default function NeumorphicInput({
       onChange={(e) => onChange(e.target.value)}
       className={`neumorphic-input p-3 rounded-xl border-none focus:outline-none ${className}`}
       style={{
-        backgroundColor: "var(--input-bg)",
         boxShadow: "var(--shadow-neu-inset)",
         color: "var(--input-text)",
       }}
