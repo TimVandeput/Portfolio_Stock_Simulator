@@ -62,37 +62,30 @@ export default function ConfirmationModal({
 
   if (!isOpen) return null;
 
+  // Center modal only in main section, not header/footer
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onCancel}
-      />
-
-      <div className="modal-base relative rounded-2xl p-8 max-w-md mx-4">
+    <div className="w-full flex flex-col items-center justify-center py-16">
+      <div className="modal-base rounded-2xl p-8 max-w-md w-full mx-4 shadow-lg">
         <h2 className="modal-title text-xl font-bold mb-4">{title}</h2>
-
         <p className="modal-text mb-6 leading-relaxed">{message}</p>
-
         <div className="flex gap-4 justify-center">
           <button
             onClick={cancelDisabled ? undefined : onCancel}
             disabled={cancelDisabled}
-            className={`neu-button px-8 py-3 rounded-xl font-medium
-              ${cancelDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`neu-button px-8 py-3 rounded-xl font-medium ${
+              cancelDisabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             {cancelText}
           </button>
-
           <button
             onClick={confirmDisabled ? undefined : onConfirm}
             disabled={confirmDisabled}
-            className={`px-8 py-3 rounded-xl font-medium transition-all duration-150 bg-red-500 hover:bg-red-600 text-white
-              ${
-                confirmDisabled
-                  ? "opacity-50 cursor-not-allowed"
-                  : "active:translate-y-0.5 active:duration-75"
-              }`}
+            className={`px-8 py-3 rounded-xl font-medium transition-all duration-150 bg-red-500 hover:bg-red-600 text-white ${
+              confirmDisabled
+                ? "opacity-50 cursor-not-allowed"
+                : "active:translate-y-0.5 active:duration-75"
+            }`}
           >
             {confirmText}
           </button>

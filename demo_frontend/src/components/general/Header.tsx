@@ -14,7 +14,13 @@ const navItems = [
   { name: "ABOUT", href: "/about" },
 ];
 
-export default function Header() {
+export default function Header({
+  onLogoutClick,
+  isLoggingOut,
+}: {
+  onLogoutClick: () => void;
+  isLoggingOut: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
@@ -90,7 +96,10 @@ export default function Header() {
         {!hideNav && (
           <div className="absolute right-4 md:right-6 flex gap-4 items-center">
             <ThemeToggle />
-            <LogoutButton />
+            <LogoutButton
+              onLogoutClick={onLogoutClick}
+              isLoggingOut={isLoggingOut}
+            />
           </div>
         )}
 
