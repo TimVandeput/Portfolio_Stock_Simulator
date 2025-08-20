@@ -62,7 +62,6 @@ export default function ConfirmationModal({
 
   if (!isOpen) return null;
 
-  // Center modal only in main section, not header/footer
   return (
     <div className="w-full flex flex-col items-center justify-center py-16">
       <div className="modal-base rounded-2xl p-8 max-w-md w-full mx-4 shadow-lg">
