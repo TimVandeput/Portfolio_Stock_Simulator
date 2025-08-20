@@ -6,9 +6,11 @@ import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { logout } from "@/lib/api/auth";
+import { usePathname, useRouter } from "next/navigation";
+import Loader from "@/components/ui/Loader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,27 +24,42 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogoutClick = () => setShowConfirmation(true);
+  const handleLogoutClick = () => {
+    router.prefetch("/login");
+    setShowConfirmation(true);
+  };
   const handleCancelLogout = () => setShowConfirmation(false);
+
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true);
     try {
       await logout();
-      window.location.href = "/login";
-    } finally {
+      router.replace("/login");
+    } catch {
       setIsLoggingOut(false);
       setShowConfirmation(false);
     }
   };
 
+  useEffect(() => {
+    if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
+      setIsLoggingOut(false);
+      setShowConfirmation(false);
+    }
+  }, [pathname, isLoggingOut, showConfirmation]);
+
   return (
-    <html lang="en">
-      <head>
-      </head>
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
@@ -52,6 +69,7 @@ export default function RootLayout({
             onLogoutClick={handleLogoutClick}
             isLoggingOut={isLoggingOut}
           />
+
           <main className="flex-1 h-full flex flex-col justify-center items-center">
             {showConfirmation ? (
               <ConfirmationModal
@@ -70,7 +88,10 @@ export default function RootLayout({
               children
             )}
           </main>
+
           <Footer />
+
+          {isLoggingOut && <Loader />}
         </ThemeProvider>
       </body>
     </html>
