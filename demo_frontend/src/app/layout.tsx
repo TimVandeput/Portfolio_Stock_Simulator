@@ -30,6 +30,47 @@ export default function RootLayout({
   const handleCancelLogout = () => setShowConfirmation(false);
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true);
+    // Show loading overlay immediately with correct theme
+    if (typeof window !== "undefined") {
+      const isDark = document.documentElement.classList.contains('dark');
+      const overlay = document.createElement('div');
+      overlay.id = 'logout-loading';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: ${isDark ? '#2a2d3a' : '#e0e5ec'};
+        color: ${isDark ? '#c4b5fd' : '#60a5fa'};
+        transition: opacity 0.2s ease;
+      `;
+      overlay.innerHTML = `
+        <div style="text-align: center;">
+          <div style="
+            width: 32px;
+            height: 32px;
+            border: 3px solid ${isDark ? '#363a4c' : '#c2c8d0'};
+            border-top: 3px solid ${isDark ? '#c4b5fd' : '#60a5fa'};
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+          "></div>
+          <p style="margin: 0; font-size: 14px;">Logging out...</p>
+        </div>
+        <style>
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      `;
+      document.body.appendChild(overlay);
+    }
     try {
       await logout();
       window.location.href = "/login";
