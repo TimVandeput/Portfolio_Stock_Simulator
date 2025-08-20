@@ -153,9 +153,11 @@ body {
 :root {
   --loader-overlay: rgba(255, 255, 255, 0.6);
   --loader-spinner: #60a5fa;
+  --bg-primary: #e0e5ec;
 }
 
 .dark {
   --loader-overlay: rgba(0, 0, 0, 0.6);
   --loader-spinner: #c4b5fd;
+  --bg-primary: #2a2d3a;
 }
