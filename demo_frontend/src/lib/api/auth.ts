@@ -26,7 +26,18 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
-  const refreshToken = localStorage.getItem("auth.refresh");
+  // Cookie helpers scoped to logout
+  function getCookie(name: string) {
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)")
+    );
+    return match ? match[2] : null;
+  }
+  function removeCookie(name: string) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  }
+
+  const refreshToken = getCookie("auth.refresh");
   if (refreshToken) {
     try {
       await client.post<void>("/api/auth/logout", { refreshToken });
@@ -48,11 +59,12 @@ export async function logout(): Promise<void> {
     "authToken",
     "jwt",
     "bearerToken",
+    "auth.refresh",
+    "auth.access",
+    "auth.as",
   ];
 
   keysToRemove.forEach((key) => {
-    if (localStorage.getItem(key)) {
-      localStorage.removeItem(key);
-    }
+    removeCookie(key);
   });
 }

@@ -1,3 +1,17 @@
+// Cookie helpers
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/`;
+}
+
+function getCookie(name: string) {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
+
+function removeCookie(name: string) {
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+}
+
 import { Role } from "@/types";
 
 let _accessToken: string | null = null;
@@ -12,10 +26,9 @@ const isBrowser = () => typeof window !== "undefined";
 
 export function loadTokensFromStorage() {
   if (!isBrowser()) return;
-  _accessToken = window.localStorage.getItem(ACCESS_KEY);
-  _refreshToken = window.localStorage.getItem(REFRESH_KEY);
-  _authenticatedAs =
-    (window.localStorage.getItem(AS_KEY) as Role | null) ?? null;
+  _accessToken = getCookie(ACCESS_KEY);
+  _refreshToken = getCookie(REFRESH_KEY);
+  _authenticatedAs = (getCookie(AS_KEY) as Role | null) ?? null;
 }
 
 export function setTokens(tokens: {
@@ -27,9 +40,9 @@ export function setTokens(tokens: {
   _refreshToken = tokens.refreshToken;
   if (tokens.authenticatedAs) _authenticatedAs = tokens.authenticatedAs;
   if (isBrowser()) {
-    window.localStorage.setItem(ACCESS_KEY, _accessToken ?? "");
-    window.localStorage.setItem(REFRESH_KEY, _refreshToken ?? "");
-    if (_authenticatedAs) window.localStorage.setItem(AS_KEY, _authenticatedAs);
+    setCookie(ACCESS_KEY, _accessToken ?? "");
+    setCookie(REFRESH_KEY, _refreshToken ?? "");
+    if (_authenticatedAs) setCookie(AS_KEY, _authenticatedAs);
   }
 }
 
@@ -38,9 +51,24 @@ export function clearTokens() {
   _refreshToken = null;
   _authenticatedAs = null;
   if (isBrowser()) {
-    window.localStorage.removeItem(ACCESS_KEY);
-    window.localStorage.removeItem(REFRESH_KEY);
-    window.localStorage.removeItem(AS_KEY);
+    removeCookie(ACCESS_KEY);
+    removeCookie(REFRESH_KEY);
+    removeCookie(AS_KEY);
+  }
+  // Cookie helpers
+  function setCookie(name: string, value: string) {
+    document.cookie = `${name}=${value}; path=/`;
+  }
+
+  function getCookie(name: string) {
+    const match = document.cookie.match(
+      new RegExp("(^| )" + name + "=([^;]+)")
+    );
+    return match ? match[2] : null;
+  }
+
+  function removeCookie(name: string) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   }
 }
 

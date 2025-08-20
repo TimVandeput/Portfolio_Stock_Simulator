@@ -16,10 +16,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    // Read theme from cookie
+    const match = document.cookie.match(/theme=(dark|light)/);
+    const savedTheme = match ? match[1] : "light";
     if (savedTheme === "dark") {
       setIsDark(true);
       document.documentElement.classList.add("dark");
+    } else {
+      setIsDark(false);
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
@@ -39,10 +44,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     if (newIsDark) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
+      document.cookie = "theme=dark; path=/";
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+      document.cookie = "theme=light; path=/";
     }
 
     setTimeout(() => {
