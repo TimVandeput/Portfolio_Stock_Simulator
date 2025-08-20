@@ -19,8 +19,9 @@ export default function RoleSelector({
         className="role-selector-title text-sm mb-2 font-medium text-justify"
         style={{ color: "var(--text-secondary)" }}
       >
-        Please select your role before logging in. It is recommended to start
-        with Admin.
+        Please select your role before logging in.
+        <br />
+        It is recommended to start with Admin.
       </p>
       <div className="flex gap-2">
         <button
