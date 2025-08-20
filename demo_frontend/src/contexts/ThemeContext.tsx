@@ -13,10 +13,9 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    // Read theme from cookie
     const match = document.cookie.match(/theme=(dark|light)/);
     const savedTheme = match ? match[1] : "light";
     if (savedTheme === "dark") {
@@ -54,6 +53,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.head.removeChild(style);
     }, 50);
   };
+
+  if (isDark === undefined) return null;
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
