@@ -1,9 +1,11 @@
 /* Footer shadow above utility (matches header shadow, inverted) */
 .footer-shadow-above {
-  box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0), -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
+  box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0),
+    -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
 }
 .dark .footer-shadow-above {
-  box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028), -5px 5px 10px var(--shadow-footer-above2, #363a4c);
+  box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028),
+    -5px 5px 10px var(--shadow-footer-above2, #363a4c);
 }
 /* Custom variables for footer shadow above */
 :root {
