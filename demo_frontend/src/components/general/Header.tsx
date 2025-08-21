@@ -78,8 +78,8 @@ export default function Header({
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 w-full md:py-4 py-0"
-      style={{ background: "var(--gradient-header)" }}
+      className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
+      style={{ background: "var(--bg-surface)" }}
     >
       <div className="relative w-full h-full flex items-center">
         {!hideNav && <HamburgerButton onClick={() => setOpen(true)} />}

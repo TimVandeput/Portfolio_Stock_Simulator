@@ -102,7 +102,7 @@ export default function MobileDrawer({
               onClick={onClose}
               className="no-underline"
             >
-              <span className="neu-button block p-3 rounded-xl font-bold text-center">
+              <span className="neu-button neumorphic-button block p-3 rounded-xl font-bold text-center">
                 {item.name}
               </span>
             </Link>
