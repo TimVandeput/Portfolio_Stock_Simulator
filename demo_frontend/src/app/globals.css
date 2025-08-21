@@ -9,10 +9,18 @@
 }
 /* Custom variables for footer shadow above */
 :root {
+  --cookie-banner-red: #ef4444;
+  --cookie-banner-bg: #e0e5ec;
+  --cookie-banner-border: #60a5fa;
+  --cookie-banner-accent: #60a5fa;
   --shadow-footer-above: #c2c8d0;
   --shadow-footer-above2: #e6f0fa;
 }
 .dark {
+  --cookie-banner-red: #ef4444;
+  --cookie-banner-bg: #1e2028;
+  --cookie-banner-border: #c4b5fd;
+  --cookie-banner-accent: #c4b5fd;
   --shadow-footer-above: #1e2028;
   --shadow-footer-above2: #363a4c;
 }
