@@ -10,8 +10,22 @@
   --border-color: #c2c8d0;
 
   /* Gradients */
-  --gradient-header: linear-gradient(to bottom, #93c5fd, #e0e5ec);
-  --gradient-footer: linear-gradient(to top, #93c5fd, #e0e5ec);
+  --gradient-header: linear-gradient(
+    to bottom,
+    #93c5fd 0%,
+    #93c5fd 3%,
+    rgba(147, 197, 253, 0.5) 6%,
+    #e0e5ec 12%,
+    #e0e5ec 100%
+  );
+  --gradient-footer: linear-gradient(
+    to top,
+    #93c5fd 0%,
+    #93c5fd 3%,
+    rgba(147, 197, 253, 0.5) 6%,
+    #e0e5ec 12%,
+    #e0e5ec 100%
+  );
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa;
@@ -53,8 +67,22 @@
   --border-color: #363a4c;
 
   /* Gradients */
-  --gradient-header: linear-gradient(to bottom, #7c3aed, #2a2d3a);
-  --gradient-footer: linear-gradient(to top, #7c3aed, #2a2d3a);
+  --gradient-header: linear-gradient(
+    to bottom,
+    #7c3aed 0%,
+    #7c3aed 3%,
+    rgba(124, 58, 237, 0.5) 6%,
+    #2a2d3a 12%,
+    #2a2d3a 100%
+  );
+  --gradient-footer: linear-gradient(
+    to top,
+    #7c3aed 0%,
+    #7c3aed 3%,
+    rgba(124, 58, 237, 0.5) 6%,
+    #2a2d3a 12%,
+    #2a2d3a 100%
+  );
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #1e2028, -5px -5px 10px #363a4c;
@@ -94,6 +122,23 @@ body {
 
 /* Utility classes for common patterns */
 .neu-button {
+  /* Neumorphic button style for nav buttons */
+  .neumorphic-button {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--shadow-neu);
+    border-radius: 0.75rem;
+    font-weight: bold;
+    transition: all 0.15s ease;
+  }
+  .neumorphic-button:hover {
+    background: var(--btn-hover);
+    box-shadow: var(--shadow-neu-hover);
+  }
+  .neumorphic-button:active {
+    box-shadow: var(--shadow-neu-inset);
+    transform: translateY(0.125rem);
+  }
   background: var(--btn-bg);
   color: var(--btn-text);
   box-shadow: var(--shadow-neu);
