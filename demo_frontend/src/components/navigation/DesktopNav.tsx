@@ -39,7 +39,7 @@ export default function DesktopNav({
           <button
             data-eq
             style={maxBtnWidth ? { width: `${maxBtnWidth}px` } : undefined}
-            className="neu-button p-3 rounded-xl font-bold"
+            className="neu-button neumorphic-button p-3 rounded-xl font-bold"
           >
             {item.name}
           </button>

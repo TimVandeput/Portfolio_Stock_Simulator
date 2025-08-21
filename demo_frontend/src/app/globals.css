@@ -1,3 +1,36 @@
+/* Footer shadow above utility (matches header shadow, inverted) */
+.footer-shadow-above {
+  box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0),
+    -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
+}
+.dark .footer-shadow-above {
+  box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028),
+    -5px 5px 10px var(--shadow-footer-above2, #363a4c);
+}
+/* Custom variables for footer shadow above */
+:root {
+  --shadow-footer-above: #c2c8d0;
+  --shadow-footer-above2: #e6f0fa;
+}
+.dark {
+  --shadow-footer-above: #1e2028;
+  --shadow-footer-above2: #363a4c;
+}
+/* Footer top shadow utility */
+.footer-top-shadow {
+  box-shadow: 0 -8px 20px -8px #c2c8d0, 0 -2px 8px -2px #e6f0fa;
+}
+/* Login card shadow utility */
+.login-card {
+  box-shadow: var(--shadow-large);
+}
+/* Header and Footer Shadows (conventional utility classes) */
+.header-shadow {
+  box-shadow: 10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa;
+}
+.footer-shadow {
+  box-shadow: 10px -10px 15px #c2c8d0, -5px 5px 10px #e6f0fa;
+}
 @import "tailwindcss";
 
 :root {
@@ -10,8 +43,22 @@
   --border-color: #c2c8d0;
 
   /* Gradients */
-  --gradient-header: linear-gradient(to bottom, #93c5fd, #e0e5ec);
-  --gradient-footer: linear-gradient(to top, #93c5fd, #e0e5ec);
+  --gradient-header: linear-gradient(
+    to bottom,
+    #60a5fa 0%,
+    #60a5fa 4%,
+    rgba(96, 165, 250, 0.5) 7%,
+    #e0e5ec 12%,
+    #e0e5ec 100%
+  );
+  --gradient-footer: linear-gradient(
+    to top,
+    #60a5fa 0%,
+    #60a5fa 4%,
+    rgba(96, 165, 250, 0.5) 7%,
+    #e0e5ec 12%,
+    #e0e5ec 100%
+  );
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa;
@@ -53,8 +100,22 @@
   --border-color: #363a4c;
 
   /* Gradients */
-  --gradient-header: linear-gradient(to bottom, #7c3aed, #2a2d3a);
-  --gradient-footer: linear-gradient(to top, #7c3aed, #2a2d3a);
+  --gradient-header: linear-gradient(
+    to bottom,
+    #7c3aed 0%,
+    #7c3aed 4%,
+    rgba(124, 58, 237, 0.5) 7%,
+    #2a2d3a 12%,
+    #2a2d3a 100%
+  );
+  --gradient-footer: linear-gradient(
+    to top,
+    #7c3aed 0%,
+    #7c3aed 4%,
+    rgba(124, 58, 237, 0.5) 7%,
+    #2a2d3a 12%,
+    #2a2d3a 100%
+  );
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #1e2028, -5px -5px 10px #363a4c;
