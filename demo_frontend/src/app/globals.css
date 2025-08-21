@@ -51,7 +51,7 @@
   --border-color: #c2c8d0;
 
   /* Gradients */
-  --gradient-header: linear-gradient(
+  /* --gradient-header: linear-gradient(
     to bottom,
     #60a5fa 0%,
     #60a5fa 4%,
@@ -66,10 +66,11 @@
     rgba(96, 165, 250, 0.5) 7%,
     #e0e5ec 12%,
     #e0e5ec 100%
-  );
+  ); */
 
   /* Neumorphic shadows */
-  --shadow-neu: 6px 6px 10px #c2c8d0, -5px -5px 10px #e6f0fa;
+  --shadow-neu: 6px 6px 10px #c2c8d0, -6px -6px 10px #e6f0fa,
+    6px -6px 10px #e6f0fa, -6px 6px 10px #c2c8d0;
   --shadow-neu-inset: inset 2px 2px 5px rgba(0, 0, 0, 0.25),
     inset -2px -2px 5px rgba(255, 255, 255, 0.7);
   --shadow-neu-hover: 4px 4px 8px #c2c8d0, -3px -3px 8px #e6f0fa;
@@ -107,7 +108,7 @@
   --text-accent: #7c3aed;
   --border-color: #363a4c;
 
-  /* Gradients */
+  /* Gradients
   --gradient-header: linear-gradient(
     to bottom,
     #7c3aed 0%,
@@ -123,11 +124,13 @@
     rgba(124, 58, 237, 0.5) 7%,
     #2a2d3a 12%,
     #2a2d3a 100%
-  );
+  ); */
 
   /* Neumorphic shadows */
-  --shadow-neu: 6px 6px 10px #1e2028, -5px -5px 10px #363a4c;
-  --shadow-neu-inset: inset 2px 2px 5px #1e2028, inset -2px -2px 5px #363a4c;
+  --shadow-neu: 6px 6px 10px #1e2028, -6px -6px 10px #363a4c,
+    6px -6px 10px #363a4c, -6px 6px 10px #1e2028;
+  --shadow-neu-inset: inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.08);
   --shadow-neu-hover: 4px 4px 8px #1e2028, -3px -3px 8px #363a4c;
   --shadow-large: 10px 10px 15px #1e2028, -5px -5px 10px #363a4c;
 
@@ -154,7 +157,7 @@
   --success-text: #34d399;
 }
 
-/* Apply the CSS variables */
+/* Body */
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
