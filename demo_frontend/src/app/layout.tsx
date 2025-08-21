@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientLayout from "@/components/layout/ClientLayout";
+import CookieBanner from "@/components/CookieBanner";
 import type { Metadata } from "next";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -35,6 +36,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ClientLayout>{children}</ClientLayout>
+        <CookieBanner />
       </body>
     </html>
   );
