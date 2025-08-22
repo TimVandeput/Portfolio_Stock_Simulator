@@ -21,6 +21,9 @@ export default function ClientLayout({
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
+  const [desktopTrailEnabled, setDesktopTrailEnabled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleLogoutClick = () => {
     router.prefetch("/login");
@@ -41,6 +44,47 @@ export default function ClientLayout({
   };
 
   useEffect(() => {
+    // On mount, read cookie for desktop setting
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return undefined;
+    };
+    const cookieValue = getCookie("cursorTrailEnabled");
+    if (cookieValue === "true") {
+      setDesktopTrailEnabled(true);
+      setCursorTrailEnabled(true);
+    } else {
+      setDesktopTrailEnabled(false);
+      setCursorTrailEnabled(false);
+    }
+
+    const checkMobile = () => {
+      const mobile = window.matchMedia("(max-width: 767px)").matches;
+      setIsMobile(mobile);
+      if (mobile) {
+        setDesktopTrailEnabled(cursorTrailEnabled); // Save desktop setting
+        setCursorTrailEnabled(false); // Force off on mobile
+      } else {
+        setCursorTrailEnabled(desktopTrailEnabled); // Restore desktop setting
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      document.cookie = `cursorTrailEnabled=${String(
+        cursorTrailEnabled
+      )}; path=/; max-age=${60 * 60 * 24 * 365}`;
+      setDesktopTrailEnabled(cursorTrailEnabled);
+    }
+  }, [cursorTrailEnabled, isMobile]);
+
+  useEffect(() => {
     if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
       setIsLoggingOut(false);
       setShowConfirmation(false);
@@ -49,8 +93,14 @@ export default function ClientLayout({
 
   return (
     <ThemeProvider>
-      <CursorTrail />
-      <Header onLogoutClick={handleLogoutClick} isLoggingOut={isLoggingOut} />
+      {cursorTrailEnabled && <CursorTrail />}
+      <Header
+        onLogoutClick={handleLogoutClick}
+        isLoggingOut={isLoggingOut}
+        cursorTrailEnabled={cursorTrailEnabled}
+        setCursorTrailEnabled={setCursorTrailEnabled}
+        hideTrailButton={isMobile}
+      />
 
       <main className="flex-1 w-full flex flex-col justify-center items-center">
         <div className="relative w-full h-full flex items-center justify-center">
