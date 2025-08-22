@@ -21,9 +21,11 @@ export default function RoleSelector({
             type="button"
             onClick={() => onRoleChange("ROLE_USER")}
             className={`flex-1 h-full px-4 py-2 rounded-xl font-medium text-sm transition-all duration-150
-              ${selectedRole === "ROLE_USER"
-                ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
-                : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"}
+              ${
+                selectedRole === "ROLE_USER"
+                  ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
+                  : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
+              }
             `}
             style={{ outline: "none", border: "none" }}
           >
@@ -33,9 +35,11 @@ export default function RoleSelector({
             type="button"
             onClick={() => onRoleChange("ROLE_ADMIN")}
             className={`flex-1 h-full px-4 py-2 rounded-xl font-medium text-sm transition-all duration-150
-              ${selectedRole === "ROLE_ADMIN"
-                ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
-                : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"}
+              ${
+                selectedRole === "ROLE_ADMIN"
+                  ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
+                  : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
+              }
             `}
             style={{ outline: "none", border: "none" }}
           >
@@ -47,7 +51,8 @@ export default function RoleSelector({
         className="role-selector-title text-sm mt-3 font-medium text-center"
         style={{ color: "var(--text-secondary)" }}
       >
-        Please select your role before logging in.<br />
+        Please select your role before logging in.
+        <br />
         It is recommended to start with Admin.
       </p>
     </div>
