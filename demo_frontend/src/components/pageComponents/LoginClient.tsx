@@ -195,7 +195,7 @@ export default function LoginClient() {
               <RoleSelector
                 selectedRole={selectedRole}
                 onRoleChange={setSelectedRole}
-                className="my-4"
+                className="my-2"
               />
 
               <div className="mt-auto flex flex-col">

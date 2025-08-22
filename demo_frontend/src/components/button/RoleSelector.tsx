@@ -14,41 +14,42 @@ export default function RoleSelector({
   className = "",
 }: RoleSelectorProps) {
   return (
-    <div className={`${className}`}>
+    <div className={className}>
+      <div className="flex w-full justify-center">
+        <div className="flex bg-[var(--bg-surface)] rounded-xl shadow-[var(--shadow-neu)] p-1 gap-1 w-full max-w-[340px] h-[48px]">
+          <button
+            type="button"
+            onClick={() => onRoleChange("ROLE_USER")}
+            className={`flex-1 h-full px-4 py-2 rounded-xl font-medium text-sm transition-all duration-150
+              ${selectedRole === "ROLE_USER"
+                ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
+                : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"}
+            `}
+            style={{ outline: "none", border: "none" }}
+          >
+            User
+          </button>
+          <button
+            type="button"
+            onClick={() => onRoleChange("ROLE_ADMIN")}
+            className={`flex-1 h-full px-4 py-2 rounded-xl font-medium text-sm transition-all duration-150
+              ${selectedRole === "ROLE_ADMIN"
+                ? "bg-[var(--btn-hover)] text-[var(--btn-text)] shadow-[var(--shadow-neu-inset)]"
+                : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"}
+            `}
+            style={{ outline: "none", border: "none" }}
+          >
+            Admin
+          </button>
+        </div>
+      </div>
       <p
-        className="role-selector-title text-sm mb-2 font-medium text-justify"
+        className="role-selector-title text-sm mt-3 font-medium text-center"
         style={{ color: "var(--text-secondary)" }}
       >
-        Please select your role before logging in.
-        <br />
+        Please select your role before logging in.<br />
         It is recommended to start with Admin.
       </p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onRoleChange("ROLE_USER")}
-          className={`
-            role-selector-button
-            flex-1 p-3 rounded-xl font-medium text-sm
-            transition-all duration-200
-            ${selectedRole === "ROLE_USER" ? "role-selected" : "neu-button"}
-          `}
-        >
-          User
-        </button>
-        <button
-          type="button"
-          onClick={() => onRoleChange("ROLE_ADMIN")}
-          className={`
-            role-selector-button
-            flex-1 p-3 rounded-xl font-medium text-sm
-            transition-all duration-200
-            ${selectedRole === "ROLE_ADMIN" ? "role-selected" : "neu-button"}
-          `}
-        >
-          Admin
-        </button>
-      </div>
     </div>
   );
 }
