@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
 import HamburgerButton from "@/components/button/HamburgerButton";
 import DesktopNav from "@/components/navigation/DesktopNav";
@@ -17,14 +18,20 @@ const navItems = [
 export default function Header({
   onLogoutClick,
   isLoggingOut,
+  cursorTrailEnabled,
+  setCursorTrailEnabled,
+  hideTrailButton,
 }: {
   onLogoutClick: () => void;
   isLoggingOut: boolean;
+  cursorTrailEnabled: boolean;
+  setCursorTrailEnabled: (enabled: boolean) => void;
+  hideTrailButton?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
-  const hideNav = pathname === "/login";
+  const hideLogout = pathname === "/login";
   const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -82,36 +89,47 @@ export default function Header({
       style={{ background: "var(--bg-surface)" }}
     >
       <div className="relative w-full h-full flex items-center">
-        {!hideNav && <HamburgerButton onClick={() => setOpen(true)} />}
+        {!hideLogout && <HamburgerButton onClick={() => setOpen(true)} />}
 
         <div className="flex-1 flex justify-center">
           <DesktopNav
             navItems={navItems}
-            hideNav={hideNav}
+            hideNav={hideLogout}
             maxBtnWidth={maxBtnWidth}
             onWidthCalculation={handleWidthCalculation}
           />
         </div>
 
-        {!hideNav && (
-          <div className="absolute right-4 md:right-6 flex gap-4 items-center">
-            <ThemeToggle />
+        <div className="absolute right-4 md:right-6 flex gap-4 items-center">
+          <ThemeToggle />
+          {!hideTrailButton && (
+            <button
+              className="neu-button p-3 rounded-xl font-bold active:translate-y-0.5 active:duration-75"
+              title={
+                cursorTrailEnabled
+                  ? "Disable Cursor Trail"
+                  : "Enable Cursor Trail"
+              }
+              onClick={() => setCursorTrailEnabled(!cursorTrailEnabled)}
+            >
+              {cursorTrailEnabled ? (
+                <MousePointer2 size={20} style={{ color: "orange" }} />
+              ) : (
+                <MousePointerBan size={20} style={{ color: "orange" }} />
+              )}
+            </button>
+          )}
+          {!hideLogout && (
             <LogoutButton
               onLogoutClick={onLogoutClick}
               isLoggingOut={isLoggingOut}
             />
-          </div>
-        )}
-
-        {hideNav && (
-          <div className="absolute right-4 md:right-6 flex gap-4 items-center">
-            <ThemeToggle />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <MobileDrawer
-        isOpen={open && !hideNav}
+        isOpen={open && !hideLogout}
         navItems={navItems}
         onClose={() => setOpen(false)}
       />

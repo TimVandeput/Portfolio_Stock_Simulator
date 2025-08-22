@@ -128,7 +128,7 @@ export default function LoginClient() {
         <div
           className={`
             relative
-            w-[340px] h-[460px]
+            w-[340px] h-[492px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
@@ -137,7 +137,11 @@ export default function LoginClient() {
           style={{ transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
         >
           {/* LOGIN SIDE */}
-          <div
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLoginSubmit();
+            }}
             className={`
               login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
@@ -196,16 +200,17 @@ export default function LoginClient() {
 
               <div className="mt-auto flex flex-col">
                 <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
-                  {error && <StatusMessage message={error} className="mb-0" />}
+                  {error && <StatusMessage message={error} className="mb-3" />}
                   {success && (
                     <StatusMessage
                       message={success}
                       type="success"
-                      className="mb-0"
+                      className="mb-1"
                     />
                   )}
                 </div>
                 <NeumorphicButton
+                  type="submit"
                   onClick={handleLoginSubmit}
                   disabled={isLoggingIn}
                 >
@@ -213,10 +218,14 @@ export default function LoginClient() {
                 </NeumorphicButton>
               </div>
             </div>
-          </div>
+          </form>
 
           {/* REGISTER SIDE */}
-          <div
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegisterSubmit();
+            }}
             className={`
               login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
@@ -286,11 +295,12 @@ export default function LoginClient() {
                     <StatusMessage
                       message={rStatus.message}
                       type={rStatus.type}
-                      className="mb-0"
+                      className="mb-3"
                     />
                   )}
                 </div>
                 <NeumorphicButton
+                  type="submit"
                   onClick={handleRegisterSubmit}
                   disabled={isRegistering}
                 >
@@ -298,7 +308,7 @@ export default function LoginClient() {
                 </NeumorphicButton>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
