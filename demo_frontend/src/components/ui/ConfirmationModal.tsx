@@ -63,8 +63,8 @@ export default function ConfirmationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="w-full flex flex-col items-center justify-center py-16">
-      <div className="modal-base rounded-2xl p-8 max-w-md w-full mx-4 shadow-lg">
+    <div className="w-full flex flex-col items-center justify-center py-16 px-4">
+      <div className="modal-base rounded-2xl p-8 max-w-sm w-full mx-auto shadow-lg">
         <h2 className="modal-title text-xl font-bold mb-4">{title}</h2>
         <p className="modal-text mb-6 leading-relaxed">{message}</p>
         <div className="flex gap-4 justify-center">
@@ -80,11 +80,12 @@ export default function ConfirmationModal({
           <button
             onClick={confirmDisabled ? undefined : onConfirm}
             disabled={confirmDisabled}
-            className={`px-8 py-3 rounded-xl font-medium transition-all duration-150 bg-red-500 hover:bg-red-600 text-white ${
+            className={`neu-button neumorphic-button px-8 py-3 rounded-xl font-medium transition-all duration-150 ${
               confirmDisabled
                 ? "opacity-50 cursor-not-allowed"
                 : "active:translate-y-0.5 active:duration-75"
             }`}
+            style={{ background: '#ef4444', color: '#fff' }}
           >
             {confirmText}
           </button>

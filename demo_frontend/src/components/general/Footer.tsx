@@ -5,10 +5,8 @@ export default function Footer() {
 
   return (
     <footer
-      className="sticky bottom-0 z-10 w-full h-18 flex items-center justify-center"
-      style={{
-        background: "var(--gradient-footer)",
-      }}
+      className="sticky bottom-0 z-10 w-full h-18 flex items-center justify-center footer-shadow-above"
+      style={{ background: "var(--bg-surface)" }}
     >
       <div className="flex justify-center pt-4">
         <span

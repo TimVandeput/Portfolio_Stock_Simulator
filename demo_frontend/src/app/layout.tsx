@@ -1,99 +1,42 @@
-"use client";
-
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/general/Header";
-import Footer from "@/components/general/Footer";
-import CursorTrail from "@/components/effects/CursorTrail";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useEffect, useState } from "react";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
-import { logout } from "@/lib/api/auth";
-import { usePathname, useRouter } from "next/navigation";
-import Loader from "@/components/ui/Loader";
+import { Geist, Geist_Mono } from "next/font/google";
+import ClientLayout from "@/components/layout/ClientLayout";
+import CookieBanner from "@/components/CookieBanner";
+import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: {
+    default: "Portfolio Demo",
+    template: "%s | Portfolio Demo",
+  },
+  description: "Demo app with auth, themed loader, and smooth navigation.",
+  openGraph: {
+    siteName: "Portfolio Demo",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const handleLogoutClick = () => {
-    router.prefetch("/login");
-    setShowConfirmation(true);
-  };
-  const handleCancelLogout = () => setShowConfirmation(false);
-
-  const handleConfirmLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      router.replace("/login");
-    } catch {
-      setIsLoggingOut(false);
-      setShowConfirmation(false);
-    }
-  };
-
-  useEffect(() => {
-    if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
-      setIsLoggingOut(false);
-      setShowConfirmation(false);
-    }
-  }, [pathname, isLoggingOut, showConfirmation]);
-
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider>
-          <CursorTrail />
-          <Header
-            onLogoutClick={handleLogoutClick}
-            isLoggingOut={isLoggingOut}
-          />
-
-          <main className="flex-1 w-full flex flex-col justify-center items-center">
-            <div className="relative w-full h-full flex items-center justify-center">
-              {showConfirmation ? (
-                <ConfirmationModal
-                  isOpen={showConfirmation}
-                  title="Confirm Logout"
-                  message="Are you sure you want to logout? You will need to login again to access your account."
-                  confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
-                  cancelText="Cancel"
-                  onConfirm={handleConfirmLogout}
-                  onCancel={handleCancelLogout}
-                  confirmButtonClass="bg-red-500 hover:bg-red-600 text-white"
-                  confirmDisabled={isLoggingOut}
-                  cancelDisabled={isLoggingOut}
-                />
-              ) : (
-                children
-              )}
-
-              {isLoggingOut && <Loader cover="content" />}
-            </div>
-          </main>
-
-          <Footer />
-        </ThemeProvider>
+        <ClientLayout>{children}</ClientLayout>
+        <CookieBanner />
       </body>
     </html>
   );
