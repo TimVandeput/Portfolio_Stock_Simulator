@@ -77,21 +77,21 @@ export default function HomePage() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full px-4 py-8"
+      className="fixed inset-0 flex flex-col items-center justify-center w-full px-4 overflow-hidden"
       style={{ background: "var(--bg-primary)" }}
     >
-      <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-6">
+      <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
         <div
-          className="grid gap-6 w-full"
+          className="grid gap-4 sm:gap-6 w-full"
           style={{
-            gridTemplateColumns: `repeat(${columns}, minmax(100px, 1fr))`,
+            gridTemplateColumns: `repeat(${columns}, minmax(80px, 1fr))`,
             aspectRatio: "1",
           }}
         >
           {navItems.map((item: NavItem, index: number) => (
             <div
               key={item.href}
-              className="flex flex-col items-center gap-3"
+              className="flex flex-col items-center gap-2 sm:gap-3"
               style={{
                 transform:
                   animateFromLogin && !buttonAnimations[index]
@@ -118,17 +118,17 @@ export default function HomePage() {
                     const IconComponent = (LucideIcons as any)[iconName];
                     return IconComponent ? (
                       <IconComponent
-                        size={96}
+                        size={64}
                         style={{ color: "var(--text-primary)" }}
                       />
                     ) : null;
                   })()}
               </button>
               <span
-                className="text-base text-center font-bold transition-opacity duration-300"
+                className="text-sm sm:text-base text-center font-bold transition-opacity duration-300"
                 style={{
                   color: "var(--text-primary)",
-                  opacity: showText[index] ? 1 : 0,
+                  opacity: animateFromLogin ? (showText[index] ? 1 : 0) : 1,
                 }}
               >
                 {item.name}
