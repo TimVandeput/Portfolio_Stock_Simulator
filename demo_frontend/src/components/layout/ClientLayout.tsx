@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
+import RotationPrompt from "@/components/ui/RotationPrompt";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
@@ -95,6 +96,7 @@ export default function ClientLayout({
 
   return (
     <ThemeProvider>
+      <RotationPrompt />
       {cursorTrailEnabled && <CursorTrail />}
       <Header
         onLogoutClick={handleLogoutClick}
