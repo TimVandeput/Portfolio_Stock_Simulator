@@ -4,14 +4,76 @@ import { useRouter } from "next/navigation";
 import { navItems } from "@/components/general/Header";
 import type { NavItem } from "@/types";
 import * as LucideIcons from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 
 export default function HomePage() {
   const router = useRouter();
 
-  // Calculate grid dimensions for closest-to-square layout
+  const fromLogin =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem("fromLogin") === "true";
+
+  const [animateFromLogin, setAnimateFromLogin] = useState(fromLogin);
+  const [buttonAnimations, setButtonAnimations] = useState<boolean[]>(
+    fromLogin
+      ? new Array(navItems.length).fill(false)
+      : new Array(navItems.length).fill(true)
+  );
+  const [showText, setShowText] = useState<boolean[]>(
+    fromLogin
+      ? new Array(navItems.length).fill(false)
+      : new Array(navItems.length).fill(true)
+  );
+  const hasAnimated = useRef(false);
+
   const itemCount = navItems.length;
   const columns = Math.ceil(Math.sqrt(itemCount));
   const rows = Math.ceil(itemCount / columns);
+
+  useEffect(() => {
+    if (hasAnimated.current) return;
+
+    const fromLoginStorage = sessionStorage.getItem("fromLogin") === "true";
+
+    if (fromLoginStorage) {
+      hasAnimated.current = true;
+      sessionStorage.removeItem("fromLogin");
+
+      setTimeout(() => {
+        navItems.forEach((_, index) => {
+          setTimeout(() => {
+            setButtonAnimations((prev) => {
+              const newState = [...prev];
+              newState[index] = true;
+              return newState;
+            });
+
+            setTimeout(() => {
+              setShowText((prev) => {
+                const newState = [...prev];
+                newState[index] = true;
+                return newState;
+              });
+            }, 1500);
+          }, index * 600);
+        });
+      }, 500);
+    }
+  }, []);
+
+  const getRandomStartPosition = (index: number) => {
+    const directions = [
+      "translate(-100vw, -100vh)",
+      "translate(0, -100vh)",
+      "translate(100vw, -100vh)",
+      "translate(-100vw, 0)",
+      "translate(100vw, 0)",
+      "translate(-100vw, 100vh)",
+      "translate(0, 100vh)",
+      "translate(100vw, 100vh)",
+    ];
+    return directions[index % directions.length];
+  };
 
   return (
     <div
@@ -26,8 +88,19 @@ export default function HomePage() {
             aspectRatio: "1",
           }}
         >
-          {navItems.map((item: NavItem) => (
-            <div key={item.href} className="flex flex-col items-center gap-3">
+          {navItems.map((item: NavItem, index: number) => (
+            <div
+              key={item.href}
+              className="flex flex-col items-center gap-3"
+              style={{
+                transform:
+                  animateFromLogin && !buttonAnimations[index]
+                    ? getRandomStartPosition(index)
+                    : "translate(0, 0)",
+                transition: "transform 2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                opacity: animateFromLogin && !buttonAnimations[index] ? 0.7 : 1,
+              }}
+            >
               <button
                 className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
                 style={{ color: "var(--btn-text)", fontWeight: "bold" }}
@@ -35,7 +108,6 @@ export default function HomePage() {
               >
                 {item.icon &&
                   (() => {
-                    // Convert kebab-case to PascalCase (e.g., "gamepad-2" -> "Gamepad2")
                     const iconName = item.icon
                       .split("-")
                       .map(
@@ -53,8 +125,11 @@ export default function HomePage() {
                   })()}
               </button>
               <span
-                className="text-base text-center font-bold"
-                style={{ color: "var(--text-primary)" }}
+                className="text-base text-center font-bold transition-opacity duration-300"
+                style={{
+                  color: "var(--text-primary)",
+                  opacity: showText[index] ? 1 : 0,
+                }}
               >
                 {item.name}
               </span>

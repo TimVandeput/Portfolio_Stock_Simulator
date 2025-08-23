@@ -60,7 +60,7 @@ export default function LoginClient() {
       setUsername("");
       setPassword("");
 
-      // Redirect to homepage after login
+      sessionStorage.setItem("fromLogin", "true");
       router.push("/home");
     } catch (error: any) {
       const errorMessage =
