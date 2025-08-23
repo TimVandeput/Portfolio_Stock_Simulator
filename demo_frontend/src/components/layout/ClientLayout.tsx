@@ -31,7 +31,7 @@ export default function ClientLayout({
   }, []);
 
   const handleLogoutClick = () => {
-    router.prefetch("/login");
+    router.prefetch("/");
     setShowConfirmation(true);
   };
 
@@ -41,7 +41,7 @@ export default function ClientLayout({
     setIsLoggingOut(true);
     try {
       await logout();
-      router.replace("/login");
+      router.replace("/");
     } catch {
       setIsLoggingOut(false);
       setShowConfirmation(false);

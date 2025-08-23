@@ -38,7 +38,7 @@ export default function NoAccessModal({
 
   const handleButtonClick = () => {
     if (accessType === "login") {
-      router.push("/login");
+      router.push("/");
     } else {
       onClose();
     }
