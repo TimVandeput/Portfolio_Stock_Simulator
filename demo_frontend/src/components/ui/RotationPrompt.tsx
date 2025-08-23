@@ -6,13 +6,13 @@ export default function RotationPrompt() {
   return (
     <div
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 landscape:flex portrait:hidden"
-      style={{ 
+      style={{
         background: "var(--bg-primary)",
-        color: "var(--text-primary)"
+        color: "var(--text-primary)",
       }}
     >
-      <RotateCcw 
-        className="w-16 h-16 mb-4 animate-pulse" 
+      <RotateCcw
+        className="w-16 h-16 mb-4 animate-pulse"
         style={{ color: "var(--text-primary)" }}
       />
       <h2 className="text-xl font-bold mb-2 text-center">
