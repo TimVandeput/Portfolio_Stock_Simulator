@@ -44,7 +44,6 @@ export default function ClientLayout({
   };
 
   useEffect(() => {
-    // On mount, read cookie for desktop setting
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -64,10 +63,10 @@ export default function ClientLayout({
       const mobile = window.matchMedia("(max-width: 767px)").matches;
       setIsMobile(mobile);
       if (mobile) {
-        setDesktopTrailEnabled(cursorTrailEnabled); // Save desktop setting
-        setCursorTrailEnabled(false); // Force off on mobile
+        setDesktopTrailEnabled(cursorTrailEnabled);
+        setCursorTrailEnabled(false);
       } else {
-        setCursorTrailEnabled(desktopTrailEnabled); // Restore desktop setting
+        setCursorTrailEnabled(desktopTrailEnabled);
       }
     };
     checkMobile();

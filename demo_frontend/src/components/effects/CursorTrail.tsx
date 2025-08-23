@@ -55,7 +55,7 @@ export default function CursorTrail() {
       fadeTimeout = setTimeout(() => {
         isMoving = false;
         dots.forEach((dot) => (dot.style.opacity = "0"));
-      }, 150);
+      }, 80);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
