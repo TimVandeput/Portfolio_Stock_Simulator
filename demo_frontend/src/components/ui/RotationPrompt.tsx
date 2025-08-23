@@ -5,7 +5,7 @@ import { RotateCcw } from "lucide-react";
 export default function RotationPrompt() {
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 landscape:flex portrait:hidden"
+      className="fixed inset-0 z-[9999] hidden max-md:landscape:flex flex-col items-center justify-center p-4"
       style={{
         background: "var(--bg-primary)",
         color: "var(--text-primary)",
