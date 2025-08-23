@@ -126,8 +126,11 @@ export default function LoginClient() {
 
   return (
     <div
-      className="login-container flex-1 w-full flex items-center justify-center font-sans px-6 py-6"
-      style={{ backgroundColor: "var(--bg-primary)" }}
+      className="login-container w-full h-full flex items-center justify-center font-sans px-6 py-1"
+      style={{
+        backgroundColor: "var(--bg-primary)",
+        minHeight: "calc(100vh - 8.5rem)",
+      }}
     >
       <div style={{ perspective: "1000px" }}>
         <div
@@ -148,7 +151,7 @@ export default function LoginClient() {
               handleLoginSubmit();
             }}
             className={`
-              login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
+              login-card absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
               transition-shadow duration-500
               ${isFlipped ? "!shadow-none" : ""}
@@ -183,7 +186,7 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col flex-1">
+            <div className="mt-3 sm:mt-5 flex flex-col flex-1">
               <NeumorphicInput
                 type="text"
                 placeholder="Username"
@@ -232,7 +235,7 @@ export default function LoginClient() {
               handleRegisterSubmit();
             }}
             className={`
-              login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
+              login-card absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
               transition-shadow duration-500
               ${isFlipped ? "" : "!shadow-none"}
@@ -267,7 +270,7 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col flex-1">
+            <div className="mt-3 sm:mt-5 flex flex-col flex-1">
               <NeumorphicInput
                 type="text"
                 placeholder="Username"
