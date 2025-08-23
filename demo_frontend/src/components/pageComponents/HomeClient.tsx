@@ -108,16 +108,16 @@ export default function HomeClient() {
         >
           <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
             <div
-              className="grid gap-2 sm:gap-3 lg:gap-4 w-full"
+              className="grid gap-4 sm:gap-3 lg:gap-4 xl:gap-6 w-full"
               style={{
-                gridTemplateColumns: `repeat(${columns}, minmax(80px, 1fr))`,
+                gridTemplateColumns: `repeat(${columns}, minmax(60px, 1fr))`,
                 aspectRatio: "1",
               }}
             >
               {dashboardItems.map((item: NavItem, index: number) => (
                 <div
                   key={item.href}
-                  className="flex flex-col items-center gap-2 sm:gap-3"
+                  className="flex flex-col items-center gap-1"
                   style={{
                     transform:
                       animateFromLogin && !buttonAnimations[index]
@@ -130,7 +130,7 @@ export default function HomeClient() {
                   }}
                 >
                   <button
-                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full max-w-48 rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
+                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full max-w-32 sm:max-w-36 lg:max-w-48 rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
                     style={{ color: "var(--btn-text)", fontWeight: "bold" }}
                     onClick={() => router.push(item.href)}
                   >
@@ -165,7 +165,7 @@ export default function HomeClient() {
                       })()}
                   </button>
                   <span
-                    className="text-sm sm:text-base text-center font-bold transition-opacity duration-300"
+                    className="text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"
                     style={{
                       color: "var(--text-primary)",
                       opacity: animateFromLogin ? (showText[index] ? 1 : 0) : 1,
