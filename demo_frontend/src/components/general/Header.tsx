@@ -58,7 +58,7 @@ export default function Header({
 
   const filteredNavItems = filterNavItemsByRole(navItems, role);
 
-  const hideLogout = pathname === "/login";
+  const hideLogout = pathname === "/";
   const hideNav = pathname === "/home";
   const hideHamburger = pathname === "/home";
   const headerRef = useRef<HTMLElement | null>(null);

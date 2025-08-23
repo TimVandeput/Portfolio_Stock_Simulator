@@ -88,7 +88,7 @@ export default function ClientLayout({
   }, [cursorTrailEnabled, isMobile]);
 
   useEffect(() => {
-    if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
+    if (pathname === "/" && (isLoggingOut || showConfirmation)) {
       setIsLoggingOut(false);
       setShowConfirmation(false);
     }
