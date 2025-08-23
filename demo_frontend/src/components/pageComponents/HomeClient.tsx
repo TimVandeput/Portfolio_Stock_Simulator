@@ -103,7 +103,7 @@ export default function HomeClient() {
         />
       ) : (
         <div
-          className="fixed inset-0 flex flex-col items-center justify-center w-full px-4 overflow-hidden"
+          className="h-full flex flex-col items-center justify-center w-full px-4 py-4"
           style={{ background: "var(--bg-primary)" }}
         >
           <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
@@ -111,7 +111,10 @@ export default function HomeClient() {
               className="grid gap-4 sm:gap-3 lg:gap-4 xl:gap-6 w-full"
               style={{
                 gridTemplateColumns: `repeat(${columns}, minmax(60px, 1fr))`,
-                aspectRatio: "1",
+                gridTemplateRows: `repeat(${Math.ceil(
+                  dashboardItems.length / columns
+                )}, minmax(60px, auto))`,
+                maxHeight: "min(80vh, 600px)",
               }}
             >
               {dashboardItems.map((item: NavItem, index: number) => (
