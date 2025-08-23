@@ -60,9 +60,8 @@ export default function LoginClient() {
       setUsername("");
       setPassword("");
 
-      setTimeout(() => {
-        router.push("/about");
-      }, 2000);
+      // Redirect to homepage after login
+      router.push("/home");
     } catch (error: any) {
       const errorMessage =
         error?.message ||
@@ -128,7 +127,7 @@ export default function LoginClient() {
         <div
           className={`
             relative
-            w-[340px] h-[492px]
+            w-[340px] h-[460px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
