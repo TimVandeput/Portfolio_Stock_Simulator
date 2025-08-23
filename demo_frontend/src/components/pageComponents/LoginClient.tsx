@@ -60,8 +60,10 @@ export default function LoginClient() {
       setUsername("");
       setPassword("");
 
-      sessionStorage.setItem("fromLogin", "true");
-      router.push("/home");
+      setTimeout(() => {
+        sessionStorage.setItem("fromLogin", "true");
+        router.push("/home");
+      }, 2000);
     } catch (error: any) {
       const errorMessage =
         error?.message ||
