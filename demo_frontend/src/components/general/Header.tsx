@@ -11,6 +11,7 @@ import LogoutButton from "@/components/button/LogoutButton";
 import type { NavItem } from "@/types";
 
 export const navItems: NavItem[] = [
+  { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
   { name: "GAME", href: "/game", icon: "gamepad-2" },
   { name: "A.I.", href: "/ai", icon: "bot" },
   { name: "ABOUT", href: "/about", icon: "info" },

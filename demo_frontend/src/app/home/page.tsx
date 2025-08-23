@@ -13,20 +13,22 @@ export default function HomePage() {
     typeof window !== "undefined" &&
     sessionStorage.getItem("fromLogin") === "true";
 
+  const dashboardItems = navItems.filter((item) => !item.hideOnDashboard);
+
   const [animateFromLogin, setAnimateFromLogin] = useState(fromLogin);
   const [buttonAnimations, setButtonAnimations] = useState<boolean[]>(
     fromLogin
-      ? new Array(navItems.length).fill(false)
-      : new Array(navItems.length).fill(true)
+      ? new Array(dashboardItems.length).fill(false)
+      : new Array(dashboardItems.length).fill(true)
   );
   const [showText, setShowText] = useState<boolean[]>(
     fromLogin
-      ? new Array(navItems.length).fill(false)
-      : new Array(navItems.length).fill(true)
+      ? new Array(dashboardItems.length).fill(false)
+      : new Array(dashboardItems.length).fill(true)
   );
   const hasAnimated = useRef(false);
 
-  const itemCount = navItems.length;
+  const itemCount = dashboardItems.length;
   const columns = Math.ceil(Math.sqrt(itemCount));
   const rows = Math.ceil(itemCount / columns);
 
@@ -40,7 +42,7 @@ export default function HomePage() {
       sessionStorage.removeItem("fromLogin");
 
       setTimeout(() => {
-        navItems.forEach((_, index) => {
+        dashboardItems.forEach((_, index) => {
           setTimeout(() => {
             setButtonAnimations((prev) => {
               const newState = [...prev];
@@ -88,7 +90,7 @@ export default function HomePage() {
             aspectRatio: "1",
           }}
         >
-          {navItems.map((item: NavItem, index: number) => (
+          {dashboardItems.map((item: NavItem, index: number) => (
             <div
               key={item.href}
               className="flex flex-col items-center gap-2 sm:gap-3"
@@ -118,7 +120,7 @@ export default function HomePage() {
                     const IconComponent = (LucideIcons as any)[iconName];
                     return IconComponent ? (
                       <IconComponent
-                        size={64}
+                        className="w-[80%] h-[80%]"
                         style={{ color: "var(--text-primary)" }}
                       />
                     ) : null;

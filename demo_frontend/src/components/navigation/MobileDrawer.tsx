@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface NavItem {
   name: string;
   href: string;
+  hideOnDashboard?: boolean;
 }
 
 interface MobileDrawerProps {
@@ -22,6 +24,12 @@ export default function MobileDrawer({
 }: MobileDrawerProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const pathname = usePathname();
+  const isDashboard = pathname === "/home";
+
+  const filteredNavItems = navItems.filter(
+    (item) => !(isDashboard && item.hideOnDashboard)
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -98,7 +106,7 @@ export default function MobileDrawer({
 
         {!hideNav && (
           <nav className="flex flex-col gap-4">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 href={item.href}
                 key={item.name}
