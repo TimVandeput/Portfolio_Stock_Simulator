@@ -115,7 +115,10 @@ export default function Header({
     <header
       ref={headerRef}
       className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
-      style={{ background: "var(--bg-surface)" }}
+      style={{
+        background: "var(--bg-surface)",
+        minHeight: "4rem",
+      }}
     >
       <div className="relative w-full h-full flex items-center">
         {!hideLogout && !hideHamburger && (

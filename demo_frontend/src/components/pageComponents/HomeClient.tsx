@@ -133,8 +133,13 @@ export default function HomeClient() {
                   }}
                 >
                   <button
-                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full max-w-32 sm:max-w-36 lg:max-w-48 rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
-                    style={{ color: "var(--btn-text)", fontWeight: "bold" }}
+                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
+                    style={{
+                      color: "var(--btn-text)",
+                      fontWeight: "bold",
+                      maxWidth: "min(35vw, 30vh, 192px)",
+                      maxHeight: "min(35vw, 30vh, 192px)",
+                    }}
                     onClick={() => router.push(item.href)}
                   >
                     {item.icon &&
