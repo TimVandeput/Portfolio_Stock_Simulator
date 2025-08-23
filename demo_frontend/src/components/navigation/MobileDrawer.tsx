@@ -1,25 +1,35 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface NavItem {
   name: string;
   href: string;
+  hideOnDashboard?: boolean;
 }
 
 interface MobileDrawerProps {
   isOpen: boolean;
   navItems: NavItem[];
   onClose: () => void;
+  hideNav?: boolean;
 }
 
 export default function MobileDrawer({
   isOpen,
   navItems,
   onClose,
+  hideNav = false,
 }: MobileDrawerProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const pathname = usePathname();
+  const isDashboard = pathname === "/home";
+
+  const filteredNavItems = navItems.filter(
+    (item) => !(isDashboard && item.hideOnDashboard)
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -94,20 +104,22 @@ export default function MobileDrawer({
           </button>
         </div>
 
-        <nav className="flex flex-col gap-4">
-          {navItems.map((item) => (
-            <Link
-              href={item.href}
-              key={item.name}
-              onClick={onClose}
-              className="no-underline"
-            >
-              <span className="neu-button neumorphic-button block p-3 rounded-xl font-bold text-center">
-                {item.name}
-              </span>
-            </Link>
-          ))}
-        </nav>
+        {!hideNav && (
+          <nav className="flex flex-col gap-4">
+            {filteredNavItems.map((item) => (
+              <Link
+                href={item.href}
+                key={item.name}
+                onClick={onClose}
+                className="no-underline"
+              >
+                <span className="neu-button neumorphic-button block p-3 rounded-xl font-bold text-center">
+                  {item.name}
+                </span>
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
     </div>
   );

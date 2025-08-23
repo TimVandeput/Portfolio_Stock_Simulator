@@ -8,11 +8,13 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
+import type { NavItem } from "@/types";
 
-const navItems = [
-  { name: "GAME", href: "/game" },
-  { name: "A.I.", href: "/ai" },
-  { name: "ABOUT", href: "/about" },
+export const navItems: NavItem[] = [
+  { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
+  { name: "GAME", href: "/game", icon: "gamepad-2" },
+  { name: "A.I.", href: "/ai", icon: "bot" },
+  { name: "ABOUT", href: "/about", icon: "info" },
 ];
 
 export default function Header({
@@ -32,6 +34,8 @@ export default function Header({
   const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
   const hideLogout = pathname === "/login";
+  const hideNav = pathname === "/home";
+  const hideHamburger = pathname === "/home";
   const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -89,12 +93,14 @@ export default function Header({
       style={{ background: "var(--bg-surface)" }}
     >
       <div className="relative w-full h-full flex items-center">
-        {!hideLogout && <HamburgerButton onClick={() => setOpen(true)} />}
+        {!hideLogout && !hideHamburger && (
+          <HamburgerButton onClick={() => setOpen(true)} />
+        )}
 
         <div className="flex-1 flex justify-center">
           <DesktopNav
             navItems={navItems}
-            hideNav={hideLogout}
+            hideNav={hideLogout || hideNav}
             maxBtnWidth={maxBtnWidth}
             onWidthCalculation={handleWidthCalculation}
           />
@@ -131,6 +137,7 @@ export default function Header({
       <MobileDrawer
         isOpen={open && !hideLogout}
         navItems={navItems}
+        hideNav={hideLogout || hideNav}
         onClose={() => setOpen(false)}
       />
     </header>

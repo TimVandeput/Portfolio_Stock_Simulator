@@ -1,9 +1,11 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   name: string;
   href: string;
+  hideOnDashboard?: boolean;
 }
 
 interface DesktopNavProps {
@@ -20,6 +22,12 @@ export default function DesktopNav({
   onWidthCalculation,
 }: DesktopNavProps) {
   const desktopNavRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
+  const isDashboard = pathname === "/home";
+
+  const filteredNavItems = navItems.filter(
+    (item) => !(isDashboard && item.hideOnDashboard)
+  );
 
   useEffect(() => {
     if (desktopNavRef.current) {
@@ -34,7 +42,7 @@ export default function DesktopNav({
         hideNav ? "opacity-0 pointer-events-none" : ""
       }`}
     >
-      {navItems.map((item) => (
+      {filteredNavItems.map((item) => (
         <Link href={item.href} key={item.name} className="no-underline">
           <button
             data-eq

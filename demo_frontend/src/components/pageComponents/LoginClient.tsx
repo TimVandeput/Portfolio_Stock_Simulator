@@ -61,7 +61,8 @@ export default function LoginClient() {
       setPassword("");
 
       setTimeout(() => {
-        router.push("/about");
+        sessionStorage.setItem("fromLogin", "true");
+        router.push("/home");
       }, 2000);
     } catch (error: any) {
       const errorMessage =
@@ -128,7 +129,7 @@ export default function LoginClient() {
         <div
           className={`
             relative
-            w-[340px] h-[492px]
+            w-[340px] h-[460px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
