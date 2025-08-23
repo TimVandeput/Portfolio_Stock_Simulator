@@ -10,7 +10,6 @@ interface ConfirmationModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmButtonClass?: string;
   confirmDisabled?: boolean;
   cancelDisabled?: boolean;
 }
@@ -23,7 +22,6 @@ export default function ConfirmationModal({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
-  confirmButtonClass = "bg-red-500 hover:bg-red-600 text-white",
   confirmDisabled = false,
   cancelDisabled = false,
 }: ConfirmationModalProps) {
@@ -85,7 +83,7 @@ export default function ConfirmationModal({
                 ? "opacity-50 cursor-not-allowed"
                 : "active:translate-y-0.5 active:duration-75"
             }`}
-            style={{ background: '#ef4444', color: '#fff' }}
+            style={{ background: "#ef4444", color: "#fff" }}
           >
             {confirmText}
           </button>

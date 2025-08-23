@@ -19,8 +19,8 @@ export interface ApiErrorShape {
 
 export class ApiError extends Error {
   status: number;
-  body?: any;
-  constructor(status: number, message: string, body?: any) {
+  body?: unknown;
+  constructor(status: number, message: string, body?: unknown) {
     super(message);
     this.status = status;
     this.body = body;
@@ -66,14 +66,17 @@ export class HttpClient {
       }
     }
 
-    let body: any = undefined;
+    let body: unknown = undefined;
     try {
       body = await res.json();
     } catch {
       /* ignore */
     }
     const message =
-      body?.message || body?.error || res.statusText || "Request failed";
+      (body as any)?.message ||
+      (body as any)?.error ||
+      res.statusText ||
+      "Request failed";
     throw new ApiError(res.status, message, body);
   }
 

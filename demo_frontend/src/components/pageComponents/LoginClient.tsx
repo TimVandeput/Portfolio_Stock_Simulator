@@ -64,11 +64,13 @@ export default function LoginClient() {
         sessionStorage.setItem("fromLogin", "true");
         router.push("/home");
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error?.message ||
-        error?.body?.message ||
-        "Login failed. Please check your credentials and try again.";
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && "message" in error
+          ? String((error as any).message)
+          : "Login failed. Please check your credentials and try again.";
       setError(errorMessage);
     } finally {
       setIsLoggingIn(false);
@@ -109,11 +111,13 @@ export default function LoginClient() {
         setIsFlipped(false);
         setRStatus(null);
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error?.message ||
-        error?.body?.message ||
-        "Registration failed. Please try again.";
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && "message" in error
+          ? String((error as any).message)
+          : "Registration failed. Please try again.";
       setRStatus({ message: errorMessage, type: "error" });
     } finally {
       setIsRegistering(false);
