@@ -8,10 +8,12 @@ body {
 .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0),
     -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
+  transition: box-shadow 0.2s ease-in-out;
 }
 .dark .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028),
     -5px 5px 10px var(--shadow-footer-above2, #363a4c);
+  transition: box-shadow 0.2s ease-in-out;
 }
 /* Custom variables for footer shadow above */
 :root {
@@ -37,13 +39,16 @@ body {
 /* Login card shadow utility */
 .login-card {
   box-shadow: var(--shadow-large);
+  transition: box-shadow 0.2s ease-in-out;
 }
-/* Header and Footer Shadows (conventional utility classes) */
+/* Header and Footer Shadows  */
 .header-shadow {
   box-shadow: 10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
 .footer-shadow {
   box-shadow: 10px -10px 15px #c2c8d0, -5px 5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
 @import "tailwindcss";
 

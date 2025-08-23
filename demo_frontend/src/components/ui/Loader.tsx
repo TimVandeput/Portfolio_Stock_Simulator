@@ -31,7 +31,7 @@ export default function Loader({ cover = "page", className }: LoaderProps) {
   if (cover === "content") {
     return (
       <div
-        className={`absolute inset-0 z-[999] ${overlayClasses}`}
+        className={`absolute inset-0 z-[5] ${overlayClasses}`}
         style={styleOverlay}
       >
         {content}

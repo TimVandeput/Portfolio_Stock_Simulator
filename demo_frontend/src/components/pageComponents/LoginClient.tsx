@@ -7,6 +7,7 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import RoleSelector from "@/components/button/RoleSelector";
+import Loader from "@/components/ui/Loader";
 import { register, login } from "@/lib/api/auth";
 import type { RegisterRequest, LoginRequest, Role } from "@/types";
 
@@ -20,6 +21,7 @@ export default function LoginClient() {
   const [success, setSuccess] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role>("ROLE_USER");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
 
   const [rUser, setRUser] = useState("");
   const [rPass, setRPass] = useState("");
@@ -61,8 +63,9 @@ export default function LoginClient() {
       setPassword("");
 
       setTimeout(() => {
+        setShowLoader(true);
         sessionStorage.setItem("fromLogin", "true");
-        router.push("/home");
+        router.replace("/home");
       }, 2000);
     } catch (error: unknown) {
       const errorMessage =
@@ -319,6 +322,8 @@ export default function LoginClient() {
           </form>
         </div>
       </div>
+      
+      {showLoader && <Loader />}
     </div>
   );
 }
