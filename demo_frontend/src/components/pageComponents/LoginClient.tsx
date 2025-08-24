@@ -14,7 +14,7 @@ import { getErrorMessage } from "@/lib/utils/errorHandling";
 
 export default function LoginClient() {
   const router = useRouter();
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(true);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -135,7 +135,7 @@ export default function LoginClient() {
         <div
           className={`
             relative
-            w-[340px] h-[460px] sm:w-[320px] xs:w-[300px]
+            w-[340px] h-[500px] sm:w-[320px] sm:h-[480px] xs:w-[300px] xs:h-[460px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
@@ -198,13 +198,15 @@ export default function LoginClient() {
               />
 
               <div className="mt-auto flex flex-col">
-                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
-                  {error && <StatusMessage message={error} className="mb-3" />}
+                <div className="mb-2 h-[54px] overflow-hidden flex items-center">
+                  {error && (
+                    <StatusMessage message={error} className="mb-1 w-full" />
+                  )}
                   {success && (
                     <StatusMessage
                       message={success}
                       type="success"
-                      className="mb-1"
+                      className="mb-1 w-full"
                     />
                   )}
                 </div>
@@ -289,12 +291,12 @@ export default function LoginClient() {
               />
 
               <div className="mt-auto flex flex-col">
-                <div className="mb-2 min-h-[20px] max-h-[60px] overflow-hidden">
+                <div className="mb-2 h-[54px] overflow-hidden flex items-center">
                   {rStatus && (
                     <StatusMessage
                       message={rStatus.message}
                       type={rStatus.type}
-                      className="mb-3"
+                      className="mb-1 w-full"
                     />
                   )}
                 </div>

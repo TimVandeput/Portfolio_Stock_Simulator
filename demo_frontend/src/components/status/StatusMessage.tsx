@@ -12,7 +12,7 @@ export default function StatusMessage({
   return (
     <div
       key={`${message}-${type}`}
-      className={`text-sm text-center min-h-5 transition-opacity duration-200 ${
+      className={`text-xs leading-tight text-center min-h-5 transition-opacity duration-200 ${
         type === "error" ? "text-error" : "text-success"
       } ${className}`}
     >
