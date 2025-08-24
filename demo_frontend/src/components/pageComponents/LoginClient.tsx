@@ -139,7 +139,7 @@ export default function LoginClient() {
         <div
           className={`
             relative
-            w-[340px] h-[460px]
+            w-[340px] h-[460px] sm:w-[320px] xs:w-[300px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
@@ -322,7 +322,7 @@ export default function LoginClient() {
           </form>
         </div>
       </div>
-      
+
       {showLoader && <Loader />}
     </div>
   );
