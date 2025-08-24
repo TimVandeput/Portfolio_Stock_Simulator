@@ -268,3 +268,120 @@ body {
     margin-bottom: 0.25rem;
   }
 }
+
+/* Additional utility classes */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-primary {
+  background: var(--bg-primary);
+}
+
+.bg-surface {
+  background: var(--bg-surface);
+}
+
+.modal-title {
+  color: var(--modal-title);
+}
+
+.modal-text {
+  color: var(--modal-text);
+}
+
+.icon-danger {
+  color: var(--logout-icon);
+}
+
+.text-error {
+  color: var(--logout-icon);
+}
+
+.btn-danger {
+  background: var(--confirm-btn);
+  color: #fff;
+}
+
+.text-success {
+  color: var(--success-text);
+}
+
+/* Login specific styles */
+.login-container {
+  background: var(--bg-primary);
+}
+
+.login-perspective {
+  perspective: 1000px;
+}
+
+.login-card-flip {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.login-card-flipped {
+  transform: rotateY(180deg);
+}
+
+.login-card-front,
+.login-card-back {
+  backface-visibility: hidden;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-large);
+}
+
+.login-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Dashboard/Home specific styles */
+.dashboard-container {
+  background: var(--bg-primary);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid {
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid {
+    gap: 1.5rem;
+  }
+}
+
+/* Page component utilities */
+.page-container {
+  background: var(--bg-primary);
+}
+
+.page-card {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-large);
+}
+
+.page-title {
+  color: var(--text-secondary);
+}
+
+.page-text {
+  color: var(--text-primary);
+}

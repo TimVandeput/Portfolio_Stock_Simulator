@@ -12,10 +12,9 @@ export default function StatusMessage({
   return (
     <div
       key={`${message}-${type}`}
-      className={`text-sm text-center min-h-5 transition-opacity duration-200 ${className}`}
-      style={{
-        color: type === "error" ? "var(--logout-icon)" : "var(--success-text)",
-      }}
+      className={`text-sm text-center min-h-5 transition-opacity duration-200 ${
+        type === "error" ? "text-error" : "text-success"
+      } ${className}`}
     >
       {message ? message : <span className="opacity-0">placeholder</span>}
     </div>

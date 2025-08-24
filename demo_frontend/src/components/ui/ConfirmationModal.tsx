@@ -78,12 +78,11 @@ export default function ConfirmationModal({
           <button
             onClick={confirmDisabled ? undefined : onConfirm}
             disabled={confirmDisabled}
-            className={`neu-button neumorphic-button px-8 py-3 rounded-xl font-medium transition-all duration-150 ${
+            className={`neu-button neumorphic-button btn-danger px-8 py-3 rounded-xl font-medium transition-all duration-150 ${
               confirmDisabled
                 ? "opacity-50 cursor-not-allowed"
                 : "active:translate-y-0.5 active:duration-75"
             }`}
-            style={{ background: "#ef4444", color: "#fff" }}
           >
             {confirmText}
           </button>

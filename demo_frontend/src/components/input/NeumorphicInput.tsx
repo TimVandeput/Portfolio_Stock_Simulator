@@ -22,10 +22,6 @@ export default function NeumorphicInput({
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
       className={`neumorphic-input p-3 rounded-xl border-none focus:outline-none ${className}`}
-      style={{
-        boxShadow: "var(--shadow-neu-inset)",
-        color: "var(--input-text)",
-      }}
     />
   );
 }

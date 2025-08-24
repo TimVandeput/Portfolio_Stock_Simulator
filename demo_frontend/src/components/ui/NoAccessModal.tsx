@@ -102,11 +102,7 @@ export default function NoAccessModal({
     >
       <div className="modal-base rounded-2xl p-8 max-w-sm w-full mx-auto shadow-lg">
         <div className="flex items-center gap-3 mb-4">
-          <AlertCircle
-            size={24}
-            style={{ color: "var(--logout-icon)" }}
-            aria-hidden="true"
-          />
+          <AlertCircle size={24} className="icon-danger" aria-hidden="true" />
           <h2 id="modal-title" className="modal-title text-xl font-bold">
             {modalTitle}
           </h2>

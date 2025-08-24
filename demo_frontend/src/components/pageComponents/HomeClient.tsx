@@ -102,13 +102,10 @@ export default function HomeClient() {
           onClose={() => setShowModal(false)}
         />
       ) : (
-        <div
-          className="h-full flex flex-col items-center justify-center w-full px-4 py-4"
-          style={{ background: "var(--bg-primary)" }}
-        >
+        <div className="dashboard-container h-full flex flex-col items-center justify-center w-full px-4 py-4">
           <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
             <div
-              className="grid gap-4 sm:gap-3 lg:gap-4 xl:gap-6 w-full"
+              className="dashboard-grid w-full"
               style={{
                 gridTemplateColumns: `repeat(${columns}, minmax(60px, 1fr))`,
                 gridTemplateRows: `repeat(${Math.ceil(
@@ -145,15 +142,13 @@ export default function HomeClient() {
                     {item.icon && (
                       <DynamicIcon
                         iconName={item.icon}
-                        className="w-[80%] h-[80%]"
-                        style={{ color: "var(--text-primary)" }}
+                        className="w-[80%] h-[80%] text-primary"
                       />
                     )}
                   </button>
                   <span
-                    className="text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"
+                    className="text-primary text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"
                     style={{
-                      color: "var(--text-primary)",
                       opacity: animateFromLogin ? (showText[index] ? 1 : 0) : 1,
                     }}
                   >

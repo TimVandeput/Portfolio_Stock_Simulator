@@ -128,11 +128,10 @@ export default function LoginClient() {
     <div
       className="login-container w-full h-full flex items-center justify-center font-sans px-6 py-1"
       style={{
-        backgroundColor: "var(--bg-primary)",
         minHeight: "calc(100vh - 8.5rem)",
       }}
     >
-      <div style={{ perspective: "1000px" }}>
+      <div className="login-perspective">
         <div
           className={`
             relative
@@ -142,7 +141,6 @@ export default function LoginClient() {
             rounded-2xl
             ${isFlipped ? "rotate-y-180" : ""}
           `}
-          style={{ transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
         >
           {/* LOGIN SIDE */}
           <form
@@ -151,21 +149,14 @@ export default function LoginClient() {
               handleLoginSubmit();
             }}
             className={`
-              login-card absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
+              login-card login-card-front absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
               transition-shadow duration-500
               ${isFlipped ? "!shadow-none" : ""}
             `}
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              boxShadow: isFlipped ? "none" : "var(--shadow-large)",
-            }}
           >
             <div className="flex justify-between items-start">
-              <h1
-                className="login-title text-2xl font-bold"
-                style={{ color: "var(--text-secondary)" }}
-              >
+              <h1 className="login-title text-2xl font-bold text-secondary">
                 Login
               </h1>
               <div
