@@ -209,71 +209,71 @@ body {
   --bg-primary: #2a2d3a;
 }
 
-/* smallest phones */
-@media (max-width: 320px) {
-  /* Force card size */
+/* Small phones */
+@media (max-width: 350px) {
+  /* Card container size */
   .login-container > div > div {
     width: 260px !important;
     height: 380px !important;
   }
 
-  /* Force card padding */
+  /* Card padding */
   .login-card {
     padding: 12px 16px !important;
   }
 
-  /* Force ALL input sizes */
+  /* Input field sizes */
   input.neumorphic-input {
     padding: 8px 12px !important;
     font-size: 14px !important;
   }
 
-  /* Force password input right padding */
+  /* Password input with icon */
   input.neumorphic-input.pr-12 {
     padding-right: 32px !important;
   }
 
-  /* Force button in password field */
+  /* Password toggle button position */
   .password-toggle-button {
     right: 8px !important;
   }
 
-  /* Force role selector size */
+  /* Role selector container */
   div[class*="bg-[var(--bg-surface)]"] {
     max-width: 220px !important;
     height: 32px !important;
     padding: 2px !important;
   }
 
-  /* Force role buttons */
+  /* Role selector buttons */
   div[class*="bg-[var(--bg-surface)]"] button {
     padding: 4px 8px !important;
     font-size: 12px !important;
   }
 
-  /* Force main button */
+  /* Main button */
   button.neumorphic-button {
     padding: 8px 12px !important;
     font-size: 14px !important;
   }
 
-  /* Force title size */
+  /* Title size */
   h1.login-title {
     font-size: 18px !important;
   }
 
-  /* Force link size */
+  /* Link size */
   div.login-link {
     font-size: 12px !important;
   }
 
-  /* Force role text */
+  /* Role description text */
   p.role-selector-title {
     font-size: 11px !important;
     margin-top: 8px !important;
   }
 
-  /* Force spacing */
+  /* Element spacing */
   .my-2 {
     margin-top: 4px !important;
     margin-bottom: 4px !important;
