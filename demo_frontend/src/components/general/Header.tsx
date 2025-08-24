@@ -22,6 +22,7 @@ export const navItems: NavItem[] = [
   },
   { name: "A.I.", href: "/ai", icon: "bot", allowedRoles: ["ROLE_USER"] },
   { name: "ABOUT", href: "/about", icon: "info" },
+  { name: "MYSTERY", href: "/mystery", icon: "circle-question-mark" },
 ];
 
 export function filterNavItemsByRole(

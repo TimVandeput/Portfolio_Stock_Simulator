@@ -28,15 +28,27 @@ export default function HomeClient() {
 
   const [animateFromLogin] = useState(fromLogin);
   const [buttonAnimations, setButtonAnimations] = useState<boolean[]>(
-    fromLogin
-      ? new Array(dashboardItems.length).fill(false)
-      : new Array(dashboardItems.length).fill(true)
+    new Array(dashboardItems.length).fill(fromLogin ? false : true)
   );
   const [showText, setShowText] = useState<boolean[]>(
-    fromLogin
-      ? new Array(dashboardItems.length).fill(false)
-      : new Array(dashboardItems.length).fill(true)
+    new Array(dashboardItems.length).fill(fromLogin ? false : true)
   );
+
+  const [animationStarted, setAnimationStarted] = useState(false);
+
+  const initialDelay = 500;
+  const stagger = 350;
+  const textOffset = 450;
+
+  useEffect(() => {
+    setButtonAnimations(
+      new Array(dashboardItems.length).fill(fromLogin ? false : true)
+    );
+    setShowText(
+      new Array(dashboardItems.length).fill(fromLogin ? false : true)
+    );
+    setAnimationStarted(false);
+  }, [dashboardItems.length, fromLogin]);
   const hasAnimated = useRef(false);
 
   const itemCount = dashboardItems.length;
@@ -53,31 +65,15 @@ export default function HomeClient() {
 
     const fromLoginStorage = sessionStorage.getItem("fromLogin") === "true";
 
-    if (fromLoginStorage) {
-      hasAnimated.current = true;
-      sessionStorage.removeItem("fromLogin");
+    if (!fromLoginStorage || dashboardItems.length === 0) return;
 
-      setTimeout(() => {
-        dashboardItems.forEach((_, index) => {
-          setTimeout(() => {
-            setButtonAnimations((prev) => {
-              const newState = [...prev];
-              newState[index] = true;
-              return newState;
-            });
+    hasAnimated.current = true;
+    sessionStorage.removeItem("fromLogin");
 
-            setTimeout(() => {
-              setShowText((prev) => {
-                const newState = [...prev];
-                newState[index] = true;
-                return newState;
-              });
-            }, 1500);
-          }, index * 800);
-        });
-      }, 500);
-    }
-  }, [dashboardItems]);
+    setTimeout(() => {
+      setAnimationStarted(true);
+    }, initialDelay);
+  }, [dashboardItems.length]);
 
   const getRandomStartPosition = (index: number) => {
     const directions = [
@@ -123,13 +119,14 @@ export default function HomeClient() {
                   className="flex flex-col items-center gap-1"
                   style={{
                     transform:
-                      animateFromLogin && !buttonAnimations[index]
+                      animateFromLogin && !animationStarted
                         ? getRandomStartPosition(index)
                         : "translate(0, 0)",
-                    transition:
-                      "transform 3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    opacity:
-                      animateFromLogin && !buttonAnimations[index] ? 0.7 : 1,
+                    transition: `transform 1900ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+                    transitionDelay: animationStarted
+                      ? `${index * stagger}ms`
+                      : "0ms",
+                    opacity: animateFromLogin && !animationStarted ? 0.7 : 1,
                   }}
                 >
                   <button
@@ -150,9 +147,16 @@ export default function HomeClient() {
                     )}
                   </button>
                   <span
-                    className="text-primary text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"
+                    className="text-primary text-sm sm:text-base text-center font-bold transition-opacity duration-500 mt-2"
                     style={{
-                      opacity: animateFromLogin ? (showText[index] ? 1 : 0) : 1,
+                      opacity: animateFromLogin
+                        ? animationStarted
+                          ? 1
+                          : 0
+                        : 1,
+                      transitionDelay: animationStarted
+                        ? `${index * stagger + textOffset}ms`
+                        : "0ms",
                     }}
                   >
                     {item.name}
