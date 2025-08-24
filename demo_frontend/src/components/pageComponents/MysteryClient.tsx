@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import MysteryAdminForm from "./MysteryAdminForm";
-import MysteryUserForm from "./MysteryUserForm";
+import MysteryAdminForm from "../form/MysteryAdminForm";
+import MysteryUserForm from "../form/MysteryUserForm";
 import Loader from "@/components/ui/Loader";
 
 export default function MysteryClient() {

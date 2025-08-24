@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import MysteryAdminForm from "@/components/pageComponents/MysteryAdminForm";
+import MysteryAdminForm from "@/components/form/MysteryAdminForm";
 
 export const metadata: Metadata = {
   title: "Mystery Admin",
