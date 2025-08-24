@@ -1,6 +1,6 @@
 "use client";
 
-import { Lightbulb, LightbulbOff } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function ThemeToggle() {
@@ -13,9 +13,9 @@ export default function ThemeToggle() {
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
-        <Lightbulb size={20} style={{ color: "var(--text-secondary)" }} />
+        <Moon size={20} className="text-secondary" />
       ) : (
-        <LightbulbOff size={20} style={{ color: "var(--text-primary)" }} />
+        <Sun size={20} className="text-primary" />
       )}
     </button>
   );

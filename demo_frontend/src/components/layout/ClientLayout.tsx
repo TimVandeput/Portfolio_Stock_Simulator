@@ -6,10 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
+import RotationPrompt from "@/components/ui/RotationPrompt";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { logout } from "@/lib/api/auth";
+import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
+import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export default function ClientLayout({
   children,
@@ -22,11 +25,15 @@ export default function ClientLayout({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
-  const [desktopTrailEnabled, setDesktopTrailEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isSmallPhone, setIsSmallPhone] = useState(false);
+
+  useEffect(() => {
+    loadTokensFromStorage();
+  }, []);
 
   const handleLogoutClick = () => {
-    router.prefetch("/login");
+    router.prefetch("/");
     setShowConfirmation(true);
   };
 
@@ -36,7 +43,7 @@ export default function ClientLayout({
     setIsLoggingOut(true);
     try {
       await logout();
-      router.replace("/login");
+      router.replace("/");
     } catch {
       setIsLoggingOut(false);
       setShowConfirmation(false);
@@ -44,7 +51,6 @@ export default function ClientLayout({
   };
 
   useEffect(() => {
-    // On mount, read cookie for desktop setting
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -53,21 +59,25 @@ export default function ClientLayout({
     };
     const cookieValue = getCookie("cursorTrailEnabled");
     if (cookieValue === "true") {
-      setDesktopTrailEnabled(true);
       setCursorTrailEnabled(true);
     } else {
-      setDesktopTrailEnabled(false);
       setCursorTrailEnabled(false);
     }
 
     const checkMobile = () => {
-      const mobile = window.matchMedia("(max-width: 767px)").matches;
+      const mobile = window.matchMedia(BREAKPOINTS.MOBILE_DOWN).matches;
+      const smallPhone = window.matchMedia(
+        BREAKPOINTS.SMALL_PHONE_DOWN
+      ).matches;
       setIsMobile(mobile);
+      setIsSmallPhone(smallPhone);
       if (mobile) {
-        setDesktopTrailEnabled(cursorTrailEnabled); // Save desktop setting
-        setCursorTrailEnabled(false); // Force off on mobile
+        setCursorTrailEnabled(false);
       } else {
-        setCursorTrailEnabled(desktopTrailEnabled); // Restore desktop setting
+        const savedValue = getCookie("cursorTrailEnabled");
+        if (savedValue === "true") {
+          setCursorTrailEnabled(true);
+        }
       }
     };
     checkMobile();
@@ -80,12 +90,11 @@ export default function ClientLayout({
       document.cookie = `cursorTrailEnabled=${String(
         cursorTrailEnabled
       )}; path=/; max-age=${60 * 60 * 24 * 365}`;
-      setDesktopTrailEnabled(cursorTrailEnabled);
     }
   }, [cursorTrailEnabled, isMobile]);
 
   useEffect(() => {
-    if (pathname === "/login" && (isLoggingOut || showConfirmation)) {
+    if (pathname === "/" && (isLoggingOut || showConfirmation)) {
       setIsLoggingOut(false);
       setShowConfirmation(false);
     }
@@ -93,6 +102,7 @@ export default function ClientLayout({
 
   return (
     <ThemeProvider>
+      <RotationPrompt />
       {cursorTrailEnabled && <CursorTrail />}
       <Header
         onLogoutClick={handleLogoutClick}
@@ -113,7 +123,6 @@ export default function ClientLayout({
               cancelText="Cancel"
               onConfirm={handleConfirmLogout}
               onCancel={handleCancelLogout}
-              confirmButtonClass="bg-red-500 hover:bg-red-600 text-white"
               confirmDisabled={isLoggingOut}
               cancelDisabled={isLoggingOut}
             />
@@ -125,7 +134,7 @@ export default function ClientLayout({
         </div>
       </main>
 
-      <Footer />
+      {!isSmallPhone && <Footer />}
     </ThemeProvider>
   );
 }

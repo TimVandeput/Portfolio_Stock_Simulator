@@ -17,10 +17,15 @@ export interface ApiErrorShape {
   timestamp?: string;
 }
 
+interface ErrorResponse {
+  message?: string;
+  error?: string;
+}
+
 export class ApiError extends Error {
   status: number;
-  body?: any;
-  constructor(status: number, message: string, body?: any) {
+  body?: ErrorResponse;
+  constructor(status: number, message: string, body?: ErrorResponse) {
     super(message);
     this.status = status;
     this.body = body;
@@ -66,7 +71,7 @@ export class HttpClient {
       }
     }
 
-    let body: any = undefined;
+    let body: ErrorResponse = {};
     try {
       body = await res.json();
     } catch {

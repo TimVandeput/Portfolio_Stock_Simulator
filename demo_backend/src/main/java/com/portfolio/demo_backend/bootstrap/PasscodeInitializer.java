@@ -20,8 +20,28 @@ public class PasscodeInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (passcodeRepository.count() > 0)
-            return;
+        seedIfNeeded();
+    }
+
+    void seedIfNeeded() {
+        int attempts = 5;
+        while (attempts-- > 0) {
+            try {
+                if (passcodeRepository.count() > 0) {
+                    return;
+                }
+                break;
+            } catch (org.springframework.dao.DataAccessException e) {
+                log.warn("Passcode table not available yet (attempt {}), retrying...: {}", 6 - attempts,
+                        e.getMessage());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
 
         String raw = regProps.getPasscode();
         if (raw == null || raw.isBlank()) {
@@ -29,11 +49,15 @@ public class PasscodeInitializer implements CommandLineRunner {
             return;
         }
 
-        passcodeRepository.save(
-                Passcode.builder()
-                        .codeHash(passwordEncoder.encode(raw))
-                        .active(true)
-                        .build());
-        log.info("Seeded initial registration passcode.");
+        try {
+            passcodeRepository.save(
+                    Passcode.builder()
+                            .codeHash(passwordEncoder.encode(raw))
+                            .active(true)
+                            .build());
+            log.info("Seeded initial registration passcode.");
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.error("Failed to seed passcode after retries: {}", e.getMessage());
+        }
     }
 }

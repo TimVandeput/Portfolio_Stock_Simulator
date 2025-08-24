@@ -8,12 +8,37 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
+import { useAuth } from "@/hooks/useAuth";
+import type { NavItem, Role } from "@/types";
+import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
-const navItems = [
-  { name: "GAME", href: "/game" },
-  { name: "A.I.", href: "/ai" },
-  { name: "ABOUT", href: "/about" },
+export const navItems: NavItem[] = [
+  { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
+  {
+    name: "GAME",
+    href: "/game",
+    icon: "gamepad-2",
+    allowedRoles: ["ROLE_USER"],
+  },
+  { name: "A.I.", href: "/ai", icon: "bot", allowedRoles: ["ROLE_USER"] },
+  { name: "ABOUT", href: "/about", icon: "info" },
+  { name: "MYSTERY", href: "/mystery", icon: "circle-question-mark" },
 ];
+
+export function filterNavItemsByRole(
+  items: NavItem[],
+  userRole: Role | null
+): NavItem[] {
+  return items.filter((item) => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      return true;
+    }
+    if (!userRole) {
+      return true;
+    }
+    return item.allowedRoles.includes(userRole);
+  });
+}
 
 export default function Header({
   onLogoutClick,
@@ -31,12 +56,18 @@ export default function Header({
   const [open, setOpen] = useState(false);
   const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
-  const hideLogout = pathname === "/login";
+  const { role } = useAuth();
+
+  const filteredNavItems = filterNavItemsByRole(navItems, role);
+
+  const hideLogout = pathname === "/";
+  const hideNav = pathname === "/home";
+  const hideHamburger = pathname === "/home";
   const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const applyHeights = () => {
-      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
       const header = headerRef.current;
       if (!header) return;
 
@@ -59,7 +90,7 @@ export default function Header({
     const calc = () => {
       if (!nav) return;
 
-      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
       if (!isDesktop) {
         setMaxBtnWidth(null);
         return;
@@ -86,15 +117,20 @@ export default function Header({
     <header
       ref={headerRef}
       className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
-      style={{ background: "var(--bg-surface)" }}
+      style={{
+        background: "var(--bg-surface)",
+        minHeight: "4rem",
+      }}
     >
       <div className="relative w-full h-full flex items-center">
-        {!hideLogout && <HamburgerButton onClick={() => setOpen(true)} />}
+        {!hideLogout && !hideHamburger && (
+          <HamburgerButton onClick={() => setOpen(true)} />
+        )}
 
         <div className="flex-1 flex justify-center">
           <DesktopNav
-            navItems={navItems}
-            hideNav={hideLogout}
+            navItems={filteredNavItems}
+            hideNav={hideLogout || hideNav}
             maxBtnWidth={maxBtnWidth}
             onWidthCalculation={handleWidthCalculation}
           />
@@ -130,7 +166,8 @@ export default function Header({
 
       <MobileDrawer
         isOpen={open && !hideLogout}
-        navItems={navItems}
+        navItems={filteredNavItems}
+        hideNav={hideLogout || hideNav}
         onClose={() => setOpen(false)}
       />
     </header>

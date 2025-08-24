@@ -1,11 +1,21 @@
-/* Footer shadow above utility (matches header shadow, inverted) */
+@import "tailwindcss";
+
+html,
+body {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Footer shadow above utility */
 .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0),
     -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
+  transition: box-shadow 0.2s ease-in-out;
 }
 .dark .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028),
     -5px 5px 10px var(--shadow-footer-above2, #363a4c);
+  transition: box-shadow 0.2s ease-in-out;
 }
 /* Custom variables for footer shadow above */
 :root {
@@ -31,15 +41,17 @@
 /* Login card shadow utility */
 .login-card {
   box-shadow: var(--shadow-large);
+  transition: box-shadow 0.2s ease-in-out;
 }
-/* Header and Footer Shadows (conventional utility classes) */
+/* Header and Footer Shadows  */
 .header-shadow {
   box-shadow: 10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
 .footer-shadow {
   box-shadow: 10px -10px 15px #c2c8d0, -5px 5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
-@import "tailwindcss";
 
 :root {
   /* Light theme (default) */
@@ -49,24 +61,6 @@
   --text-secondary: #93c5fd;
   --text-accent: #7c3aed;
   --border-color: #c2c8d0;
-
-  /* Gradients */
-  /* --gradient-header: linear-gradient(
-    to bottom,
-    #60a5fa 0%,
-    #60a5fa 4%,
-    rgba(96, 165, 250, 0.5) 7%,
-    #e0e5ec 12%,
-    #e0e5ec 100%
-  );
-  --gradient-footer: linear-gradient(
-    to top,
-    #60a5fa 0%,
-    #60a5fa 4%,
-    rgba(96, 165, 250, 0.5) 7%,
-    #e0e5ec 12%,
-    #e0e5ec 100%
-  ); */
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #c2c8d0, -6px -6px 10px #e6f0fa,
@@ -107,24 +101,6 @@
   --text-secondary: #a78bfa;
   --text-accent: #7c3aed;
   --border-color: #363a4c;
-
-  /* Gradients
-  --gradient-header: linear-gradient(
-    to bottom,
-    #7c3aed 0%,
-    #7c3aed 4%,
-    rgba(124, 58, 237, 0.5) 7%,
-    #2a2d3a 12%,
-    #2a2d3a 100%
-  );
-  --gradient-footer: linear-gradient(
-    to top,
-    #7c3aed 0%,
-    #7c3aed 4%,
-    rgba(124, 58, 237, 0.5) 7%,
-    #2a2d3a 12%,
-    #2a2d3a 100%
-  ); */
 
   /* Neumorphic shadows */
   --shadow-neu: 6px 6px 10px #1e2028, -6px -6px 10px #363a4c,
@@ -232,4 +208,180 @@ body {
   --loader-overlay: rgba(0, 0, 0, 0.6);
   --loader-spinner: #c4b5fd;
   --bg-primary: #2a2d3a;
+}
+
+/* Small phones responsive design */
+@media (max-width: 350px) {
+  .login-container > div > div {
+    width: 16.25rem;
+    height: 23.75rem;
+  }
+
+  .login-card {
+    padding: 0.75rem 1rem;
+  }
+
+  .neumorphic-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .neumorphic-input.pr-12 {
+    padding-right: 2rem;
+  }
+
+  .password-toggle-button {
+    right: 0.5rem;
+  }
+
+  div[class*="bg-[var(--bg-surface)]"] {
+    max-width: 13.75rem;
+    height: 2rem;
+    padding: 0.125rem;
+  }
+
+  div[class*="bg-[var(--bg-surface)]"] button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .neumorphic-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .login-title {
+    font-size: 1.125rem;
+  }
+
+  .login-link {
+    font-size: 0.75rem;
+  }
+
+  .role-selector-title {
+    font-size: 0.6875rem;
+    margin-top: 0.5rem;
+  }
+
+  .my-2 {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Additional utility classes */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-primary {
+  background: var(--bg-primary);
+}
+
+.bg-surface {
+  background: var(--bg-surface);
+}
+
+.modal-title {
+  color: var(--modal-title);
+}
+
+.modal-text {
+  color: var(--modal-text);
+}
+
+.icon-danger {
+  color: var(--logout-icon);
+}
+
+.text-error {
+  color: var(--logout-icon);
+}
+
+.btn-danger {
+  background: var(--confirm-btn);
+  color: #fff;
+}
+
+.text-success {
+  color: var(--success-text);
+}
+
+/* Login specific styles */
+.login-container {
+  background: var(--bg-primary);
+}
+
+.login-perspective {
+  perspective: 1000px;
+}
+
+.login-card-flip {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.login-card-flipped {
+  transform: rotateY(180deg);
+}
+
+.login-card-front,
+.login-card-back {
+  backface-visibility: hidden;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-large);
+}
+
+.login-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Dashboard/Home specific styles */
+.dashboard-container {
+  background: var(--bg-primary);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid {
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid {
+    gap: 1.5rem;
+  }
+}
+
+/* Page component utilities */
+.page-container {
+  background: var(--bg-primary);
+}
+
+.page-card {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-large);
+}
+
+.page-title {
+  color: var(--text-secondary);
+}
+
+.page-text {
+  color: var(--text-primary);
 }
