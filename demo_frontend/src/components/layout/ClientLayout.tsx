@@ -65,7 +65,7 @@ export default function ClientLayout({
 
     const checkMobile = () => {
       const mobile = window.matchMedia("(max-width: 767px)").matches;
-      const smallPhone = window.matchMedia("(max-width: 320px)").matches;
+      const smallPhone = window.matchMedia("(max-width: 350px)").matches;
       setIsMobile(mobile);
       setIsSmallPhone(smallPhone);
       if (mobile) {
