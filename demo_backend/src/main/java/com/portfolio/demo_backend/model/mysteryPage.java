@@ -7,6 +7,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,10 @@ public class mysteryPage {
     @Id
     private Long id;
 
+    @Column(length = 512)
     private String title;
+
+    @Column(columnDefinition = "text")
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)

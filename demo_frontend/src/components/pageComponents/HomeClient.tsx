@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { navItems, filterNavItemsByRole } from "@/components/general/Header";
 import type { NavItem } from "@/types";
-import * as LucideIcons from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -142,35 +142,13 @@ export default function HomeClient() {
                     }}
                     onClick={() => router.push(item.href)}
                   >
-                    {item.icon &&
-                      (() => {
-                        const iconName = item.icon
-                          .split("-")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() + word.slice(1)
-                          )
-                          .join("");
-
-                        const IconComponent = (
-                          LucideIcons as unknown as Record<
-                            string,
-                            React.ComponentType<{
-                              className?: string;
-                              style?: React.CSSProperties;
-                            }>
-                          >
-                        )[iconName] as React.ComponentType<{
-                          className?: string;
-                          style?: React.CSSProperties;
-                        }>;
-                        return IconComponent ? (
-                          <IconComponent
-                            className="w-[80%] h-[80%]"
-                            style={{ color: "var(--text-primary)" }}
-                          />
-                        ) : null;
-                      })()}
+                    {item.icon && (
+                      <DynamicIcon
+                        iconName={item.icon}
+                        className="w-[80%] h-[80%]"
+                        style={{ color: "var(--text-primary)" }}
+                      />
+                    )}
                   </button>
                   <span
                     className="text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"

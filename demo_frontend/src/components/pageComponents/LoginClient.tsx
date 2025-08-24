@@ -10,6 +10,7 @@ import RoleSelector from "@/components/button/RoleSelector";
 import Loader from "@/components/ui/Loader";
 import { register, login } from "@/lib/api/auth";
 import type { RegisterRequest, LoginRequest, Role } from "@/types";
+import { getErrorMessage } from "@/lib/utils/errorHandling";
 
 export default function LoginClient() {
   const router = useRouter();
@@ -68,13 +69,11 @@ export default function LoginClient() {
         router.replace("/home");
       }, 2000);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : error && typeof error === "object" && "message" in error
-          ? String((error as any).message)
-          : "Login failed. Please check your credentials and try again.";
-      setError(errorMessage);
+      const errorMessage = getErrorMessage(error);
+      setError(
+        errorMessage ||
+          "Login failed. Please check your credentials and try again."
+      );
     } finally {
       setIsLoggingIn(false);
     }
@@ -115,13 +114,11 @@ export default function LoginClient() {
         setRStatus(null);
       }, 2000);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : error && typeof error === "object" && "message" in error
-          ? String((error as any).message)
-          : "Registration failed. Please try again.";
-      setRStatus({ message: errorMessage, type: "error" });
+      const errorMessage = getErrorMessage(error);
+      setRStatus({
+        message: errorMessage || "Registration failed. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsRegistering(false);
     }
