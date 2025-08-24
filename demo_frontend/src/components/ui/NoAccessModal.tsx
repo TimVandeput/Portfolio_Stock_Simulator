@@ -32,13 +32,16 @@ export default function NoAccessModal({
 
   const modalTitle = title || defaultTitle;
 
-  const defaultCloseText = accessType === "login" ? "Go to Login" : "OK";
+  const defaultCloseText =
+    accessType === "login" ? "Go to Login" : accessType === "role" ? "Go to Home" : "OK";
 
   const buttonText = closeText || defaultCloseText;
 
   const handleButtonClick = () => {
     if (accessType === "login") {
       router.push("/");
+    } else if (accessType === "role") {
+      router.push("/home");
     } else {
       onClose();
     }
