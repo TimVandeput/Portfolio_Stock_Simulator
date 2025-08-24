@@ -8,22 +8,26 @@ import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.EnumSet;
+
 import java.util.List;
 import java.util.regex.Pattern;
+import com.portfolio.demo_backend.dto.MysteryPageDTO;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MysteryPageService mysteryPageService;
 
     private static final Pattern PWD_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{8,128}$");
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            MysteryPageService mysteryPageService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mysteryPageService = mysteryPageService;
     }
 
     public User createUser(User user) {
@@ -76,6 +80,10 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+    }
+
+    public MysteryPageDTO createOrUpdateMysteryPageDto(Long userId, String title) {
+        return mysteryPageService.createOrUpdateMysteryPageDto(userId, title);
     }
 
     private void validateAndEncodePassword(User user) {
