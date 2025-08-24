@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import Loader from "@/components/ui/Loader";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function HomeClient() {
     typeof window !== "undefined" &&
     sessionStorage.getItem("fromLogin") === "true";
 
-  const roleFilteredItems = filterNavItemsByRole(navItems, role);
+  const roleFilteredItems = role ? filterNavItemsByRole(navItems, role) : [];
   const dashboardItems = roleFilteredItems.filter(
     (item) => !item.hideOnDashboard
   );
@@ -101,6 +102,8 @@ export default function HomeClient() {
           message={accessError?.message || "Access denied"}
           onClose={() => setShowModal(false)}
         />
+      ) : isLoading || !role || dashboardItems.length === 0 ? (
+        <Loader />
       ) : (
         <div className="dashboard-container h-full flex flex-col items-center justify-center w-full px-4 py-4">
           <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
