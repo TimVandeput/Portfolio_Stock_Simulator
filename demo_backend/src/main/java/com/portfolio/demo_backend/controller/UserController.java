@@ -73,4 +73,12 @@ public class UserController {
         MysteryPageDTO out = userService.createOrUpdateMysteryPageDto(id, dto.getTitle());
         return ResponseEntity.ok(out);
     }
+
+    @GetMapping("/{id}/mystery-page")
+    public ResponseEntity<MysteryPageDTO> getMysteryPage(@PathVariable("id") Long id) {
+        MysteryPageDTO page = userService.getMysteryPageDto(id);
+        if (page == null)
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(page);
+    }
 }

@@ -7,6 +7,9 @@ import com.portfolio.demo_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.web.client.RestTemplate;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Service
@@ -49,12 +52,12 @@ public class MysteryPageService {
 
     protected String fetchWikipediaExtract(String title) {
         try {
-            org.springframework.web.client.RestTemplate rt = new org.springframework.web.client.RestTemplate();
+            RestTemplate rt = new RestTemplate();
 
             String[] variants = new String[] { title, title.replace(' ', '_') };
             String candidate = null;
             for (String v : variants) {
-                String encoded = java.net.URLEncoder.encode(v, java.nio.charset.StandardCharsets.UTF_8);
+                String encoded = URLEncoder.encode(v, StandardCharsets.UTF_8);
                 String url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + encoded;
                 try {
                     Map<?, ?> resp = rt.getForObject(url, Map.class);
@@ -73,8 +76,8 @@ public class MysteryPageService {
                 }
             }
 
-            try {
-                String encodedSpace = java.net.URLEncoder.encode(title, java.nio.charset.StandardCharsets.UTF_8);
+                try {
+                    String encodedSpace = URLEncoder.encode(title, StandardCharsets.UTF_8);
                 String mwUrl = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&format=json&exchars=2000&titles="
                         + encodedSpace;
                 Map<?, ?> mwResp = rt.getForObject(mwUrl, Map.class);

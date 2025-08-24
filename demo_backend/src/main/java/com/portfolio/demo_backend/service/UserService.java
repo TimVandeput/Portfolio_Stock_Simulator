@@ -5,6 +5,7 @@ import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.model.Role;
 import com.portfolio.demo_backend.model.User;
+import com.portfolio.demo_backend.model.mysteryPage;
 import com.portfolio.demo_backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -84,6 +85,17 @@ public class UserService {
 
     public MysteryPageDTO createOrUpdateMysteryPageDto(Long userId, String title) {
         return mysteryPageService.createOrUpdateMysteryPageDto(userId, title);
+    }
+
+    public MysteryPageDTO getMysteryPageDto(Long userId) {
+        User user = getUserById(userId);
+        mysteryPage page = user.getMysteryPage();
+        if (page == null)
+            return null;
+        MysteryPageDTO out = new MysteryPageDTO();
+        out.setTitle(page.getTitle());
+        out.setContent(page.getContent());
+        return out;
     }
 
     private void validateAndEncodePassword(User user) {
