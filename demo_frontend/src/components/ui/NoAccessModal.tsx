@@ -55,6 +55,11 @@ export default function NoAccessModal({
     if (isOpen) {
       document.body.style.overflow = "hidden";
 
+      const modalElement = document.querySelector('[role="dialog"]');
+      if (modalElement) {
+        (modalElement as HTMLElement).focus();
+      }
+
       setTimeout(() => {
         const event = new CustomEvent("themeChanged");
         window.dispatchEvent(event);
@@ -87,19 +92,35 @@ export default function NoAccessModal({
   if (!isOpen) return null;
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center py-16 px-4">
+    <div
+      className="w-full h-full flex flex-col items-center justify-center py-16 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-description"
+      tabIndex={-1}
+    >
       <div className="modal-base rounded-2xl p-8 max-w-sm w-full mx-auto shadow-lg">
         <div className="flex items-center gap-3 mb-4">
-          <AlertCircle size={24} style={{ color: "var(--logout-icon)" }} />
-          <h2 className="modal-title text-xl font-bold">{modalTitle}</h2>
+          <AlertCircle
+            size={24}
+            style={{ color: "var(--logout-icon)" }}
+            aria-hidden="true"
+          />
+          <h2 id="modal-title" className="modal-title text-xl font-bold">
+            {modalTitle}
+          </h2>
         </div>
 
-        <p className="modal-text mb-6 leading-relaxed">{message}</p>
+        <p id="modal-description" className="modal-text mb-6 leading-relaxed">
+          {message}
+        </p>
 
         <div className="flex justify-center">
           <button
             onClick={handleButtonClick}
             className="neu-button neumorphic-button px-8 py-3 rounded-xl font-medium transition-all duration-150 active:translate-y-0.5 active:duration-75"
+            autoFocus
           >
             {buttonText}
           </button>

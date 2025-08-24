@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getAccessToken, getAuthenticatedAs } from "@/lib/auth/tokenStorage";
 import type { Role } from "@/types";
 
@@ -47,7 +47,6 @@ export interface AccessControlConfig {
 export function useAccessControl(config: AccessControlConfig) {
   const auth = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   const hasAccess = () => {
     if (!config.requireAuth) {

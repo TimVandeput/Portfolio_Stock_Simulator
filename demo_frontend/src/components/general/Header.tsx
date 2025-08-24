@@ -10,6 +10,7 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavItem, Role } from "@/types";
+import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
@@ -65,7 +66,7 @@ export default function Header({
 
   useEffect(() => {
     const applyHeights = () => {
-      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
       const header = headerRef.current;
       if (!header) return;
 
@@ -88,7 +89,7 @@ export default function Header({
     const calc = () => {
       if (!nav) return;
 
-      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
       if (!isDesktop) {
         setMaxBtnWidth(null);
         return;

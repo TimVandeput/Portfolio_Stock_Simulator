@@ -12,6 +12,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { logout } from "@/lib/api/auth";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
+import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export default function ClientLayout({
   children,
@@ -64,8 +65,10 @@ export default function ClientLayout({
     }
 
     const checkMobile = () => {
-      const mobile = window.matchMedia("(max-width: 767px)").matches;
-      const smallPhone = window.matchMedia("(max-width: 350px)").matches;
+      const mobile = window.matchMedia(BREAKPOINTS.MOBILE_DOWN).matches;
+      const smallPhone = window.matchMedia(
+        BREAKPOINTS.SMALL_PHONE_DOWN
+      ).matches;
       setIsMobile(mobile);
       setIsSmallPhone(smallPhone);
       if (mobile) {

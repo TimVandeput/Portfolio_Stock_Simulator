@@ -1,10 +1,4 @@
-interface NeumorphicButtonProps {
-  children: React.ReactNode;
-  onClick: () => void;
-  type?: "button" | "submit";
-  className?: string;
-  disabled?: boolean;
-}
+import type { ButtonProps } from "@/types";
 
 export default function NeumorphicButton({
   children,
@@ -12,12 +6,14 @@ export default function NeumorphicButton({
   type = "button",
   className = "",
   disabled = false,
-}: NeumorphicButtonProps) {
+  "aria-label": ariaLabel,
+}: ButtonProps) {
   return (
     <button
       type={type}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
       className={`neu-button neumorphic-button p-3 rounded-xl font-bold 
         transition-all duration-150 
         active:translate-y-0.5
