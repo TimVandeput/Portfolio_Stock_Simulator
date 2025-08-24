@@ -47,7 +47,7 @@ public class MysteryPageService {
         return out;
     }
 
-    private String fetchWikipediaExtract(String title) {
+    protected String fetchWikipediaExtract(String title) {
         try {
             org.springframework.web.client.RestTemplate rt = new org.springframework.web.client.RestTemplate();
 
