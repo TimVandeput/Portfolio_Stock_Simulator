@@ -7,6 +7,7 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import RoleSelector from "@/components/button/RoleSelector";
+import Loader from "@/components/ui/Loader";
 import { register, login } from "@/lib/api/auth";
 import type { RegisterRequest, LoginRequest, Role } from "@/types";
 
@@ -20,6 +21,7 @@ export default function LoginClient() {
   const [success, setSuccess] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role>("ROLE_USER");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
 
   const [rUser, setRUser] = useState("");
   const [rPass, setRPass] = useState("");
@@ -61,14 +63,17 @@ export default function LoginClient() {
       setPassword("");
 
       setTimeout(() => {
+        setShowLoader(true);
         sessionStorage.setItem("fromLogin", "true");
-        router.push("/home");
+        router.replace("/home");
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error?.message ||
-        error?.body?.message ||
-        "Login failed. Please check your credentials and try again.";
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && "message" in error
+          ? String((error as any).message)
+          : "Login failed. Please check your credentials and try again.";
       setError(errorMessage);
     } finally {
       setIsLoggingIn(false);
@@ -109,11 +114,13 @@ export default function LoginClient() {
         setIsFlipped(false);
         setRStatus(null);
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error?.message ||
-        error?.body?.message ||
-        "Registration failed. Please try again.";
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && "message" in error
+          ? String((error as any).message)
+          : "Registration failed. Please try again.";
       setRStatus({ message: errorMessage, type: "error" });
     } finally {
       setIsRegistering(false);
@@ -122,14 +129,17 @@ export default function LoginClient() {
 
   return (
     <div
-      className="login-container flex-1 w-full flex items-center justify-center font-sans px-6 py-6"
-      style={{ backgroundColor: "var(--bg-primary)" }}
+      className="login-container w-full h-full flex items-center justify-center font-sans px-6 py-1"
+      style={{
+        backgroundColor: "var(--bg-primary)",
+        minHeight: "calc(100vh - 8.5rem)",
+      }}
     >
       <div style={{ perspective: "1000px" }}>
         <div
           className={`
             relative
-            w-[340px] h-[460px]
+            w-[340px] h-[460px] sm:w-[320px] xs:w-[300px]
             transition-transform duration-500
             [transform-style:preserve-3d]
             rounded-2xl
@@ -144,7 +154,7 @@ export default function LoginClient() {
               handleLoginSubmit();
             }}
             className={`
-              login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
+              login-card absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
               transition-shadow duration-500
               ${isFlipped ? "!shadow-none" : ""}
@@ -179,7 +189,7 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col flex-1">
+            <div className="mt-3 sm:mt-5 flex flex-col flex-1">
               <NeumorphicInput
                 type="text"
                 placeholder="Username"
@@ -228,7 +238,7 @@ export default function LoginClient() {
               handleRegisterSubmit();
             }}
             className={`
-              login-card absolute inset-0 rounded-2xl p-8 overflow-hidden
+              login-card absolute inset-0 rounded-2xl px-8 py-6 sm:py-8 overflow-hidden
               [backface-visibility:hidden] flex flex-col h-full
               transition-shadow duration-500
               ${isFlipped ? "" : "!shadow-none"}
@@ -263,7 +273,7 @@ export default function LoginClient() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col flex-1">
+            <div className="mt-3 sm:mt-5 flex flex-col flex-1">
               <NeumorphicInput
                 type="text"
                 placeholder="Username"
@@ -312,6 +322,8 @@ export default function LoginClient() {
           </form>
         </div>
       </div>
+
+      {showLoader && <Loader />}
     </div>
   );
 }

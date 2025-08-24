@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 
-export default function AboutClient() {
+export default function AIClient() {
   const [showModal, setShowModal] = useState(false);
 
   const { isLoading, hasAccess, accessError } = useAccessControl({
     requireAuth: true,
+    allowedRoles: ["ROLE_USER"],
   });
 
   useEffect(() => {
@@ -28,37 +29,27 @@ export default function AboutClient() {
         />
       ) : (
         <div
-          className="about-container w-full flex items-center justify-center font-sans px-6 py-6"
+          className="ai-container w-full flex items-center justify-center font-sans px-6 py-6"
           style={{ backgroundColor: "var(--bg-primary)" }}
         >
           <div
-            className="about-card p-8 rounded-2xl max-w-xl"
+            className="ai-card p-8 rounded-2xl max-w-xl"
             style={{
               backgroundColor: "var(--bg-surface)",
               boxShadow: "var(--shadow-large)",
             }}
           >
             <h1
-              className="about-title text-3xl font-bold text-center mb-6"
+              className="ai-title text-3xl font-bold text-center mb-6"
               style={{ color: "var(--text-secondary)" }}
             >
-              ABOUT
+              A.I.
             </h1>
             <p
-              className="about-text leading-relaxed mb-4 text-justify"
+              className="ai-text leading-relaxed mb-4 text-center"
               style={{ color: "var(--text-primary)" }}
             >
-              This is the About page of our application. Here we share
-              information about the purpose of this project, our goals, and the
-              team behind it.
-            </p>
-            <p
-              className="about-text leading-relaxed text-justify"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Built with Next.js and styled with a soft, neumorphic theme, this
-              app is designed to be clean, responsive, and easy to use across
-              devices.
+              AI content coming soon...
             </p>
           </div>
         </div>

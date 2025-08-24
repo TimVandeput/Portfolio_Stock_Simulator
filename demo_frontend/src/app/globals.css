@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 html,
 body {
   overflow: hidden;
@@ -8,10 +10,12 @@ body {
 .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #c2c8d0),
     -5px 5px 10px var(--shadow-footer-above2, #e6f0fa);
+  transition: box-shadow 0.2s ease-in-out;
 }
 .dark .footer-shadow-above {
   box-shadow: 10px -10px 15px var(--shadow-footer-above, #1e2028),
     -5px 5px 10px var(--shadow-footer-above2, #363a4c);
+  transition: box-shadow 0.2s ease-in-out;
 }
 /* Custom variables for footer shadow above */
 :root {
@@ -37,15 +41,17 @@ body {
 /* Login card shadow utility */
 .login-card {
   box-shadow: var(--shadow-large);
+  transition: box-shadow 0.2s ease-in-out;
 }
-/* Header and Footer Shadows (conventional utility classes) */
+/* Header and Footer Shadows  */
 .header-shadow {
   box-shadow: 10px 10px 15px #c2c8d0, -5px -5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
 .footer-shadow {
   box-shadow: 10px -10px 15px #c2c8d0, -5px 5px 10px #e6f0fa;
+  transition: box-shadow 0.2s ease-in-out;
 }
-@import "tailwindcss";
 
 :root {
   /* Light theme (default) */
@@ -202,4 +208,63 @@ body {
   --loader-overlay: rgba(0, 0, 0, 0.6);
   --loader-spinner: #c4b5fd;
   --bg-primary: #2a2d3a;
+}
+
+/* Small phones responsive design */
+@media (max-width: 350px) {
+  .login-container > div > div {
+    width: 16.25rem;
+    height: 23.75rem;
+  }
+
+  .login-card {
+    padding: 0.75rem 1rem;
+  }
+
+  .neumorphic-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .neumorphic-input.pr-12 {
+    padding-right: 2rem;
+  }
+
+  .password-toggle-button {
+    right: 0.5rem;
+  }
+
+  div[class*="bg-[var(--bg-surface)]"] {
+    max-width: 13.75rem;
+    height: 2rem;
+    padding: 0.125rem;
+  }
+
+  div[class*="bg-[var(--bg-surface)]"] button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .neumorphic-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .login-title {
+    font-size: 1.125rem;
+  }
+
+  .login-link {
+    font-size: 0.75rem;
+  }
+
+  .role-selector-title {
+    font-size: 0.6875rem;
+    margin-top: 0.5rem;
+  }
+
+  .my-2 {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
 }

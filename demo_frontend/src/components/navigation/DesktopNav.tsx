@@ -1,12 +1,7 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-interface NavItem {
-  name: string;
-  href: string;
-  hideOnDashboard?: boolean;
-}
+import type { NavItem } from "@/types";
 
 interface DesktopNavProps {
   navItems: NavItem[];
@@ -42,17 +37,32 @@ export default function DesktopNav({
         hideNav ? "opacity-0 pointer-events-none" : ""
       }`}
     >
-      {filteredNavItems.map((item) => (
-        <Link href={item.href} key={item.name} className="no-underline">
-          <button
-            data-eq
-            style={maxBtnWidth ? { width: `${maxBtnWidth}px` } : undefined}
-            className="neu-button neumorphic-button p-3 rounded-xl font-bold"
-          >
-            {item.name}
-          </button>
-        </Link>
-      ))}
+      {filteredNavItems.map((item) => {
+        const isActive = pathname === item.href;
+        const buttonStyle = {
+          ...(maxBtnWidth ? { width: `${maxBtnWidth}px` } : {}),
+          ...(isActive
+            ? {
+                color: "var(--bg-primary)",
+                backgroundColor: "var(--text-primary)",
+                boxShadow: "var(--shadow-neu-inset)",
+                transform: "translateY(1px)",
+              }
+            : {}),
+        };
+
+        return (
+          <Link href={item.href} key={item.name} className="no-underline">
+            <button
+              data-eq
+              style={buttonStyle}
+              className="neu-button neumorphic-button p-3 rounded-xl font-bold"
+            >
+              {item.name}
+            </button>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

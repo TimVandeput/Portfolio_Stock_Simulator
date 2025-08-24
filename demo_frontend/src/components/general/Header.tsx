@@ -8,14 +8,35 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
-import type { NavItem } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
+import type { NavItem, Role } from "@/types";
 
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
-  { name: "GAME", href: "/game", icon: "gamepad-2" },
-  { name: "A.I.", href: "/ai", icon: "bot" },
+  {
+    name: "GAME",
+    href: "/game",
+    icon: "gamepad-2",
+    allowedRoles: ["ROLE_USER"],
+  },
+  { name: "A.I.", href: "/ai", icon: "bot", allowedRoles: ["ROLE_USER"] },
   { name: "ABOUT", href: "/about", icon: "info" },
 ];
+
+export function filterNavItemsByRole(
+  items: NavItem[],
+  userRole: Role | null
+): NavItem[] {
+  return items.filter((item) => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      return true;
+    }
+    if (!userRole) {
+      return true;
+    }
+    return item.allowedRoles.includes(userRole);
+  });
+}
 
 export default function Header({
   onLogoutClick,
@@ -33,7 +54,11 @@ export default function Header({
   const [open, setOpen] = useState(false);
   const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
-  const hideLogout = pathname === "/login";
+  const { role } = useAuth();
+
+  const filteredNavItems = filterNavItemsByRole(navItems, role);
+
+  const hideLogout = pathname === "/";
   const hideNav = pathname === "/home";
   const hideHamburger = pathname === "/home";
   const headerRef = useRef<HTMLElement | null>(null);
@@ -90,7 +115,10 @@ export default function Header({
     <header
       ref={headerRef}
       className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
-      style={{ background: "var(--bg-surface)" }}
+      style={{
+        background: "var(--bg-surface)",
+        minHeight: "4rem",
+      }}
     >
       <div className="relative w-full h-full flex items-center">
         {!hideLogout && !hideHamburger && (
@@ -99,7 +127,7 @@ export default function Header({
 
         <div className="flex-1 flex justify-center">
           <DesktopNav
-            navItems={navItems}
+            navItems={filteredNavItems}
             hideNav={hideLogout || hideNav}
             maxBtnWidth={maxBtnWidth}
             onWidthCalculation={handleWidthCalculation}
@@ -136,7 +164,7 @@ export default function Header({
 
       <MobileDrawer
         isOpen={open && !hideLogout}
-        navItems={navItems}
+        navItems={filteredNavItems}
         hideNav={hideLogout || hideNav}
         onClose={() => setOpen(false)}
       />

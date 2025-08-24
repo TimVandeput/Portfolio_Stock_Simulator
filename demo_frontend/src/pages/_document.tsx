@@ -1,5 +1,6 @@
 import { Html, Head, Main, NextScript } from "next/document";
 import { NextPageContext } from "next";
+import { DocumentContext, DocumentInitialProps } from "next/document";
 
 function getThemeFromCookie(ctx: NextPageContext) {
   const cookie = ctx.req?.headers.cookie || "";
@@ -7,8 +8,17 @@ function getThemeFromCookie(ctx: NextPageContext) {
   return match ? match[1] : "light";
 }
 
-export default function Document(props: any) {
-  // Default to light theme
+interface DocumentProps extends DocumentInitialProps {
+  __NEXT_DATA__?: {
+    props?: {
+      pageProps?: {
+        theme?: string;
+      };
+    };
+  };
+}
+
+export default function Document(props: DocumentProps) {
   let theme = "light";
   if (props.__NEXT_DATA__?.props?.pageProps?.theme) {
     theme = props.__NEXT_DATA__.props.pageProps.theme;
@@ -24,14 +34,15 @@ export default function Document(props: any) {
   );
 }
 
-Document.getInitialProps = async (ctx: any) => {
+Document.getInitialProps = async (
+  ctx: DocumentContext
+): Promise<DocumentProps> => {
   const initialProps = await ctx.defaultGetInitialProps(ctx);
   const theme = getThemeFromCookie(ctx);
   return {
     ...initialProps,
     __NEXT_DATA__: {
-      ...initialProps.__NEXT_DATA__,
-      props: { ...initialProps.__NEXT_DATA__.props, pageProps: { theme } },
+      props: { pageProps: { theme } },
     },
   };
 };
