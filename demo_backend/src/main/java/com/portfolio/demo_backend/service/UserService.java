@@ -5,7 +5,7 @@ import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.model.Role;
 import com.portfolio.demo_backend.model.User;
-import com.portfolio.demo_backend.model.mysteryPage;
+
 import com.portfolio.demo_backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,22 +13,18 @@ import java.util.EnumSet;
 
 import java.util.List;
 import java.util.regex.Pattern;
-import com.portfolio.demo_backend.dto.MysteryPageDTO;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MysteryPageService mysteryPageService;
 
     private static final Pattern PWD_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{8,128}$");
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            MysteryPageService mysteryPageService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.mysteryPageService = mysteryPageService;
     }
 
     public User createUser(User user) {
@@ -81,21 +77,6 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
-    }
-
-    public MysteryPageDTO createOrUpdateMysteryPageDto(Long userId, String title) {
-        return mysteryPageService.createOrUpdateMysteryPageDto(userId, title);
-    }
-
-    public MysteryPageDTO getMysteryPageDto(Long userId) {
-        User user = getUserById(userId);
-        mysteryPage page = user.getMysteryPage();
-        if (page == null)
-            return null;
-        MysteryPageDTO out = new MysteryPageDTO();
-        out.setTitle(page.getTitle());
-        out.setContent(page.getContent());
-        return out;
     }
 
     private void validateAndEncodePassword(User user) {
