@@ -47,10 +47,9 @@ export default function RoleSelector({
           </button>
         </div>
       </div>
-      <p className="role-selector-title text-sm mt-3 font-medium text-center text-secondary">
-        Please select your role before logging in.
-        <br />
-        It is recommended to start with Admin.
+      <p className="role-selector-title text-sm mt-3 font-medium text-justify text-secondary">
+        This demo gives you both User and Admin roles. Please select which role
+        you want to discover.
       </p>
     </div>
   );
