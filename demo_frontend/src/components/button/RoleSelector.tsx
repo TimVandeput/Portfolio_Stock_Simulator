@@ -41,7 +41,6 @@ export default function RoleSelector({
                   : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
               }
             `}
-            style={{ outline: "none", border: "none" }}
           >
             Admin
           </button>
