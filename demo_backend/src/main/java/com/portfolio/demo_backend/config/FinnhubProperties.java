@@ -4,7 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Data;
 
 @Data
-@ConfigurationProperties(prefix = "app.reg")
-public class RegistrationProperties {
-    private String passcode;
+@ConfigurationProperties(prefix = "app.marketdata.finnhub")
+public class FinnhubProperties {
+    private String wsUrl;
+    private String token;
 }
