@@ -9,8 +9,6 @@ import com.portfolio.demo_backend.service.UserService;
 import jakarta.validation.Valid;
 
 import com.portfolio.demo_backend.mapper.UserMapper;
-import com.portfolio.demo_backend.dto.CreateMysteryPageDTO;
-import com.portfolio.demo_backend.dto.MysteryPageDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,11 +64,4 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/mystery-page")
-    public ResponseEntity<MysteryPageDTO> createMysteryPage(
-            @PathVariable("id") Long id,
-            @RequestBody CreateMysteryPageDTO dto) {
-        MysteryPageDTO out = userService.createOrUpdateMysteryPageDto(id, dto.getTitle());
-        return ResponseEntity.ok(out);
-    }
 }
