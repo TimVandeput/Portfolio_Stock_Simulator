@@ -15,6 +15,7 @@ import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
   { name: "ABOUT", href: "/about", icon: "info" },
+  { name: "LIVE", href: "/live", icon: "activity" },
 ];
 
 export function filterNavItemsByRole(
