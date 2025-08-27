@@ -47,10 +47,7 @@ export default function RoleSelector({
           </button>
         </div>
       </div>
-      <p
-        className="role-selector-title text-sm mt-3 font-medium text-center"
-        style={{ color: "var(--text-secondary)" }}
-      >
+      <p className="role-selector-title text-sm mt-3 font-medium text-center text-secondary">
         Please select your role before logging in.
         <br />
         It is recommended to start with Admin.

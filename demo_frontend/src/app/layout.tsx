@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientLayout from "@/components/layout/ClientLayout";
-import CookieBanner from "@/components/CookieBanner";
+import CookieBanner from "@/components/ui/CookieBanner";
 import type { Metadata } from "next";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });

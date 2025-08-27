@@ -14,13 +14,6 @@ import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
-  {
-    name: "GAME",
-    href: "/game",
-    icon: "gamepad-2",
-    allowedRoles: ["ROLE_USER"],
-  },
-  { name: "A.I.", href: "/ai", icon: "bot", allowedRoles: ["ROLE_USER"] },
   { name: "ABOUT", href: "/about", icon: "info" },
 ];
 

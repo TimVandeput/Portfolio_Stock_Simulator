@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import Loader from "@/components/ui/Loader";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -20,22 +21,34 @@ export default function HomeClient() {
     typeof window !== "undefined" &&
     sessionStorage.getItem("fromLogin") === "true";
 
-  const roleFilteredItems = filterNavItemsByRole(navItems, role);
+  const roleFilteredItems = role ? filterNavItemsByRole(navItems, role) : [];
   const dashboardItems = roleFilteredItems.filter(
     (item) => !item.hideOnDashboard
   );
 
   const [animateFromLogin] = useState(fromLogin);
   const [buttonAnimations, setButtonAnimations] = useState<boolean[]>(
-    fromLogin
-      ? new Array(dashboardItems.length).fill(false)
-      : new Array(dashboardItems.length).fill(true)
+    new Array(dashboardItems.length).fill(fromLogin ? false : true)
   );
   const [showText, setShowText] = useState<boolean[]>(
-    fromLogin
-      ? new Array(dashboardItems.length).fill(false)
-      : new Array(dashboardItems.length).fill(true)
+    new Array(dashboardItems.length).fill(fromLogin ? false : true)
   );
+
+  const [animationStarted, setAnimationStarted] = useState(false);
+
+  const initialDelay = 500;
+  const stagger = 350;
+  const textOffset = 450;
+
+  useEffect(() => {
+    setButtonAnimations(
+      new Array(dashboardItems.length).fill(fromLogin ? false : true)
+    );
+    setShowText(
+      new Array(dashboardItems.length).fill(fromLogin ? false : true)
+    );
+    setAnimationStarted(false);
+  }, [dashboardItems.length, fromLogin]);
   const hasAnimated = useRef(false);
 
   const itemCount = dashboardItems.length;
@@ -52,31 +65,15 @@ export default function HomeClient() {
 
     const fromLoginStorage = sessionStorage.getItem("fromLogin") === "true";
 
-    if (fromLoginStorage) {
-      hasAnimated.current = true;
-      sessionStorage.removeItem("fromLogin");
+    if (!fromLoginStorage || dashboardItems.length === 0) return;
 
-      setTimeout(() => {
-        dashboardItems.forEach((_, index) => {
-          setTimeout(() => {
-            setButtonAnimations((prev) => {
-              const newState = [...prev];
-              newState[index] = true;
-              return newState;
-            });
+    hasAnimated.current = true;
+    sessionStorage.removeItem("fromLogin");
 
-            setTimeout(() => {
-              setShowText((prev) => {
-                const newState = [...prev];
-                newState[index] = true;
-                return newState;
-              });
-            }, 1500);
-          }, index * 800);
-        });
-      }, 500);
-    }
-  }, [dashboardItems]);
+    setTimeout(() => {
+      setAnimationStarted(true);
+    }, initialDelay);
+  }, [dashboardItems.length]);
 
   const getRandomStartPosition = (index: number) => {
     const directions = [
@@ -101,14 +98,13 @@ export default function HomeClient() {
           message={accessError?.message || "Access denied"}
           onClose={() => setShowModal(false)}
         />
+      ) : isLoading || !role || dashboardItems.length === 0 ? (
+        <Loader />
       ) : (
-        <div
-          className="h-full flex flex-col items-center justify-center w-full px-4 py-4"
-          style={{ background: "var(--bg-primary)" }}
-        >
+        <div className="dashboard-container h-full flex flex-col items-center justify-center w-full px-4 py-4">
           <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
             <div
-              className="grid gap-4 sm:gap-3 lg:gap-4 xl:gap-6 w-full"
+              className="dashboard-grid w-full"
               style={{
                 gridTemplateColumns: `repeat(${columns}, minmax(60px, 1fr))`,
                 gridTemplateRows: `repeat(${Math.ceil(
@@ -123,13 +119,14 @@ export default function HomeClient() {
                   className="flex flex-col items-center gap-1"
                   style={{
                     transform:
-                      animateFromLogin && !buttonAnimations[index]
+                      animateFromLogin && !animationStarted
                         ? getRandomStartPosition(index)
                         : "translate(0, 0)",
-                    transition:
-                      "transform 3s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    opacity:
-                      animateFromLogin && !buttonAnimations[index] ? 0.7 : 1,
+                    transition: `transform 1900ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+                    transitionDelay: animationStarted
+                      ? `${index * stagger}ms`
+                      : "0ms",
+                    opacity: animateFromLogin && !animationStarted ? 0.7 : 1,
                   }}
                 >
                   <button
@@ -145,16 +142,21 @@ export default function HomeClient() {
                     {item.icon && (
                       <DynamicIcon
                         iconName={item.icon}
-                        className="w-[80%] h-[80%]"
-                        style={{ color: "var(--text-primary)" }}
+                        className="w-[80%] h-[80%] text-primary"
                       />
                     )}
                   </button>
                   <span
-                    className="text-sm sm:text-base text-center font-bold transition-opacity duration-300 mt-2"
+                    className="text-primary text-sm sm:text-base text-center font-bold transition-opacity duration-500 mt-2"
                     style={{
-                      color: "var(--text-primary)",
-                      opacity: animateFromLogin ? (showText[index] ? 1 : 0) : 1,
+                      opacity: animateFromLogin
+                        ? animationStarted
+                          ? 1
+                          : 0
+                        : 1,
+                      transitionDelay: animationStarted
+                        ? `${index * stagger + textOffset}ms`
+                        : "0ms",
                     }}
                   >
                     {item.name}

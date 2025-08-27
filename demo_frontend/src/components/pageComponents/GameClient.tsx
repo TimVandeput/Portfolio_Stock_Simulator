@@ -28,27 +28,12 @@ export default function GameClient() {
           onClose={() => setShowModal(false)}
         />
       ) : (
-        <div
-          className="game-container w-full flex items-center justify-center font-sans px-6 py-6"
-          style={{ backgroundColor: "var(--bg-primary)" }}
-        >
-          <div
-            className="game-card p-8 rounded-2xl max-w-xl"
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              boxShadow: "var(--shadow-large)",
-            }}
-          >
-            <h1
-              className="game-title text-3xl font-bold text-center mb-6"
-              style={{ color: "var(--text-secondary)" }}
-            >
+        <div className="game-container page-container w-full flex items-center justify-center font-sans px-6 py-6">
+          <div className="game-card page-card p-8 rounded-2xl max-w-xl">
+            <h1 className="game-title page-title text-3xl font-bold text-center mb-6">
               GAME
             </h1>
-            <p
-              className="game-text leading-relaxed mb-4 text-center"
-              style={{ color: "var(--text-primary)" }}
-            >
+            <p className="game-text page-text leading-relaxed mb-4 text-center">
               Game content coming soon...
             </p>
           </div>
