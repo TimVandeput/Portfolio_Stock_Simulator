@@ -53,28 +53,6 @@ export default function Header({
   const hideLogout = pathname === "/";
   const hideNav = pathname === "/home";
   const hideHamburger = pathname === "/home";
-  const headerRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const applyHeights = () => {
-      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
-      const header = headerRef.current;
-      if (!header) return;
-
-      if (isDesktop) {
-        header.style.height = "";
-        return;
-      }
-
-      const footer = document.querySelector("footer") as HTMLElement | null;
-      const footerH = footer?.offsetHeight ?? 64;
-      header.style.height = `${footerH}px`;
-    };
-
-    applyHeights();
-    window.addEventListener("resize", applyHeights);
-    return () => window.removeEventListener("resize", applyHeights);
-  }, []);
 
   const handleWidthCalculation = (nav: HTMLDivElement) => {
     const calc = () => {
@@ -105,9 +83,10 @@ export default function Header({
 
   return (
     <header
-      ref={headerRef}
-      className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
-      style={{ background: "var(--bg-surface)", minHeight: "4rem" }}
+      className="sticky top-0 z-50 w-full py-0 md:py-4 login-card min-h-[calc(3.25rem+0.5rem)] lg:min-h-[calc(4rem+2rem)]"
+      style={{
+        background: "var(--bg-surface)",
+      }}
     >
       <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
         <div className="flex items-center gap-3 pl-4 md:pl-6">
