@@ -15,23 +15,73 @@ import type { NavItem, Role } from "@/types";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
-  // All roles
-  { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
-  // USER only
-  { name: "MARKETS", href: "/market", icon: "store" },
-  { name: "PORTFOLIO", href: "/portfolio", icon: "briefcase" },
-  { name: "ORDERS", href: "/orders", icon: "shoppingcart" },
-  // All roles
-  { name: "WALLET", href: "/wallet", icon: "wallet" },
-  // USER only
-  { name: "LIVE", href: "/live", icon: "activity" },
-  { name: "NOTIFICATIONS", href: "/notifications", icon: "bell" },
-  // ADMIN only
-  { name: "USERS", href: "/users", icon: "users" },
-  { name: "SYMBOLS", href: "/symbols", icon: "receipt" },
-  // All roles
-  { name: "ABOUT", href: "/about", icon: "info" },
-  { name: "HELP", href: "/help", icon: "help" },
+  {
+    name: "HOME",
+    href: "/home",
+    icon: "home",
+    hideOnDashboard: true,
+    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
+  },
+  {
+    name: "MARKETS",
+    href: "/market",
+    icon: "store",
+    allowedRoles: ["ROLE_USER"],
+  },
+  {
+    name: "PORTFOLIO",
+    href: "/portfolio",
+    icon: "briefcase",
+    allowedRoles: ["ROLE_USER"],
+  },
+  {
+    name: "ORDERS",
+    href: "/orders",
+    icon: "shoppingcart",
+    allowedRoles: ["ROLE_USER"],
+  },
+  {
+    name: "WALLET",
+    href: "/wallet",
+    icon: "wallet",
+    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
+  },
+  {
+    name: "LIVE",
+    href: "/live",
+    icon: "activity",
+    allowedRoles: ["ROLE_USER"],
+  },
+  {
+    name: "NOTIFICATIONS",
+    href: "/notifications",
+    icon: "bell",
+    allowedRoles: ["ROLE_USER"],
+  },
+  {
+    name: "USERS",
+    href: "/users",
+    icon: "users",
+    allowedRoles: ["ROLE_ADMIN"],
+  },
+  {
+    name: "SYMBOLS",
+    href: "/symbols",
+    icon: "receipt",
+    allowedRoles: ["ROLE_ADMIN"],
+  },
+  {
+    name: "ABOUT",
+    href: "/about",
+    icon: "info",
+    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
+  },
+  {
+    name: "HELP",
+    href: "/help",
+    icon: "help",
+    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
+  },
 ];
 
 export function filterNavItemsByRole(
