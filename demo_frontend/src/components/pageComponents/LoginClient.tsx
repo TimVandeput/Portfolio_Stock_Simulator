@@ -32,6 +32,10 @@ export default function LoginClient() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
+    router.prefetch("/home");
+  }, [router]);
+
+  useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -183,7 +187,7 @@ export default function LoginClient() {
         </div>
       </div>
 
-      {showLoader && <Loader />}
+      {showLoader && <Loader cover="page" />}
     </div>
   );
 }
