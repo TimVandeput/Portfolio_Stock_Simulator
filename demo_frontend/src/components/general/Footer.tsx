@@ -16,7 +16,7 @@ export default function Footer() {
           className="font-semibold"
           style={{ color: "var(--text-primary)" }}
         >
-          &copy; Tim Vandeput {year}
+          &copy; Stock Simulator {year}
         </span>
       </div>
     </footer>
