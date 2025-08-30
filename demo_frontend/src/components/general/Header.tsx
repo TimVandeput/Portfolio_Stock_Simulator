@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import HamburgerButton from "@/components/button/HamburgerButton";
 import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
@@ -14,8 +15,8 @@ import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
-  { name: "ABOUT", href: "/about", icon: "info" },
   { name: "LIVE", href: "/live", icon: "activity" },
+  { name: "ABOUT", href: "/about", icon: "info" },
 ];
 
 export function filterNavItemsByRole(
@@ -23,12 +24,8 @@ export function filterNavItemsByRole(
   userRole: Role | null
 ): NavItem[] {
   return items.filter((item) => {
-    if (!item.allowedRoles || item.allowedRoles.length === 0) {
-      return true;
-    }
-    if (!userRole) {
-      return true;
-    }
+    if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
+    if (!userRole) return true;
     return item.allowedRoles.includes(userRole);
   });
 }
@@ -110,15 +107,45 @@ export default function Header({
     <header
       ref={headerRef}
       className="sticky top-0 z-50 w-full md:py-4 py-0 login-card"
-      style={{
-        background: "var(--bg-surface)",
-        minHeight: "4rem",
-      }}
+      style={{ background: "var(--bg-surface)", minHeight: "4rem" }}
     >
-      <div className="relative w-full h-full flex items-center">
-        {!hideLogout && !hideHamburger && (
-          <HamburgerButton onClick={() => setOpen(true)} />
-        )}
+      <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
+        <div className="flex items-center gap-3 pl-4 md:pl-6">
+          <Link
+            href="/home"
+            aria-label="Go to Home"
+            className="hidden md:flex items-center"
+          >
+            <img
+              src="/logoSS.png"
+              alt="Stock Simulator logo"
+              className="h-10 w-auto max-w-[200px] object-contain"
+              draggable={false}
+            />
+          </Link>
+
+          <div className="md:hidden flex items-center gap-2">
+            <div
+              className="w-11 h-11 flex items-center justify-center"
+              style={
+                hideLogout || hideHamburger
+                  ? { visibility: "hidden" }
+                  : undefined
+              }
+            >
+              <HamburgerButton onClick={() => setOpen(true)} />
+            </div>
+
+            <Link href="/home" aria-label="Go to Home">
+              <img
+                src="/logoSS_mobile.png"
+                alt="Stock Simulator mobile logo"
+                className="h-7 w-auto object-contain"
+                draggable={false}
+              />
+            </Link>
+          </div>
+        </div>
 
         <div className="flex-1 flex justify-center">
           <DesktopNav
@@ -129,7 +156,7 @@ export default function Header({
           />
         </div>
 
-        <div className="absolute right-4 md:right-6 flex gap-4 items-center">
+        <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">
           <ThemeToggle />
           {!hideTrailButton && (
             <button
