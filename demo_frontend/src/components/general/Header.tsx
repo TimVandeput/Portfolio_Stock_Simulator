@@ -198,12 +198,14 @@ export default function Header({
         </div>
 
         <div className="flex-1 flex justify-center">
-          <DesktopNav
-            navItems={filteredNavItems}
-            hideNav={hideLogout || hideNav}
-            maxBtnWidth={maxBtnWidth}
-            onWidthCalculation={handleWidthCalculation}
-          />
+          {!hideLogout && (
+            <DesktopNav
+              navItems={filteredNavItems}
+              hideNav={hideNav}
+              maxBtnWidth={maxBtnWidth}
+              onWidthCalculation={handleWidthCalculation}
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">

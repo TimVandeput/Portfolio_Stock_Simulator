@@ -30,13 +30,12 @@ export default function DesktopNav({
     }
   }, [onWidthCalculation]);
 
+  if (hideNav) {
+    return null;
+  }
+
   return (
-    <nav
-      ref={desktopNavRef}
-      className={`hidden md:flex justify-center gap-6 ${
-        hideNav ? "opacity-0 pointer-events-none" : ""
-      }`}
-    >
+    <nav ref={desktopNavRef} className="hidden md:flex justify-center gap-6">
       {filteredNavItems.map((item) => {
         const isActive = pathname === item.href;
         const buttonStyle = {
