@@ -4,8 +4,6 @@ import {
   getRefreshToken,
   setTokens,
   clearTokens,
-  getRefreshLock,
-  setRefreshLock,
   loadTokensFromStorage,
 } from "@/lib/auth/tokenStorage";
 
@@ -86,39 +84,19 @@ export class HttpClient {
     const existing = getRefreshToken();
     if (!existing) return false;
 
-    const lock = getRefreshLock();
-    if (lock) {
-      try {
-        await lock;
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    const task = (async () => {
-      try {
-        const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: existing } as RefreshRequest),
-        });
-        if (!res.ok) throw new Error("Refresh failed");
-        const data = (await res.json()) as AuthResponse;
-        setTokens({
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          authenticatedAs: data.authenticatedAs,
-        });
-        return data.accessToken;
-      } finally {
-        setRefreshLock(null);
-      }
-    })();
-
-    setRefreshLock(task);
     try {
-      await task;
+      const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: existing } as RefreshRequest),
+      });
+      if (!res.ok) throw new Error("Refresh failed");
+      const data = (await res.json()) as AuthResponse;
+      setTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        authenticatedAs: data.authenticatedAs,
+      });
       return true;
     } catch {
       clearTokens();

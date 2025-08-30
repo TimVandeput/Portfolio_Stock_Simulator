@@ -65,11 +65,3 @@ export function getRefreshToken() {
 export function getAuthenticatedAs() {
   return _authenticatedAs;
 }
-
-let refreshPromise: Promise<string> | null = null;
-export function getRefreshLock() {
-  return refreshPromise;
-}
-export function setRefreshLock(p: Promise<string> | null) {
-  refreshPromise = p;
-}
