@@ -16,8 +16,14 @@ import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
+  { name: "MARKETS", href: "/market", icon: "store" },
+  { name: "PORTFOLIO", href: "/portfolio", icon: "briefcase" },
+  { name: "ORDERS", href: "/orders", icon: "shoppingCart" },
+  { name: "WALLET", href: "/wallet", icon: "wallet" },
   { name: "LIVE", href: "/live", icon: "activity" },
+  { name: "NOTIFICATIONS", href: "/notifications", icon: "bell" },
   { name: "ABOUT", href: "/about", icon: "info" },
+  { name: "HELP", href: "/help", icon: "help" },
 ];
 
 export function filterNavItemsByRole(
