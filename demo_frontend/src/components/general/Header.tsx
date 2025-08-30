@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -95,11 +96,14 @@ export default function Header({
             aria-label="Go to Home"
             className="hidden md:flex items-center"
           >
-            <img
+            <Image
               src="/logoSS.png"
               alt="Stock Simulator logo"
+              width={200}
+              height={40}
               className="h-10 w-auto max-w-[200px] object-contain"
               draggable={false}
+              priority
             />
           </Link>
 
@@ -116,11 +120,14 @@ export default function Header({
             </div>
 
             <Link href="/home" aria-label="Go to Home">
-              <img
+              <Image
                 src="/logoSS_mobile.png"
                 alt="Stock Simulator mobile logo"
+                width={100}
+                height={28}
                 className="h-7 w-auto object-contain"
                 draggable={false}
+                priority
               />
             </Link>
           </div>
