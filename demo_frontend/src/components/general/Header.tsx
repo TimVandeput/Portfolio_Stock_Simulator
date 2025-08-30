@@ -83,7 +83,7 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-50 w-full py-0 md:py-4 login-card min-h-[calc(3.25rem+0.5rem)] lg:min-h-[calc(4rem+2rem)]"
+      className="sticky top-0 z-50 w-full py-0 md:py-4 login-card min-h-[calc(3.25rem+0.5rem)] lg:min-h-[calc(3rem+1rem)]"
       style={{
         background: "var(--bg-surface)",
       }}
