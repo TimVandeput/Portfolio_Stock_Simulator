@@ -9,6 +9,8 @@ import {
   Wallet,
   Bell,
   HelpCircle,
+  Users,
+  Receipt,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -30,6 +32,8 @@ const iconMap: Record<
   wallet: Wallet,
   bell: Bell,
   help: HelpCircle,
+  users: Users,
+  receipt: Receipt,
 };
 
 const DynamicIcon = memo(({ iconName, className, style }: DynamicIconProps) => {

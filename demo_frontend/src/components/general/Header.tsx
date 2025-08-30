@@ -15,13 +15,21 @@ import type { NavItem, Role } from "@/types";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
+  // All roles
   { name: "HOME", href: "/home", icon: "home", hideOnDashboard: true },
+  // USER only
   { name: "MARKETS", href: "/market", icon: "store" },
   { name: "PORTFOLIO", href: "/portfolio", icon: "briefcase" },
-  { name: "ORDERS", href: "/orders", icon: "shoppingCart" },
+  { name: "ORDERS", href: "/orders", icon: "shoppingcart" },
+  // All roles
   { name: "WALLET", href: "/wallet", icon: "wallet" },
+  // USER only
   { name: "LIVE", href: "/live", icon: "activity" },
   { name: "NOTIFICATIONS", href: "/notifications", icon: "bell" },
+  // ADMIN only
+  { name: "USERS", href: "/users", icon: "users" },
+  { name: "SYMBOLS", href: "/symbols", icon: "receipt" },
+  // All roles
   { name: "ABOUT", href: "/about", icon: "info" },
   { name: "HELP", href: "/help", icon: "help" },
 ];
