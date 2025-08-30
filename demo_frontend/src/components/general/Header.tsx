@@ -12,7 +12,6 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavItem, Role } from "@/types";
-import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export const navItems: NavItem[] = [
   {
@@ -109,7 +108,6 @@ export default function Header({
   hideTrailButton?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname();
   const { role } = useAuth();
 
@@ -119,48 +117,20 @@ export default function Header({
   const hideNav = pathname === "/home";
   const hideHamburger = pathname === "/home";
 
-  const handleWidthCalculation = (nav: HTMLDivElement) => {
-    const calc = () => {
-      if (!nav) return;
-
-      const isDesktop = window.matchMedia(BREAKPOINTS.MOBILE_UP).matches;
-      if (!isDesktop) {
-        setMaxBtnWidth(null);
-        return;
-      }
-
-      const btns = nav.querySelectorAll<HTMLButtonElement>("button[data-eq]");
-      let max = 0;
-      btns.forEach((b) => {
-        const prevWidth = b.style.width;
-        b.style.width = "";
-        const w = b.getBoundingClientRect().width;
-        if (w > max) max = w;
-        b.style.width = prevWidth;
-      });
-      setMaxBtnWidth(Math.ceil(max));
-    };
-
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  };
+  const isDashboard = pathname === "/home";
+  const filteredForView = filteredNavItems.filter(
+    (item) => !(isDashboard && item.hideOnDashboard)
+  );
 
   return (
     <header
       className="sticky top-0 z-50 w-full py-0 md:py-4 login-card min-h-[calc(3.25rem+0.5rem)] lg:min-h-[calc(3rem+1rem)]"
-      style={{
-        background: "var(--bg-surface)",
-      }}
+      style={{ background: "var(--bg-surface)" }}
     >
       <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
         <div className="flex items-center gap-3 pl-4 md:pl-6">
-          {!hideLogout ? (
-            <Link
-              href="/home"
-              aria-label="Go to Home"
-              className="hidden md:flex items-center"
-            >
+          <div className="hidden md:flex items-center">
+            <Link href="/home" aria-label="Go to Home">
               <Image
                 src="/logoSS.png"
                 alt="Stock Simulator logo"
@@ -171,19 +141,13 @@ export default function Header({
                 priority
               />
             </Link>
-          ) : (
-            <div className="hidden md:flex items-center">
-              <Image
-                src="/logoSS.png"
-                alt="Stock Simulator logo"
-                width={200}
-                height={40}
-                className="h-10 w-auto max-w-[200px] object-contain"
-                draggable={false}
-                priority
-              />
-            </div>
-          )}
+
+            {!hideLogout && (
+              <div className="ml-4">
+                <DesktopNav navItems={filteredForView} hideNav={hideNav} />
+              </div>
+            )}
+          </div>
 
           <div className="md:hidden flex items-center gap-2">
             <div
@@ -197,19 +161,7 @@ export default function Header({
               <HamburgerButton onClick={() => setOpen(true)} />
             </div>
 
-            {!hideLogout ? (
-              <Link href="/home" aria-label="Go to Home">
-                <Image
-                  src="/logoSS_mobile.png"
-                  alt="Stock Simulator mobile logo"
-                  width={100}
-                  height={28}
-                  className="h-7 w-auto object-contain"
-                  draggable={false}
-                  priority
-                />
-              </Link>
-            ) : (
+            <Link href="/home" aria-label="Go to Home">
               <Image
                 src="/logoSS_mobile.png"
                 alt="Stock Simulator mobile logo"
@@ -219,20 +171,10 @@ export default function Header({
                 draggable={false}
                 priority
               />
-            )}
+            </Link>
           </div>
         </div>
-
-        <div className="flex-1 flex justify-center">
-          {!hideLogout && (
-            <DesktopNav
-              navItems={filteredNavItems}
-              hideNav={hideNav}
-              maxBtnWidth={maxBtnWidth}
-              onWidthCalculation={handleWidthCalculation}
-            />
-          )}
-        </div>
+        <div />
 
         <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">
           <ThemeToggle />
@@ -264,7 +206,7 @@ export default function Header({
 
       <MobileDrawer
         isOpen={open && !hideLogout}
-        navItems={filteredNavItems}
+        navItems={filteredForView}
         hideNav={hideLogout || hideNav}
         onClose={() => setOpen(false)}
       />
