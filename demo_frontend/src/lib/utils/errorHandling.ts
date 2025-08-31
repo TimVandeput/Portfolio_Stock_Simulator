@@ -30,10 +30,4 @@ export function getErrorMessage(error: unknown): string {
   return toErrorWithMessage(error).message;
 }
 
-export function isApiError(error: unknown): error is ApiError {
-  return (
-    isErrorWithMessage(error) && typeof error === "object" && "status" in error
-  );
-}
-
 export type { ErrorWithMessage, ApiError };

@@ -5,18 +5,19 @@ export default function Footer() {
 
   return (
     <footer
-      className="sticky bottom-0 z-10 w-full h-18 flex items-center justify-center footer-shadow-above"
+      className="sticky bottom-0 z-10 w-full flex items-center justify-center footer-shadow-above"
       style={{
         background: "var(--bg-surface)",
-        minHeight: "4.5rem",
+        minHeight: "2.5rem",
       }}
     >
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center py-2">
+        {" "}
         <span
           className="font-semibold"
           style={{ color: "var(--text-primary)" }}
         >
-          &copy; Tim Vandeput {year}
+          &copy; Stock Simulator {year}
         </span>
       </div>
     </footer>

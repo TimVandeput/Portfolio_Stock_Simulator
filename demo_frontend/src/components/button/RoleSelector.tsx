@@ -41,16 +41,13 @@ export default function RoleSelector({
                   : "bg-transparent text-[var(--btn-text)] hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
               }
             `}
-            style={{ outline: "none", border: "none" }}
           >
             Admin
           </button>
         </div>
       </div>
-      <p className="role-selector-title text-sm mt-3 font-medium text-center text-secondary">
-        Please select your role before logging in.
-        <br />
-        It is recommended to start with Admin.
+      <p className="role-selector-title text-sm mt-3 font-medium text-justify text-secondary">
+        You can access both User and Admin roles. Please make a selection.
       </p>
     </div>
   );

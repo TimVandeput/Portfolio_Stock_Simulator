@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { navItems, filterNavItemsByRole } from "@/components/general/Header";
+import { filterNavItemsByRole } from "@/components/general/Header";
+import { navItems } from "@/lib/constants/navItems";
 import type { NavItem } from "@/types";
 import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
@@ -51,8 +52,15 @@ export default function HomeClient() {
   }, [dashboardItems.length, fromLogin]);
   const hasAnimated = useRef(false);
 
-  const itemCount = dashboardItems.length;
-  const columns = Math.ceil(Math.sqrt(itemCount));
+  const getResponsiveColumns = () => {
+    const itemCount = dashboardItems.length;
+    if (itemCount <= 1) return 1;
+    if (itemCount <= 4) return 2;
+    if (itemCount <= 9) return 3;
+    return 4;
+  };
+
+  const columns = getResponsiveColumns();
 
   useEffect(() => {
     if (!isLoading && !hasAccess && accessError) {
@@ -101,15 +109,12 @@ export default function HomeClient() {
       ) : isLoading || !role || dashboardItems.length === 0 ? (
         <Loader />
       ) : (
-        <div className="dashboard-container h-full flex flex-col items-center justify-center w-full px-4 py-4">
-          <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md mx-auto flex flex-col items-center justify-center">
+        <div className="dashboard-container flex flex-col items-center justify-center w-full px-4 py-8 pt-12 sm:py-12 sm:pt-16 md:pt-20 pb-16 min-h-full">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col items-center justify-center">
             <div
-              className="dashboard-grid w-full"
+              className="dashboard-grid w-full grid gap-4 sm:gap-6 my-auto"
               style={{
-                gridTemplateColumns: `repeat(${columns}, minmax(60px, 1fr))`,
-                gridTemplateRows: `repeat(${Math.ceil(
-                  dashboardItems.length / columns
-                )}, minmax(60px, auto))`,
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
                 maxHeight: "min(80vh, 600px)",
               }}
             >
@@ -130,12 +135,10 @@ export default function HomeClient() {
                   }}
                 >
                   <button
-                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)]"
+                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)] max-w-20 sm:max-w-24 md:max-w-28 lg:max-w-32"
                     style={{
                       color: "var(--btn-text)",
                       fontWeight: "bold",
-                      maxWidth: "min(35vw, 30vh, 192px)",
-                      maxHeight: "min(35vw, 30vh, 192px)",
                     }}
                     onClick={() => router.push(item.href)}
                   >

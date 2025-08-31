@@ -60,7 +60,7 @@ export default function MobileDrawer({
         onClick={onClose}
       />
       <div
-        className={`absolute left-0 top-0 bottom-0 w-64 p-6 z-[99999] transition-transform duration-500 ease-in-out ${
+        className={`absolute left-0 top-0 bottom-0 w-64 z-[99999] transition-transform duration-500 ease-in-out overflow-y-auto ${
           isAnimating ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{
@@ -68,67 +68,69 @@ export default function MobileDrawer({
           boxShadow: "var(--shadow-large)",
         }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2
-            className="text-lg font-bold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Menu
-          </h2>
-          <button
-            aria-label="Close menu"
-            onClick={onClose}
-            className="p-2"
-            style={{ color: "var(--text-primary)" }}
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2
+              className="text-lg font-bold"
+              style={{ color: "var(--text-primary)" }}
             >
-              <path
-                d="M6 6l12 12M18 6l-12 12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-        </div>
+              Menu
+            </h2>
+            <button
+              aria-label="Close menu"
+              onClick={onClose}
+              className="p-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 6l12 12M18 6l-12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
 
-        {!hideNav && (
-          <nav className="flex flex-col gap-4">
-            {filteredNavItems.map((item) => {
-              const isActive = pathname === item.href;
-              const spanStyle = isActive
-                ? {
-                    color: "var(--bg-primary)",
-                    backgroundColor: "var(--text-primary)",
-                    boxShadow: "var(--shadow-neu-inset)",
-                    transform: "translateY(1px)",
-                  }
-                : {};
+          {!hideNav && (
+            <nav className="flex flex-col gap-4">
+              {filteredNavItems.map((item) => {
+                const isActive = pathname === item.href;
+                const spanStyle = isActive
+                  ? {
+                      color: "var(--bg-primary)",
+                      backgroundColor: "var(--text-primary)",
+                      boxShadow: "var(--shadow-neu-inset)",
+                      transform: "translateY(1px)",
+                    }
+                  : {};
 
-              return (
-                <Link
-                  href={item.href}
-                  key={item.name}
-                  onClick={onClose}
-                  className="no-underline"
-                >
-                  <span
-                    className="neu-button neumorphic-button block p-3 rounded-xl font-bold text-center"
-                    style={spanStyle}
+                return (
+                  <Link
+                    href={item.href}
+                    key={item.name}
+                    onClick={onClose}
+                    className="no-underline"
                   >
-                    {item.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-        )}
+                    <span
+                      className="neu-button neumorphic-button block p-3 rounded-xl font-bold text-center"
+                      style={spanStyle}
+                    >
+                      {item.name}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+        </div>
       </div>
     </div>
   );
