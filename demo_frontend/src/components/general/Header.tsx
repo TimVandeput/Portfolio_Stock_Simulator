@@ -190,11 +190,12 @@ export default function Header({
         </div>
 
         {/* Page title */}
-        <div className="hidden md:flex items-center justify-center">
+        <div className="flex items-center justify-center">
           {showCenteredTitle && (
             <h1
-              className="text-2xl lg:text-3xl font-extrabold tracking-wide text-center"
+              className="text-sm md:text-2xl lg:text-3xl font-extrabold tracking-wide text-center truncate max-w-[50vw] leading-tight px-2"
               style={{ color: "var(--text-secondary)" }}
+              title={pageTitle}
             >
               {pageTitle}
             </h1>
