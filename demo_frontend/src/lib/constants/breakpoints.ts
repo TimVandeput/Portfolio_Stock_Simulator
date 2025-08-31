@@ -16,12 +16,4 @@ export const BREAKPOINTS = {
   LANDSCAPE_MEDIUM_DOWN: "(max-width: 1024px) and (orientation: landscape)",
 } as const;
 
-// Common responsive utilities
-export const getResponsiveClasses = {
-  hideOnSmallPhone: "max-[350px]:hidden",
-  hideOnMobile: "max-md:hidden",
-  showOnMobile: "md:hidden",
-  mobileFullWidth: "max-md:w-full",
-} as const;
-
 export type BreakpointKey = keyof typeof BREAKPOINTS;

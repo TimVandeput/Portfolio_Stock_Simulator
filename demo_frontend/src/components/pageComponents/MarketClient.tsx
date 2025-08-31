@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 
-export default function AIClient() {
+export default function MarketClient() {
   const [showModal, setShowModal] = useState(false);
 
   const { isLoading, hasAccess, accessError } = useAccessControl({
@@ -28,13 +28,13 @@ export default function AIClient() {
           onClose={() => setShowModal(false)}
         />
       ) : (
-        <div className="ai-container page-container w-full flex items-center justify-center font-sans px-6 py-6">
-          <div className="ai-card page-card p-8 rounded-2xl max-w-xl">
-            <h1 className="ai-title page-title text-3xl font-bold text-center mb-6">
-              A.I.
+        <div className="market-container page-container w-full flex items-center justify-center font-sans px-6 py-6">
+          <div className="market-card page-card p-8 rounded-2xl max-w-xl">
+            <h1 className="market-title page-title text-3xl font-bold text-center mb-6">
+              MARKETS
             </h1>
-            <p className="ai-text page-text leading-relaxed mb-4 text-center">
-              AI content coming soon...
+            <p className="market-text page-text leading-relaxed mb-4 text-justify">
+              Market data and trading interface will be displayed here.
             </p>
           </div>
         </div>

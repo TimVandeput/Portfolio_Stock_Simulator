@@ -37,11 +37,9 @@ export default function CursorTrail() {
       positions.push({ x: 0, y: 0 });
     }
 
-    let isMoving = false;
     let fadeTimeout: NodeJS.Timeout;
 
     const handleMouseMove = (e: MouseEvent) => {
-      isMoving = true;
       positions.unshift({ x: e.clientX, y: e.clientY });
       positions.splice(8);
       dots.forEach((dot, i) => {
@@ -53,7 +51,6 @@ export default function CursorTrail() {
       });
       clearTimeout(fadeTimeout);
       fadeTimeout = setTimeout(() => {
-        isMoving = false;
         dots.forEach((dot) => (dot.style.opacity = "0"));
       }, 80);
     };

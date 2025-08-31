@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "Portfolio Demo",
-    template: "%s | Portfolio Demo",
+    template: "%s",
   },
   description: "Demo app with auth, themed loader, and smooth navigation.",
   openGraph: {

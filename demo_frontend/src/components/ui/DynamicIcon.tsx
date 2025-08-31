@@ -1,5 +1,17 @@
 import { memo } from "react";
-import * as LucideIcons from "lucide-react";
+import {
+  Home,
+  Activity,
+  Info,
+  Store,
+  Briefcase,
+  ShoppingCart,
+  Wallet,
+  Bell,
+  HelpCircle,
+  Users,
+  Receipt,
+} from "lucide-react";
 
 interface DynamicIconProps {
   iconName: string;
@@ -7,28 +19,25 @@ interface DynamicIconProps {
   style?: React.CSSProperties;
 }
 
-function formatIconName(iconName: string): string {
-  return iconName
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
-}
+const iconMap: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
+  home: Home,
+  activity: Activity,
+  info: Info,
+  store: Store,
+  briefcase: Briefcase,
+  shoppingcart: ShoppingCart,
+  wallet: Wallet,
+  bell: Bell,
+  help: HelpCircle,
+  users: Users,
+  receipt: Receipt,
+};
 
 const DynamicIcon = memo(({ iconName, className, style }: DynamicIconProps) => {
-  const formattedName = formatIconName(iconName);
-
-  const IconComponent = (
-    LucideIcons as unknown as Record<
-      string,
-      React.ComponentType<{
-        className?: string;
-        style?: React.CSSProperties;
-      }>
-    >
-  )[formattedName] as React.ComponentType<{
-    className?: string;
-    style?: React.CSSProperties;
-  }>;
+  const IconComponent = iconMap[iconName.toLowerCase()];
 
   if (!IconComponent) {
     return null;

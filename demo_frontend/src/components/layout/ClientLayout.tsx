@@ -112,8 +112,8 @@ export default function ClientLayout({
         hideTrailButton={isMobile}
       />
 
-      <main className="flex-1 w-full flex flex-col justify-center items-center">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <main className="flex-1 w-full overflow-y-auto flex flex-col">
+        <div className="relative w-full min-h-full flex flex-col items-center justify-center flex-1">
           {showConfirmation ? (
             <ConfirmationModal
               isOpen={showConfirmation}

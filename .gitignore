@@ -32,9 +32,16 @@
 **/yarn-error.log*
 **/.pnpm-debug.log*
 
-# Env files (opt-in if needed)
-**/.env*
-.env*
+# Env files
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.production.local
+**/.env.test.local
+.env
+
+!**/.env.example
+!**/.env.*.example
 
 # Vercel
 **/.vercel
