@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -108,7 +108,8 @@ export default function Header({
   hideTrailButton?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
+  const pathname = usePathname() || "/";
   const { role } = useAuth();
 
   const filteredNavItems = filterNavItemsByRole(navItems, role);
@@ -121,6 +122,18 @@ export default function Header({
   const filteredForView = filteredNavItems.filter(
     (item) => !(isDashboard && item.hideOnDashboard)
   );
+
+  const showCenteredTitle = useMemo(
+    () => pathname !== "/" && pathname !== "/home",
+    [pathname]
+  );
+
+  const pageTitle = useMemo(() => {
+    const match = navItems.find((n) => n.href === pathname)?.name;
+    if (match) return match;
+    const slug = pathname.replace(/^\/+/, "");
+    return slug ? slug.replace(/[-_]+/g, " ").toUpperCase() : "";
+  }, [pathname]);
 
   return (
     <header
@@ -149,6 +162,7 @@ export default function Header({
             )}
           </div>
 
+          {/* Mobile: hamburger + mobile logo */}
           <div className="md:hidden flex items-center gap-2">
             <div
               className="w-11 h-11 flex items-center justify-center"
@@ -174,8 +188,20 @@ export default function Header({
             </Link>
           </div>
         </div>
-        <div />
 
+        {/* Page title */}
+        <div className="hidden md:flex items-center justify-center">
+          {showCenteredTitle && (
+            <h1
+              className="text-2xl lg:text-3xl font-extrabold tracking-wide text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {pageTitle}
+            </h1>
+          )}
+        </div>
+
+        {/* Theme/Trail/Logout */}
         <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">
           <ThemeToggle />
           {!hideTrailButton && (
@@ -204,6 +230,7 @@ export default function Header({
         </div>
       </div>
 
+      {/* Mobile Drawer */}
       <MobileDrawer
         isOpen={open && !hideLogout}
         navItems={filteredForView}
