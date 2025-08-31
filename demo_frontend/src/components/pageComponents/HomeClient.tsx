@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { navItems, filterNavItemsByRole } from "@/components/general/Header";
+import { filterNavItemsByRole } from "@/components/general/Header";
+import { navItems } from "@/lib/constants/navItems";
 import type { NavItem } from "@/types";
 import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
