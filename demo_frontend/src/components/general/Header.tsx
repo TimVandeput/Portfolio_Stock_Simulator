@@ -124,7 +124,6 @@ export default function Header({
               !showCenteredTitle ? "invisible" : ""
             }`}
             style={{ color: "var(--text-secondary)" }}
-            title={pageTitle}
           >
             {pageTitle}
           </h1>
