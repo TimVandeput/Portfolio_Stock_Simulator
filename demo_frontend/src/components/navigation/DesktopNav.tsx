@@ -117,17 +117,18 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
               bg-[var(--bg-surface)]
               shadow-lg
               px-4 md:px-6 lg:px-8 py-4
+              rounded-b-xl
             "
             style={{ boxShadow: "var(--shadow-large)" }}
           >
             <ul
               ref={listRef}
               className="
-                grid gap-3
+                grid gap-3 md:gap-4 lg:gap-4
                 [grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))]
               "
             >
-              {navItems.map((item) => {
+              {navItems.map((item, idx) => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.href} className="list-none">
@@ -139,11 +140,12 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
                       onClick={() => setOpen(false)}
                     >
                       <div
-                        className="
+                        className={`
                           rounded-xl px-3 py-2
                           focus-visible:outline focus-visible:outline-2
                           transition-colors
-                        "
+                          ${idx === 0 ? "mt-4 md:mt-6" : ""}
+                        `}
                         style={{
                           color: isActive
                             ? "var(--bg-primary)"
