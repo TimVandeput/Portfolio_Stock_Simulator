@@ -108,7 +108,6 @@ export default function Header({
   hideTrailButton?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [maxBtnWidth, setMaxBtnWidth] = useState<number | null>(null);
   const pathname = usePathname() || "/";
   const { role } = useAuth();
 
@@ -143,7 +142,11 @@ export default function Header({
       <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
         <div className="flex items-center gap-3 pl-4 md:pl-6">
           <div className="hidden md:flex items-center">
-            <Link href="/home" aria-label="Go to Home">
+            {!hideLogout && (
+              <DesktopNav navItems={filteredForView} hideNav={hideNav} />
+            )}
+
+            <Link href="/home" aria-label="Go to Home" className="ml-4">
               <Image
                 src="/logoSS.png"
                 alt="Stock Simulator logo"
@@ -154,12 +157,6 @@ export default function Header({
                 priority
               />
             </Link>
-
-            {!hideLogout && (
-              <div className="ml-4">
-                <DesktopNav navItems={filteredForView} hideNav={hideNav} />
-              </div>
-            )}
           </div>
 
           {/* Mobile: hamburger + mobile logo */}
