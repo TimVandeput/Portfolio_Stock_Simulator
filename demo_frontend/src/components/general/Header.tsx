@@ -45,8 +45,8 @@ export default function Header({
   const filteredNavItems = filterNavItemsByRole(navItems, role);
 
   const hideLogout = pathname === "/";
-  const hideNav = pathname === "/home";
-  const hideHamburger = pathname === "/home";
+  const hideNav = pathname === "/home" || hideLogout;
+  const hideHamburger = pathname === "/home" || hideLogout;
 
   const isDashboard = pathname === "/home";
   const filteredForView = filteredNavItems.filter(
@@ -73,13 +73,7 @@ export default function Header({
       <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
         <div className="flex items-center gap-3 pl-4 md:pl-6">
           <div className="hidden md:flex items-center">
-            {/* Keep a placeholder for the desktop menu so the logo aligns the same on pages
-                where the menu is intentionally hidden (e.g. login). We render the
-                DesktopNav inside an invisible wrapper when hideLogout is true so it
-                still occupies layout space. */}
-            <div className={hideLogout ? "invisible" : ""}>
-              <DesktopNav navItems={filteredForView} hideNav={hideNav} />
-            </div>
+            <DesktopNav navItems={filteredForView} hideNav={hideNav} />
 
             <Link href="/home" aria-label="Go to Home" className="ml-4">
               <Image
@@ -94,7 +88,7 @@ export default function Header({
             </Link>
           </div>
 
-          {/* Mobile: hamburger + mobile logo */}
+          {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
             <div
               className="w-11 h-11 flex items-center justify-center"
