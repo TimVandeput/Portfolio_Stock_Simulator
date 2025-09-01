@@ -2,7 +2,9 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.SymbolEntity;
 import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
+import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.Profile2;
@@ -14,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -26,7 +30,25 @@ public class SymbolService {
     private final FinnhubAdminClient finnhub;
     private final SymbolInUseChecker inUseChecker;
 
+    private final AtomicBoolean importRunning = new AtomicBoolean(false);
+    private volatile Instant lastImportedAt;
+    private volatile ImportSummaryDTO lastSummary;
+
     public ImportSummaryDTO importUniverse(String universe) throws IOException {
+        if (!importRunning.compareAndSet(false, true)) {
+            throw new ImportInProgressException();
+        }
+        try {
+            var summary = doImport(mapUniverse(universe));
+            lastImportedAt = Instant.now();
+            lastSummary = summary;
+            return summary;
+        } finally {
+            importRunning.set(false);
+        }
+    }
+
+    public ImportSummaryDTO doImport(String universe) throws IOException {
         String idx = mapUniverse(universe);
         List<String> tickers = finnhub.getIndexConstituents(idx);
 
@@ -106,5 +128,11 @@ public class SymbolService {
                     Sort.by(Sort.Order.asc("symbol")));
         }
         return p;
+    }
+
+    public ImportStatusDTO importStatus() {
+        return new ImportStatusDTO(importRunning.get(),
+                lastImportedAt != null ? lastImportedAt.toString() : null,
+                lastSummary);
     }
 }

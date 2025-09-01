@@ -33,6 +33,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/symbols/import").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/symbols/*/enabled").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/symbols/status").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated()
 
