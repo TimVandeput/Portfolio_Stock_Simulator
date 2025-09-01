@@ -30,8 +30,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/quotes/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/symbols/import").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/symbols/*/enabled").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/api/quotes/**").authenticated()
+
                         .anyRequest().authenticated());
+
         return http.build();
     }
 
