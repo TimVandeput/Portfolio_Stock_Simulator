@@ -61,6 +61,7 @@ export default function SymbolsClient() {
   const [importRunning, setImportRunning] = useState(false);
   const [lastImportedAt, setLastImportedAt] = useState<string | null>(null);
   const [lastSummary, setLastSummary] = useState<ImportSummaryDTO | null>(null);
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (isLoading || !hasAccess) return;
@@ -133,6 +134,18 @@ export default function SymbolsClient() {
     const t = setTimeout(() => fetchPage(0), 350);
     return () => clearTimeout(t);
   }, [q, hasAccess, fetchPage]);
+
+  useEffect(() => {
+    let timer: any;
+    if (loading) {
+      timer = setTimeout(() => setShowLoader(true), 150);
+    } else {
+      setShowLoader(false);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [loading]);
 
   const onImport = useCallback(async () => {
     setError("");
@@ -304,7 +317,7 @@ export default function SymbolsClient() {
               </tr>
             </thead>
             <tbody>
-              {loading && (
+              {showLoader && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8">
                     <div className="flex items-center justify-center">
@@ -313,7 +326,7 @@ export default function SymbolsClient() {
                   </td>
                 </tr>
               )}
-              {!loading && page?.content?.length === 0 && (
+              {!showLoader && page?.content?.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-6 text-center opacity-70">
                     No symbols found.
@@ -353,7 +366,6 @@ export default function SymbolsClient() {
           </table>
         </div>
 
-        {/* Footer / Pagination */}
         <div className="flex items-center justify-between mt-3 gap-3">
           <div className="text-sm opacity-80">
             Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
