@@ -27,6 +27,11 @@ export default function SymbolsClient() {
   });
 
   useEffect(() => {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+  }, []);
+
+  useEffect(() => {
     if (!isLoading && !hasAccess && accessError) setShowModal(true);
   }, [isLoading, hasAccess, accessError]);
 
@@ -58,8 +63,7 @@ export default function SymbolsClient() {
   const [lastSummary, setLastSummary] = useState<ImportSummaryDTO | null>(null);
 
   useEffect(() => {
-    if (isLoading || !hasAccess || showModal) return;
-
+    if (isLoading || !hasAccess) return;
     const as = getCookie("auth.as");
     if (as !== "ROLE_ADMIN") return;
 
@@ -74,6 +78,7 @@ export default function SymbolsClient() {
         setLastImportedAt(s.lastImportedAt ?? null);
         setLastSummary(s.lastSummary ?? null);
       } catch {
+        // swallow; access is already gated
       } finally {
         if (!stop) timer = setTimeout(poll, 3000);
       }
@@ -84,13 +89,15 @@ export default function SymbolsClient() {
       stop = true;
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading, hasAccess, showModal]);
+  }, [isLoading, hasAccess]);
 
   const qRef = useRef(q);
-  useEffect(() => void (qRef.current = q), [q]);
+  useEffect(() => {
+    qRef.current = q;
+  }, [q]);
 
   const fetchPage = useCallback(
-    async (idx = pageIdx) => {
+    async (idx: number) => {
       setError("");
       setLoading(true);
       try {
@@ -109,17 +116,23 @@ export default function SymbolsClient() {
         setLoading(false);
       }
     },
-    [enabledFilter, pageIdx, pageSize]
+    [enabledFilter, pageSize]
   );
 
   useEffect(() => {
-    if (!isLoading && hasAccess) fetchPage(0);
-  }, [enabledFilter, pageSize, fetchPage, isLoading, hasAccess]);
+    if (hasAccess) fetchPage(0);
+  }, [hasAccess, fetchPage]);
 
   useEffect(() => {
+    if (!hasAccess) return;
+    fetchPage(0);
+  }, [enabledFilter, pageSize, hasAccess, fetchPage]);
+
+  useEffect(() => {
+    if (!hasAccess) return;
     const t = setTimeout(() => fetchPage(0), 350);
     return () => clearTimeout(t);
-  }, [q, fetchPage]);
+  }, [q, hasAccess, fetchPage]);
 
   const onImport = useCallback(async () => {
     setError("");
@@ -163,28 +176,48 @@ export default function SymbolsClient() {
   const canPrev = pageIdx > 0;
   const canNext = pageIdx + 1 < totalPages;
 
+  const pageItems = useMemo<(number | "...")[]>(() => {
+    const t = totalPages;
+    const c = pageIdx;
+    if (t <= 1) return [0];
+    const items: (number | "...")[] = [];
+    const start = Math.max(0, c - 2);
+    const end = Math.min(t - 1, c + 2);
+
+    if (start > 0) {
+      items.push(0);
+      if (start > 1) items.push("...");
+    }
+    for (let i = start; i <= end; i++) items.push(i);
+    if (end < t - 1) {
+      if (end < t - 2) items.push("...");
+      items.push(t - 1);
+    }
+    return items;
+  }, [pageIdx, totalPages]);
+
   const enabledChips = useMemo(
     () => (
       <div className="flex gap-2">
         <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-            enabledFilter === "all" ? "bg-[var(--btn-bg)] shadow" : ""
+          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+            enabledFilter === "all" ? "chip-selected" : ""
           }`}
           onClick={() => setEnabledFilter("all")}
         >
           All
         </button>
         <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-            enabledFilter === "enabled" ? "bg-[var(--btn-bg)] shadow" : ""
+          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+            enabledFilter === "enabled" ? "chip-selected" : ""
           }`}
           onClick={() => setEnabledFilter("enabled")}
         >
           Enabled
         </button>
         <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-            enabledFilter === "disabled" ? "bg-[var(--btn-bg)] shadow" : ""
+          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+            enabledFilter === "disabled" ? "chip-selected" : ""
           }`}
           onClick={() => setEnabledFilter("disabled")}
         >
@@ -196,7 +229,7 @@ export default function SymbolsClient() {
   );
 
   return (
-    <div className="symbols-container page-container w-full font-sans px-6 py-6">
+    <div className="symbols-container page-container block w-full font-sans px-6 py-6 overflow-auto">
       <div className="symbols-card page-card p-6 rounded-2xl max-w-6xl mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
           <h1 className="page-title text-3xl font-bold">SYMBOLS</h1>
@@ -204,7 +237,7 @@ export default function SymbolsClient() {
             <select
               value={universe}
               onChange={(e) => setUniverse(e.target.value as Universe)}
-              className="px-3 py-2 rounded-xl border bg-transparent"
+              className="px-3 py-2 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
             >
               <option value="NDX">NASDAQ-100</option>
               <option value="GSPC">S&amp;P 500</option>
@@ -244,7 +277,7 @@ export default function SymbolsClient() {
             <select
               value={pageSize}
               onChange={(e) => setPageSize(parseInt(e.target.value))}
-              className="px-2 py-1 rounded-xl border bg-transparent"
+              className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
             >
               {[10, 25, 50, 100].map((n) => (
                 <option key={n} value={n}>
@@ -320,18 +353,49 @@ export default function SymbolsClient() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between mt-3">
+        {/* Footer / Pagination */}
+        <div className="flex items-center justify-between mt-3 gap-3">
           <div className="text-sm opacity-80">
             Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
             {page?.totalElements ?? 0}
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2">
             <NeumorphicButton
               disabled={!canPrev || loading}
               onClick={() => fetchPage(pageIdx - 1)}
             >
               Prev
             </NeumorphicButton>
+
+            <div className="flex items-center gap-1">
+              {pageItems.map((item, i) =>
+                item === "..." ? (
+                  <span
+                    key={`dots-${i}`}
+                    className="px-2 select-none opacity-70"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => fetchPage(item)}
+                    disabled={loading || item === pageIdx}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                      item === pageIdx
+                        ? "chip-selected"
+                        : "hover:bg-[var(--surface)]"
+                    }`}
+                    aria-current={item === pageIdx ? "page" : undefined}
+                    aria-label={`Go to page ${item + 1}`}
+                  >
+                    {item + 1}
+                  </button>
+                )
+              )}
+            </div>
+
             <NeumorphicButton
               disabled={!canNext || loading}
               onClick={() => fetchPage(pageIdx + 1)}
