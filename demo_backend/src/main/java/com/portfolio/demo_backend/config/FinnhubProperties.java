@@ -8,4 +8,5 @@ import lombok.Data;
 public class FinnhubProperties {
     private String wsUrl;
     private String token;
+    private String apiBase = "https://finnhub.io/api/v1";
 }
