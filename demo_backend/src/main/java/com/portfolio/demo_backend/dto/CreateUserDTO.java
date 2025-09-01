@@ -18,4 +18,5 @@ public class CreateUserDTO {
 
     @NotBlank(message = "Passcode is required")
     private String passcode;
+    private Boolean isFake;
 }

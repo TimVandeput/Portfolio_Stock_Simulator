@@ -11,6 +11,7 @@ public class UserMapper {
                 .id(dto.getId())
                 .username(dto.getUsername())
                 .password(dto.getPassword())
+                .isFake(dto.getIsFake() != null && dto.getIsFake())
                 .build();
     }
 
@@ -19,6 +20,7 @@ public class UserMapper {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setPassword(null);
+        dto.setIsFake(user.isFake());
         return dto;
     }
 
@@ -26,6 +28,7 @@ public class UserMapper {
         return User.builder()
                 .username(dto.getUsername())
                 .password(dto.getPassword())
+                .isFake(dto.getIsFake() != null && dto.getIsFake())
                 .build();
     }
 }
