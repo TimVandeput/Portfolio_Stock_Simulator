@@ -9,4 +9,5 @@ public class FinnhubProperties {
     private String wsUrl;
     private String token;
     private String apiBase = "https://finnhub.io/api/v1";
+    private boolean enabled = false;
 }
