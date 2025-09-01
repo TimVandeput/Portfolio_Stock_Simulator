@@ -39,6 +39,7 @@ public class AuthService {
                         .username(req.getUsername().trim())
                         .password(req.getPassword())
                         .roles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN))
+                        .isFake(false)
                         .build());
 
         return new RegistrationResponse(created.getId(), created.getUsername(), created.getRoles());

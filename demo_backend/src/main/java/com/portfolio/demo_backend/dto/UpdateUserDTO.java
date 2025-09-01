@@ -10,4 +10,5 @@ public class UpdateUserDTO {
 
     @Size(min = 8)
     private String password;
+    private Boolean isFake;
 }
