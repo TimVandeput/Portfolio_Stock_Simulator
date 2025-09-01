@@ -6,7 +6,6 @@ import NoAccessModal from "@/components/ui/NoAccessModal";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
-import Loader from "@/components/ui/Loader";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import { getCookie } from "@/lib/utils/cookies";
 
@@ -32,19 +31,8 @@ export default function SymbolsClient() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && !hasAccess && accessError) setShowModal(true);
+    setShowModal(!isLoading && !hasAccess && !!accessError);
   }, [isLoading, hasAccess, accessError]);
-
-  if (showModal) {
-    return (
-      <NoAccessModal
-        isOpen={showModal}
-        accessType={accessError?.reason}
-        message={accessError?.message || "Access denied"}
-        onClose={() => setShowModal(false)}
-      />
-    );
-  }
 
   const [universe, setUniverse] = useState<Universe>("NDX");
   const [q, setQ] = useState("");
@@ -61,7 +49,6 @@ export default function SymbolsClient() {
   const [importRunning, setImportRunning] = useState(false);
   const [lastImportedAt, setLastImportedAt] = useState<string | null>(null);
   const [lastSummary, setLastSummary] = useState<ImportSummaryDTO | null>(null);
-  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (isLoading || !hasAccess) return;
@@ -135,18 +122,6 @@ export default function SymbolsClient() {
     return () => clearTimeout(t);
   }, [q, hasAccess, fetchPage]);
 
-  useEffect(() => {
-    let timer: any;
-    if (loading) {
-      timer = setTimeout(() => setShowLoader(true), 150);
-    } else {
-      setShowLoader(false);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [loading]);
-
   const onImport = useCallback(async () => {
     setError("");
     try {
@@ -209,214 +184,211 @@ export default function SymbolsClient() {
     return items;
   }, [pageIdx, totalPages]);
 
-  const enabledChips = useMemo(
-    () => (
-      <div className="flex gap-2">
-        <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
-            enabledFilter === "all" ? "chip-selected" : ""
-          }`}
-          onClick={() => setEnabledFilter("all")}
-        >
-          All
-        </button>
-        <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
-            enabledFilter === "enabled" ? "chip-selected" : ""
-          }`}
-          onClick={() => setEnabledFilter("enabled")}
-        >
-          Enabled
-        </button>
-        <button
-          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
-            enabledFilter === "disabled" ? "chip-selected" : ""
-          }`}
-          onClick={() => setEnabledFilter("disabled")}
-        >
-          Disabled
-        </button>
-      </div>
-    ),
-    [enabledFilter]
-  );
-
   return (
-    <div className="symbols-container page-container block w-full font-sans px-6 py-6 overflow-auto">
-      <div className="symbols-card page-card p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="page-title text-3xl font-bold">SYMBOLS</h1>
-          <div className="flex items-center gap-3">
-            <select
-              value={universe}
-              onChange={(e) => setUniverse(e.target.value as Universe)}
-              className="px-3 py-2 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
-            >
-              <option value="NDX">NASDAQ-100</option>
-              <option value="GSPC">S&amp;P 500</option>
-            </select>
-            <NeumorphicButton onClick={onImport} disabled={importRunning}>
-              {importRunning ? "Importing…" : "Import / Refresh"}
-            </NeumorphicButton>
-          </div>
-        </div>
+    <>
+      {showModal ? (
+        <NoAccessModal
+          isOpen={showModal}
+          accessType={accessError?.reason}
+          message={accessError?.message || "Access denied"}
+          onClose={() => setShowModal(false)}
+        />
+      ) : (
+        <div className="symbols-container page-container block w-full font-sans px-6 py-6 overflow-auto">
+          <div className="symbols-card page-card p-6 rounded-2xl max-w-6xl mx-auto w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="page-title text-3xl font-bold">SYMBOLS</h1>
+              <div className="flex items-center gap-3">
+                <select
+                  value={universe}
+                  onChange={(e) => setUniverse(e.target.value as Universe)}
+                  className="px-3 py-2 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                >
+                  <option value="NDX">NASDAQ-100</option>
+                  <option value="GSPC">S&amp;P 500</option>
+                </select>
+                <NeumorphicButton onClick={onImport} disabled={importRunning}>
+                  {importRunning ? "Importing…" : "Import / Refresh"}
+                </NeumorphicButton>
+              </div>
+            </div>
 
-        <div className="text-sm opacity-80 mb-3 flex flex-wrap items-center gap-4">
-          <span>
-            Last imported:{" "}
-            {lastImportedAt
-              ? new Date(lastImportedAt).toLocaleString()
-              : "never"}
-          </span>
-          {lastSummary && (
-            <span>
-              Summary: +{lastSummary.imported} / upd {lastSummary.updated} /
-              skip {lastSummary.skipped}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <NeumorphicInput
-            type="text"
-            placeholder="Search symbol or name…"
-            value={q}
-            onChange={setQ}
-            className="min-w-[260px]"
-          />
-          {enabledChips}
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm opacity-80">Rows:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(parseInt(e.target.value))}
-              className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
-            >
-              {[10, 25, 50, 100].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="min-h-[28px]">
-          {error && <StatusMessage message={error} />}
-        </div>
-
-        <div className="rounded-2xl overflow-hidden border shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-[var(--surface)]">
-              <tr className="text-left">
-                <th className="px-4 py-3">Symbol</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Exchange</th>
-                <th className="px-4 py-3">Currency</th>
-                <th className="px-4 py-3 text-center">Enabled</th>
-              </tr>
-            </thead>
-            <tbody>
-              {showLoader && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8">
-                    <div className="flex items-center justify-center">
-                      <Loader />
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {!showLoader && page?.content?.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center opacity-70">
-                    No symbols found.
-                  </td>
-                </tr>
-              )}
-              {!loading &&
-                page?.content?.map((row) => (
-                  <tr key={row.id} className="border-t">
-                    <td className="px-4 py-3 font-semibold">{row.symbol}</td>
-                    <td className="px-4 py-3">{row.name}</td>
-                    <td className="px-4 py-3">{row.exchange}</td>
-                    <td className="px-4 py-3">{row.currency}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
-                        {row.inUse && (
-                          <span className="px-2 py-0.5 text-[11px] rounded-full border">
-                            In use
-                          </span>
-                        )}
-                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={row.enabled}
-                            onChange={(e) => onToggle(row, e.target.checked)}
-                            className="h-4 w-4 accent-[var(--primary)]"
-                          />
-                          <span className="opacity-80">
-                            {row.enabled ? "On" : "Off"}
-                          </span>
-                        </label>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex items-center justify-between mt-3 gap-3">
-          <div className="text-sm opacity-80">
-            Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
-            {page?.totalElements ?? 0}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <NeumorphicButton
-              disabled={!canPrev || loading}
-              onClick={() => fetchPage(pageIdx - 1)}
-            >
-              Prev
-            </NeumorphicButton>
-
-            <div className="flex items-center gap-1">
-              {pageItems.map((item, i) =>
-                item === "..." ? (
-                  <span
-                    key={`dots-${i}`}
-                    className="px-2 select-none opacity-70"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={item}
-                    onClick={() => fetchPage(item)}
-                    disabled={loading || item === pageIdx}
-                    className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
-                      item === pageIdx
-                        ? "chip-selected"
-                        : "hover:bg-[var(--surface)]"
-                    }`}
-                    aria-current={item === pageIdx ? "page" : undefined}
-                    aria-label={`Go to page ${item + 1}`}
-                  >
-                    {item + 1}
-                  </button>
-                )
+            <div className="text-sm opacity-80 mb-3 flex flex-wrap items-center gap-4">
+              <span>
+                Last imported:{" "}
+                {lastImportedAt
+                  ? new Date(lastImportedAt).toLocaleString()
+                  : "never"}
+              </span>
+              {lastSummary && (
+                <span>
+                  Summary: +{lastSummary.imported} / upd {lastSummary.updated} /
+                  skip {lastSummary.skipped}
+                </span>
               )}
             </div>
 
-            <NeumorphicButton
-              disabled={!canNext || loading}
-              onClick={() => fetchPage(pageIdx + 1)}
-            >
-              Next
-            </NeumorphicButton>
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <NeumorphicInput
+                type="text"
+                placeholder="Search symbol or name…"
+                value={q}
+                onChange={setQ}
+                className="min-w-[260px]"
+              />
+              <div className="flex gap-2">
+                <button
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                    enabledFilter === "all" ? "chip-selected" : ""
+                  }`}
+                  onClick={() => setEnabledFilter("all")}
+                >
+                  All
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                    enabledFilter === "enabled" ? "chip-selected" : ""
+                  }`}
+                  onClick={() => setEnabledFilter("enabled")}
+                >
+                  Enabled
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                    enabledFilter === "disabled" ? "chip-selected" : ""
+                  }`}
+                  onClick={() => setEnabledFilter("disabled")}
+                >
+                  Disabled
+                </button>
+              </div>
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-sm opacity-80">Rows:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(parseInt(e.target.value))}
+                  className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                >
+                  {[10, 25, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="min-h-[28px]">
+              {error && <StatusMessage message={error} />}
+            </div>
+
+            <div className="rounded-2xl overflow-hidden border shadow-sm">
+              <table className="w-full text-sm">
+                <thead className="bg-[var(--surface)]">
+                  <tr className="text-left">
+                    <th className="px-4 py-3">Symbol</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Exchange</th>
+                    <th className="px-4 py-3">Currency</th>
+                    <th className="px-4 py-3 text-center">Enabled</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {page?.content?.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-4 py-6 text-center opacity-70"
+                      >
+                        No symbols found.
+                      </td>
+                    </tr>
+                  )}
+                  {page?.content?.map((row) => (
+                    <tr key={row.id} className="border-t">
+                      <td className="px-4 py-3 font-semibold">{row.symbol}</td>
+                      <td className="px-4 py-3">{row.name}</td>
+                      <td className="px-4 py-3">{row.exchange}</td>
+                      <td className="px-4 py-3">{row.currency}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          {row.inUse && (
+                            <span className="px-2 py-0.5 text-[11px] rounded-full border">
+                              In use
+                            </span>
+                          )}
+                          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={row.enabled}
+                              onChange={(e) => onToggle(row, e.target.checked)}
+                              className="h-4 w-4 accent-[var(--primary)]"
+                            />
+                            <span className="opacity-80">
+                              {row.enabled ? "On" : "Off"}
+                            </span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center justify-between mt-3 gap-3">
+              <div className="text-sm opacity-80">
+                Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
+                {page?.totalElements ?? 0}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <NeumorphicButton
+                  disabled={!canPrev || loading}
+                  onClick={() => fetchPage(pageIdx - 1)}
+                >
+                  Prev
+                </NeumorphicButton>
+
+                <div className="flex items-center gap-1">
+                  {pageItems.map((item, i) =>
+                    item === "..." ? (
+                      <span
+                        key={`dots-${i}`}
+                        className="px-2 select-none opacity-70"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => fetchPage(item)}
+                        disabled={loading || item === pageIdx}
+                        className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                          item === pageIdx
+                            ? "chip-selected"
+                            : "hover:bg-[var(--surface)]"
+                        }`}
+                        aria-current={item === pageIdx ? "page" : undefined}
+                        aria-label={`Go to page ${item + 1}`}
+                      >
+                        {item + 1}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <NeumorphicButton
+                  disabled={!canNext || loading}
+                  onClick={() => fetchPage(pageIdx + 1)}
+                >
+                  Next
+                </NeumorphicButton>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
