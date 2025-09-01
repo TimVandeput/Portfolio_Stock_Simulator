@@ -7,7 +7,7 @@ import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.Profile2;
+import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.SymbolItem;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ public class SymbolService {
             throw new ImportInProgressException();
         }
         try {
-            var summary = doImport(mapUniverse(universe));
+            var summary = importFromFreeUniverse(universe);
             lastImportedAt = Instant.now();
             lastSummary = summary;
             return summary;
@@ -48,44 +48,49 @@ public class SymbolService {
         }
     }
 
-    public ImportSummaryDTO doImport(String universe) throws IOException {
-        String idx = mapUniverse(universe);
-        List<String> tickers = finnhub.getIndexConstituents(idx);
+    private ImportSummaryDTO importFromFreeUniverse(String universe) throws IOException {
+        final int LIMIT = 150;
+        List<SymbolItem> all = finnhub.listSymbolsByExchange("US");
 
-        int imported = 0, updated = 0, skipped = 0;
-        for (String t : tickers) {
-            Profile2 p;
-            try {
-                p = finnhub.throttled(() -> finnhub.getProfile2(t));
-            } catch (IOException e) {
-                skipped++;
-                continue;
-            }
-            if (p == null || p.ticker == null || p.name == null) {
-                skipped++;
-                continue;
-            }
+        int imported = 0, updated = 0, skipped = 0, taken = 0;
 
-            SymbolEntity e = symbolRepository.findBySymbol(p.ticker).orElse(null);
-            if (e == null) {
-                e = new SymbolEntity();
-                e.setSymbol(p.ticker);
-                e.setName(p.name);
-                e.setExchange(p.exchange);
-                e.setCurrency(p.currency);
-                e.setMic(p.mic);
+        for (SymbolItem it : all) {
+            if (it == null || it.symbol == null || it.symbol.isBlank())
+                continue;
+            if (it.description == null || it.description.isBlank())
+                continue;
+
+            if (it.type != null && !"Common Stock".equalsIgnoreCase(it.type))
+                continue;
+            if (it.currency != null && !"USD".equalsIgnoreCase(it.currency))
+                continue;
+            if (it.mic != null && !(it.mic.equals("XNAS") || it.mic.equals("XNYS")))
+                continue;
+
+            if (taken >= LIMIT)
+                break;
+            taken++;
+
+            SymbolEntity e = symbolRepository.findBySymbol(it.symbol)
+                    .orElseGet(SymbolEntity::new);
+            boolean isNew = (e.getId() == null);
+
+            e.setSymbol(it.symbol);
+            e.setName(it.description);
+            e.setExchange(it.mic != null ? it.mic : "US");
+            e.setCurrency(it.currency);
+            e.setMic(it.mic);
+            if (isNew)
                 e.setEnabled(true);
-                symbolRepository.save(e);
+
+            symbolRepository.save(e);
+            if (isNew)
                 imported++;
-            } else {
-                e.setName(p.name);
-                e.setExchange(p.exchange);
-                e.setCurrency(p.currency);
-                e.setMic(p.mic);
-                symbolRepository.save(e);
+            else
                 updated++;
-            }
         }
+
+        skipped = Math.max(0, all.size() - taken);
         return new ImportSummaryDTO(imported, updated, skipped);
     }
 
@@ -106,16 +111,6 @@ public class SymbolService {
         e.setEnabled(enabled);
         symbolRepository.save(e);
         return SymbolMapper.toSymbol(e, inUse);
-    }
-
-    private String mapUniverse(String u) {
-        if (u == null)
-            return "^NDX";
-        return switch (u.toUpperCase()) {
-            case "NDX" -> "^NDX";
-            case "GSPC" -> "^GSPC";
-            default -> "^NDX";
-        };
     }
 
     private String emptyToNull(String s) {

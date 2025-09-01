@@ -32,6 +32,15 @@ public class FinnhubAdminClient {
         public String mic;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SymbolItem {
+        public String symbol;
+        public String description;
+        public String currency;
+        public String mic;
+        public String type;
+    }
+
     public List<String> getIndexConstituents(String indexSymbol) throws IOException {
         HttpUrl url = HttpUrl.parse(props.getApiBase() + "/index/constituents")
                 .newBuilder()
@@ -58,6 +67,21 @@ public class FinnhubAdminClient {
             if (!resp.isSuccessful())
                 throw new IOException("Finnhub profile2 " + resp.code());
             return mapper.readValue(resp.body().string(), Profile2.class);
+        }
+    }
+
+    public List<SymbolItem> listSymbolsByExchange(String exchange) throws IOException {
+        HttpUrl url = HttpUrl.parse(props.getApiBase() + "/stock/symbol")
+                .newBuilder()
+                .addQueryParameter("exchange", exchange)
+                .addQueryParameter("token", props.getToken())
+                .build();
+        Request req = new Request.Builder().url(url).get().build();
+        try (Response resp = http.newCall(req).execute()) {
+            if (!resp.isSuccessful())
+                throw new IOException("Finnhub stock/symbol " + resp.code());
+            SymbolItem[] arr = mapper.readValue(resp.body().string(), SymbolItem[].class);
+            return arr != null ? List.of(arr) : List.of();
         }
     }
 
