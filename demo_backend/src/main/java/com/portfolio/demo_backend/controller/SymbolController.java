@@ -15,7 +15,6 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/symbols")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class SymbolController {
 
