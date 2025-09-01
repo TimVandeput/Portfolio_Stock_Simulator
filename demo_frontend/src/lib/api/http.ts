@@ -62,19 +62,35 @@ export class HttpClient {
       return undefined as T;
     }
 
-    if (res.status === 401 && !retried) {
-      const refreshed = await this.tryRefresh();
-      if (refreshed) {
-        return original();
-      }
-    }
-
     let body: ErrorResponse = {};
     try {
       body = await res.json();
     } catch {
       /* ignore */
     }
+
+    const hasRefresh = !!getRefreshToken();
+    if (
+      !retried &&
+      (res.status === 401 || (res.status === 403 && hasRefresh))
+    ) {
+      console.debug(
+        "[HttpClient] handle: auth error detected (status=",
+        res.status,
+        ") body=",
+        body,
+        "hasRefresh=",
+        hasRefresh
+      );
+      const refreshed = await this.tryRefresh();
+      if (refreshed) {
+        console.debug(
+          "[HttpClient] handle: refresh successful, retrying original request"
+        );
+        return original();
+      }
+    }
+
     const message =
       body?.message || body?.error || res.statusText || "Request failed";
     throw new ApiError(res.status, message, body);
@@ -82,66 +98,131 @@ export class HttpClient {
 
   private async tryRefresh(): Promise<boolean> {
     const existing = getRefreshToken();
-    if (!existing) return false;
+    if (!existing) {
+      console.debug("[HttpClient] tryRefresh: no refresh token available");
+      return false;
+    }
 
+    console.debug(
+      "[HttpClient] tryRefresh: refresh token present, calling refresh endpoint"
+    );
     try {
       const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken: existing } as RefreshRequest),
       });
-      if (!res.ok) throw new Error("Refresh failed");
-      const data = (await res.json()) as AuthResponse;
+
+      const text = await res.text();
+      let parsed: any = null;
+      try {
+        parsed = text ? JSON.parse(text) : null;
+      } catch (e) {
+        parsed = text;
+      }
+      console.debug(
+        "[HttpClient] tryRefresh: response status=",
+        res.status,
+        "body=",
+        parsed
+      );
+
+      if (!res.ok) {
+        console.warn(
+          "[HttpClient] tryRefresh failed: response not ok",
+          res.status
+        );
+        clearTokens();
+        return false;
+      }
+
+      const data = (
+        typeof parsed === "object" ? parsed : JSON.parse(text)
+      ) as AuthResponse;
       setTokens({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         authenticatedAs: data.authenticatedAs,
       });
+      console.debug("[HttpClient] tryRefresh: tokens updated successfully");
       return true;
-    } catch {
+    } catch (err) {
+      console.error("[HttpClient] tryRefresh error:", err);
       clearTokens();
       return false;
     }
   }
 
   async get<T>(path: string): Promise<T> {
-    const doFetch = () =>
-      fetch(`${this.baseUrl}${path}`, {
+    const doFetch = () => {
+      console.debug("[HttpClient] GET ->", this.baseUrl + path);
+      return fetch(`${this.baseUrl}${path}`, {
         headers: { ...this.authHeader() },
-      }).then((res) => this.handle<T>(res, true, () => this.get<T>(path)));
+      }).then((res) => {
+        console.debug(
+          "[HttpClient] GET response ->",
+          res.status,
+          this.baseUrl + path
+        );
+        return this.handle<T>(res, false, () => this.get<T>(path));
+      });
+    };
     return doFetch();
   }
 
   async post<T>(path: string, body?: unknown): Promise<T> {
-    const doFetch = () =>
-      fetch(`${this.baseUrl}${path}`, {
+    const doFetch = () => {
+      console.debug("[HttpClient] POST ->", this.baseUrl + path, "body=", body);
+      return fetch(`${this.baseUrl}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...this.authHeader() },
         body: body !== undefined ? JSON.stringify(body) : undefined,
-      }).then((res) =>
-        this.handle<T>(res, true, () => this.post<T>(path, body))
-      );
+      }).then((res) => {
+        console.debug(
+          "[HttpClient] POST response ->",
+          res.status,
+          this.baseUrl + path
+        );
+        return this.handle<T>(res, false, () => this.post<T>(path, body));
+      });
+    };
     return doFetch();
   }
 
   async put<T>(path: string, body?: unknown): Promise<T> {
-    const doFetch = () =>
-      fetch(`${this.baseUrl}${path}`, {
+    const doFetch = () => {
+      console.debug("[HttpClient] PUT ->", this.baseUrl + path, "body=", body);
+      return fetch(`${this.baseUrl}${path}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...this.authHeader() },
         body: body !== undefined ? JSON.stringify(body) : undefined,
-      }).then((res) =>
-        this.handle<T>(res, true, () => this.put<T>(path, body))
-      );
+      }).then((res) => {
+        console.debug(
+          "[HttpClient] PUT response ->",
+          res.status,
+          this.baseUrl + path
+        );
+        return this.handle<T>(res, false, () => this.put<T>(path, body));
+      });
+    };
     return doFetch();
   }
 
   async delete<T = void>(path: string): Promise<T> {
-    const doFetch = () =>
-      fetch(`${this.baseUrl}${path}`, {
+    const doFetch = () => {
+      console.debug("[HttpClient] DELETE ->", this.baseUrl + path);
+      return fetch(`${this.baseUrl}${path}`, {
         method: "DELETE",
         headers: { ...this.authHeader() },
-      }).then((res) => this.handle<T>(res, true, () => this.delete<T>(path)));
+      }).then((res) => {
+        console.debug(
+          "[HttpClient] DELETE response ->",
+          res.status,
+          this.baseUrl + path
+        );
+        return this.handle<T>(res, false, () => this.delete<T>(path));
+      });
+    };
     return doFetch();
   }
 }

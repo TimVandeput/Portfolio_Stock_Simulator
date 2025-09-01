@@ -35,4 +35,8 @@ public class RefreshToken {
     @Builder.Default
     @Column(nullable = false)
     private boolean revoked = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "authenticated_as")
+    private Role authenticatedAs;
 }
