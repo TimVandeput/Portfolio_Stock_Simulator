@@ -46,7 +46,7 @@ export default function FiltersBar({
       </div>
 
       <div className="flex items-center gap-2 sm:ml-auto">
-        <span className="text-sm opacity-80 hidden xs:inline">Rows:</span>
+        <span className="text-sm opacity-80 xs:inline">Rows:</span>
         <select
           value={pageSize}
           onChange={(e) => setPageSize(parseInt(e.target.value))}
