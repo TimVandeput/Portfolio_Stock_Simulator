@@ -6,6 +6,7 @@ import type {
 } from "@/types";
 import { HttpClient } from "@/lib/api/http";
 import { setTokens, clearTokens } from "@/lib/auth/tokenStorage";
+import { getCookie, removeCookie } from "../utils/cookies";
 
 const client = new HttpClient();
 
@@ -26,16 +27,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
-  function getCookie(name: string) {
-    const match = document.cookie.match(
-      new RegExp("(^| )" + name + "=([^;]+)")
-    );
-    return match ? match[2] : null;
-  }
-  function removeCookie(name: string) {
-    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  }
-
   const refreshToken = getCookie("auth.refresh");
   if (refreshToken) {
     try {
@@ -47,6 +38,21 @@ export async function logout(): Promise<void> {
       );
     }
   }
+
+  clearTokens();
+
+  [
+    "token",
+    "refreshToken",
+    "accessToken",
+    "auth.token",
+    "authToken",
+    "jwt",
+    "bearerToken",
+    "auth.refresh",
+    "auth.access",
+    "auth.as",
+  ].forEach((key) => removeCookie(key));
 
   clearTokens();
 

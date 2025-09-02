@@ -33,6 +33,15 @@ export interface ModalProps extends BaseComponentProps {
   "aria-describedby"?: string;
 }
 
+export interface NoAccessModalProps extends BaseComponentProps {
+  isOpen: boolean;
+  title?: string;
+  message: string;
+  closeText?: string;
+  onClose: () => void;
+  accessType?: "login" | "role" | "general";
+}
+
 export type ClickHandler = () => void;
 export type ChangeHandler = (value: string) => void;
 export type SubmitHandler = (e: React.FormEvent) => void;

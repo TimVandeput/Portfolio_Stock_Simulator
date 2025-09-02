@@ -3,15 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
-
-interface NoAccessModalProps {
-  isOpen: boolean;
-  title?: string;
-  message: string;
-  closeText?: string;
-  onClose: () => void;
-  accessType?: "login" | "role" | "general";
-}
+import { NoAccessModalProps } from "@/types";
 
 export default function NoAccessModal({
   isOpen,

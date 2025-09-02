@@ -18,7 +18,7 @@ public class RefreshTokenService {
 
     private final long refreshTtlMs = 7L * 24 * 60 * 60 * 1000;
 
-    public RefreshToken create(User user) {
+    public RefreshToken create(User user, com.portfolio.demo_backend.model.Role authenticatedAs) {
         String token = randomToken();
         Instant expires = Instant.now().plusMillis(refreshTtlMs);
         RefreshToken rt = RefreshToken.builder()
@@ -26,14 +26,27 @@ public class RefreshTokenService {
                 .user(user)
                 .expiresAt(expires)
                 .revoked(false)
+                .authenticatedAs(authenticatedAs)
                 .build();
         return repo.save(rt);
+    }
+
+    public RefreshToken create(User user) {
+        return create(user, com.portfolio.demo_backend.model.Role.ROLE_USER);
     }
 
     public RefreshToken rotate(RefreshToken old) {
         old.setRevoked(true);
         repo.save(old);
-        return create(old.getUser());
+        com.portfolio.demo_backend.model.Role auth = old.getAuthenticatedAs();
+        return create(old.getUser(), auth != null ? auth : com.portfolio.demo_backend.model.Role.ROLE_USER);
+    }
+
+    public void setAuthenticatedAs(String token, com.portfolio.demo_backend.model.Role role) {
+        repo.findByToken(token).ifPresent(rt -> {
+            rt.setAuthenticatedAs(role);
+            repo.save(rt);
+        });
     }
 
     public RefreshToken validateUsable(String token) {

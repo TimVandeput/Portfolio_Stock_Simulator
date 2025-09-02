@@ -1,6 +1,7 @@
 package com.portfolio.demo_backend.controller;
 
 import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.service.SymbolService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/symbols")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class SymbolController {
 
@@ -43,5 +43,10 @@ public class SymbolController {
 
     public static class ToggleBody {
         public boolean enabled;
+    }
+
+    @GetMapping("/import/status")
+    public ImportStatusDTO status() {
+        return service.importStatus();
     }
 }

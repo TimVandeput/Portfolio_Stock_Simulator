@@ -2,10 +2,12 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.SymbolEntity;
 import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
+import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.Profile2;
+import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.SymbolItem;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -26,44 +31,80 @@ public class SymbolService {
     private final FinnhubAdminClient finnhub;
     private final SymbolInUseChecker inUseChecker;
 
+    private final AtomicBoolean importRunning = new AtomicBoolean(false);
+    private volatile Instant lastImportedAt;
+    private volatile ImportSummaryDTO lastSummary;
+
     public ImportSummaryDTO importUniverse(String universe) throws IOException {
-        String idx = mapUniverse(universe);
-        List<String> tickers = finnhub.getIndexConstituents(idx);
-
-        int imported = 0, updated = 0, skipped = 0;
-        for (String t : tickers) {
-            Profile2 p;
-            try {
-                p = finnhub.throttled(() -> finnhub.getProfile2(t));
-            } catch (IOException e) {
-                skipped++;
-                continue;
-            }
-            if (p == null || p.ticker == null || p.name == null) {
-                skipped++;
-                continue;
-            }
-
-            SymbolEntity e = symbolRepository.findBySymbol(p.ticker).orElse(null);
-            if (e == null) {
-                e = new SymbolEntity();
-                e.setSymbol(p.ticker);
-                e.setName(p.name);
-                e.setExchange(p.exchange);
-                e.setCurrency(p.currency);
-                e.setMic(p.mic);
-                e.setEnabled(true);
-                symbolRepository.save(e);
-                imported++;
-            } else {
-                e.setName(p.name);
-                e.setExchange(p.exchange);
-                e.setCurrency(p.currency);
-                e.setMic(p.mic);
-                symbolRepository.save(e);
-                updated++;
-            }
+        if (!importRunning.compareAndSet(false, true)) {
+            throw new ImportInProgressException();
         }
+        try {
+            var summary = importFromFreeUniverse(universe);
+            lastImportedAt = Instant.now();
+            lastSummary = summary;
+            return summary;
+        } finally {
+            importRunning.set(false);
+        }
+    }
+
+    private ImportSummaryDTO importFromFreeUniverse(String universe) throws IOException {
+        List<SymbolItem> all = finnhub.listSymbolsByExchange("US");
+        final Set<String> allowedMics = allowedMicsFor(universe);
+        final int limit = capFor(universe);
+
+        List<NormItem> selected = all.stream()
+                .filter(Objects::nonNull)
+                .filter(it -> it.symbol != null && !it.symbol.isBlank())
+                .filter(it -> it.description != null && !it.description.isBlank())
+                .filter(it -> it.type == null || "Common Stock".equalsIgnoreCase(it.type))
+                .filter(it -> it.currency == null || "USD".equalsIgnoreCase(it.currency))
+                .filter(it -> {
+                    if (it.mic == null)
+                        return true;
+                    return allowedMics.isEmpty() || allowedMics.contains(it.mic);
+                })
+                .map(it -> new NormItem(norm(it.symbol), it))
+                .filter(ni -> ni.sym != null && !ni.sym.isBlank())
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                ni -> ni.sym,
+                                ni -> ni,
+                                (a, b) -> a,
+                                LinkedHashMap::new),
+                        m -> m.values().stream()
+                                .sorted(Comparator.comparing(ni -> ni.sym))
+                                .limit(limit)
+                                .collect(Collectors.toList())));
+
+        int imported = 0, updated = 0;
+
+        for (NormItem ni : selected) {
+            SymbolItem it = ni.raw;
+            String sym = ni.sym;
+
+            SymbolEntity e = symbolRepository.findBySymbol(sym).orElseGet(SymbolEntity::new);
+            boolean isNew = (e.getId() == null);
+
+            if (isNew) {
+                e.setSymbol(sym);
+                e.setEnabled(true);
+            }
+
+            e.setName(it.description);
+            e.setExchange(it.mic != null ? it.mic : "US");
+            e.setCurrency(it.currency);
+            e.setMic(it.mic);
+
+            symbolRepository.save(e);
+            if (isNew)
+                imported++;
+            else
+                updated++;
+        }
+
+        int skipped = Math.max(0, all.size() - selected.size());
         return new ImportSummaryDTO(imported, updated, skipped);
     }
 
@@ -86,16 +127,6 @@ public class SymbolService {
         return SymbolMapper.toSymbol(e, inUse);
     }
 
-    private String mapUniverse(String u) {
-        if (u == null)
-            return "^NDX";
-        return switch (u.toUpperCase()) {
-            case "NDX" -> "^NDX";
-            case "GSPC" -> "^GSPC";
-            default -> "^NDX";
-        };
-    }
-
     private String emptyToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
@@ -106,5 +137,51 @@ public class SymbolService {
                     Sort.by(Sort.Order.asc("symbol")));
         }
         return p;
+    }
+
+    public ImportStatusDTO importStatus() {
+        return new ImportStatusDTO(importRunning.get(),
+                lastImportedAt != null ? lastImportedAt.toString() : null,
+                lastSummary);
+    }
+
+    private String norm(String s) {
+        return s == null ? null : s.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private Set<String> allowedMicsFor(String universe) {
+        if (universe == null)
+            return Set.of("XNAS", "XNYS");
+        switch (universe.toUpperCase(Locale.ROOT)) {
+            case "NDX":
+                return Set.of("XNAS");
+            case "GSPC":
+                return Set.of("XNAS", "XNYS");
+            default:
+                return Set.of("XNAS", "XNYS");
+        }
+    }
+
+    private int capFor(String universe) {
+        if (universe == null)
+            return 150;
+        switch (universe.toUpperCase(Locale.ROOT)) {
+            case "NDX":
+                return 150;
+            case "GSPC":
+                return 150;
+            default:
+                return 150;
+        }
+    }
+
+    private static class NormItem {
+        final String sym;
+        final SymbolItem raw;
+
+        NormItem(String sym, SymbolItem raw) {
+            this.sym = sym;
+            this.raw = raw;
+        }
     }
 }

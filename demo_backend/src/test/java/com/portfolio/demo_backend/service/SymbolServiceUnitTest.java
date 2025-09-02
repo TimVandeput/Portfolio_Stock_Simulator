@@ -4,7 +4,6 @@ import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.Profile2;
 import com.portfolio.demo_backend.model.SymbolEntity;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,32 +58,24 @@ class SymbolServiceUnitTest {
 
     @Test
     void importUniverse_happyPath_importsAndUpdates_counts() throws Exception {
-        when(finnhub.getIndexConstituents("^NDX")).thenReturn(List.of("AAPL", "MSFT"));
+        FinnhubAdminClient.SymbolItem item1 = new FinnhubAdminClient.SymbolItem();
+        item1.symbol = "AAPL";
+        item1.description = "Apple Inc.";
+        item1.type = "Common Stock";
+        item1.currency = "USD";
+        item1.mic = "XNAS";
 
-        when(finnhub.throttled(any())).thenAnswer(inv -> {
-            FinnhubAdminClient.CallSupplier<Profile2> sup = inv.getArgument(0);
-            return sup.get();
-        });
+        FinnhubAdminClient.SymbolItem item2 = new FinnhubAdminClient.SymbolItem();
+        item2.symbol = "MSFT";
+        item2.description = "Microsoft Corp.";
+        item2.type = "Common Stock";
+        item2.currency = "USD";
+        item2.mic = "XNAS";
+
+        when(finnhub.listSymbolsByExchange("US")).thenReturn(List.of(item1, item2));
 
         when(repo.findBySymbol("AAPL")).thenReturn(Optional.empty());
         when(repo.findBySymbol("MSFT")).thenReturn(Optional.of(msft));
-
-        FinnhubAdminClient.Profile2 pAapl = new Profile2();
-        pAapl.ticker = "AAPL";
-        pAapl.name = "Apple Inc.";
-        pAapl.exchange = "NASDAQ";
-        pAapl.currency = "USD";
-        pAapl.mic = "XNAS";
-
-        FinnhubAdminClient.Profile2 pMsft = new Profile2();
-        pMsft.ticker = "MSFT";
-        pMsft.name = "Microsoft Corp.";
-        pMsft.exchange = "NASDAQ";
-        pMsft.currency = "USD";
-        pMsft.mic = "XNAS";
-
-        when(finnhub.getProfile2("AAPL")).thenReturn(pAapl);
-        when(finnhub.getProfile2("MSFT")).thenReturn(pMsft);
 
         when(repo.save(any(SymbolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -102,12 +92,14 @@ class SymbolServiceUnitTest {
 
     @Test
     void importUniverse_skipsOnClientError() throws Exception {
-        when(finnhub.getIndexConstituents("^NDX")).thenReturn(List.of("GOOG"));
-        when(finnhub.throttled(any())).thenAnswer(inv -> {
-            FinnhubAdminClient.CallSupplier<Profile2> sup = inv.getArgument(0);
-            return sup.get();
-        });
-        when(finnhub.getProfile2("GOOG")).thenThrow(new IOException("rate limit"));
+        FinnhubAdminClient.SymbolItem item = new FinnhubAdminClient.SymbolItem();
+        item.symbol = "GOOG";
+        item.description = "";
+        item.type = "Common Stock";
+        item.currency = "USD";
+        item.mic = "XNAS";
+
+        when(finnhub.listSymbolsByExchange("US")).thenReturn(List.of(item));
 
         ImportSummaryDTO sum = service.importUniverse("NDX");
 

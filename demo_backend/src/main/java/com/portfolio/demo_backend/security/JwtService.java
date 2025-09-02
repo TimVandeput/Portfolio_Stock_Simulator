@@ -40,4 +40,8 @@ public class JwtService {
                 .getBody()
                 .getSubject();
     }
+
+    byte[] getKeyBytes() {
+        return keyBytes;
+    }
 }

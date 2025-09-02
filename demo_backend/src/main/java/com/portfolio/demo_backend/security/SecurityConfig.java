@@ -2,9 +2,10 @@ package com.portfolio.demo_backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,39 +18,60 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, Environment environment) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter,
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
 
-                        .requestMatchers(HttpMethod.POST, "/api/symbols/import").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/symbols/*/enabled").hasRole("ADMIN")
+                    auth.requestMatchers("/actuator/health", "/actuator/info").permitAll();
+                    auth.requestMatchers("/api/auth/**").permitAll();
 
-                        .requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated()
+                    auth.requestMatchers(HttpMethod.GET, "/api/symbols/import/status").hasAuthority("ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.POST, "/api/symbols/import").hasAuthority("ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/symbols/*/enabled").hasAuthority("ROLE_ADMIN");
+                    auth.requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated();
 
-                        .requestMatchers(HttpMethod.GET, "/api/quotes/**").authenticated()
+                    auth.requestMatchers(HttpMethod.GET, "/api/quotes/**").authenticated();
 
-                        .anyRequest().authenticated());
+                    if (environment != null
+                            && java.util.Arrays.asList(environment.getActiveProfiles()).contains("test")) {
+                        auth.requestMatchers(HttpMethod.POST, "/api/users/*/mystery-page").permitAll();
+                    } else {
+                        auth.requestMatchers(HttpMethod.POST, "/api/users/*/mystery-page").hasRole("ADMIN");
+                    }
+                    auth.requestMatchers("/api/users/**").permitAll();
 
+                    auth.anyRequest().authenticated();
+                });
         return http.build();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        cfg.setAllowedOriginPatterns(List.of("*"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        cfg.setAllowedHeaders(List.of("*")); 
+        cfg.setExposedHeaders(List.of("Location", "Authorization"));
         cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);

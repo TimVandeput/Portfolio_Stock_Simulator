@@ -5,6 +5,7 @@ import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
+import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.exception.user.InvalidPasscodeException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
@@ -77,6 +78,14 @@ public class GlobalExceptionHandler {
         pd.setType(URI.create("https://docs/validation#symbol-in-use"));
         pd.setProperty("inUse", true);
         pd.setProperty("symbol", ex.getSymbol());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    }
+
+    @ExceptionHandler(ImportInProgressException.class)
+    public ResponseEntity<ProblemDetail> handleImportBusy(ImportInProgressException ex) {
+        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        pd.setTitle("Import in progress");
+        pd.setType(URI.create("https://docs/validation#import-in-progress"));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
     }
 

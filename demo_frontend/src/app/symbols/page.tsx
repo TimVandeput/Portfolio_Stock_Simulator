@@ -3,7 +3,7 @@ import SymbolsClient from "@/components/pageComponents/SymbolsClient";
 
 export const metadata: Metadata = {
   title: "Symbols",
-  description: "Symbol management",
+  description: "Admin: manage tradable symbols",
 };
 
 export default function SymbolsPage() {
