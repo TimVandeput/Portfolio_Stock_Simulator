@@ -138,33 +138,50 @@ export default function SymbolsClient() {
     }
   }, [universe, fetchPage]);
 
-  const onToggle = useCallback(async (row: SymbolDTO, next: boolean) => {
-    setPage((prev) =>
-      prev
-        ? {
-            ...prev,
-            content: prev.content.map((r) =>
-              r.id === row.id ? { ...r, enabled: next } : r
-            ),
-          }
-        : prev
-    );
-    try {
-      await setSymbolEnabled(row.id, next);
-    } catch (e) {
+  const onToggle = useCallback(
+    async (row: SymbolDTO, next: boolean) => {
       setPage((prev) =>
         prev
           ? {
               ...prev,
               content: prev.content.map((r) =>
-                r.id === row.id ? { ...r, enabled: row.enabled } : r
+                r.id === row.id ? { ...r, enabled: next } : r
               ),
             }
           : prev
       );
-      setError(getErrorMessage(e) || "Failed to update symbol.");
-    }
-  }, []);
+
+      try {
+        await setSymbolEnabled(row.id, next);
+
+        if (enabledFilter !== "all") {
+          const willBeRemoved =
+            (enabledFilter === "enabled" && !next) ||
+            (enabledFilter === "disabled" && next);
+
+          if (willBeRemoved) {
+            const isLastOnPage = (page?.content?.length ?? 0) === 1;
+            const targetPage =
+              isLastOnPage && pageIdx > 0 ? pageIdx - 1 : pageIdx;
+            await fetchPage(targetPage);
+          }
+        }
+      } catch (e) {
+        setPage((prev) =>
+          prev
+            ? {
+                ...prev,
+                content: prev.content.map((r) =>
+                  r.id === row.id ? { ...r, enabled: row.enabled } : r
+                ),
+              }
+            : prev
+        );
+        setError(getErrorMessage(e) || "Failed to update symbol.");
+      }
+    },
+    [enabledFilter, pageIdx, page, fetchPage]
+  );
 
   const totalPages = page?.totalPages ?? 0;
   const canPrev = pageIdx > 0;
@@ -304,7 +321,6 @@ export default function SymbolsClient() {
               </div>
             </div>
 
-            {/* Error row */}
             <div className="min-h-[28px] mb-1">
               {error && <StatusMessage message={error} />}
             </div>
