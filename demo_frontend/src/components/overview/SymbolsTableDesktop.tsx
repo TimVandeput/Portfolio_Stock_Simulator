@@ -12,16 +12,27 @@ export default function SymbolsTableDesktop({ page, onToggle }: Props) {
   return (
     <div className="hidden md:block rounded-2xl overflow-hidden border shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[10ch]" />
+            <col />
+            <col className="w-[14ch]" />
+            <col className="w-[9ch]" />
+            <col className="w-[18ch]" />
+          </colgroup>
+
           <thead className="bg-[var(--surface)]">
             <tr className="text-left">
-              <th className="px-4 py-3">Symbol</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Exchange</th>
-              <th className="px-4 py-3">Currency</th>
-              <th className="px-4 py-3 text-center">Enabled</th>
+              <th className="px-4 py-3 whitespace-nowrap">Symbol</th>
+              <th className="px-4 py-3 whitespace-nowrap">Name</th>
+              <th className="px-4 py-3 whitespace-nowrap">Exchange</th>
+              <th className="px-4 py-3 whitespace-nowrap">Currency</th>
+              <th className="px-4 py-3 text-center whitespace-nowrap">
+                Enabled
+              </th>
             </tr>
           </thead>
+
           <tbody>
             {page?.content?.length === 0 && (
               <tr>
@@ -32,10 +43,27 @@ export default function SymbolsTableDesktop({ page, onToggle }: Props) {
             )}
             {page?.content?.map((row) => (
               <tr key={row.id} className="border-t">
-                <td className="px-4 py-3 font-semibold">{row.symbol}</td>
-                <td className="px-4 py-3">{row.name}</td>
-                <td className="px-4 py-3">{row.exchange}</td>
-                <td className="px-4 py-3">{row.currency}</td>
+                <td
+                  className="px-4 py-3 font-semibold whitespace-nowrap"
+                  title={row.symbol}
+                >
+                  {row.symbol}
+                </td>
+
+                <td className="px-4 py-3 max-w-0">
+                  <span className="block truncate" title={row.name}>
+                    {row.name}
+                  </span>
+                </td>
+
+                <td
+                  className="px-4 py-3 whitespace-nowrap"
+                  title={row.exchange}
+                >
+                  {row.exchange}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">{row.currency}</td>
+
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-center gap-2">
                     {row.inUse && (

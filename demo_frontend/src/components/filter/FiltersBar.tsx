@@ -28,7 +28,7 @@ export default function FiltersBar({
         placeholder="Search symbol or name…"
         value={q}
         onChange={setQ}
-        className="w-full sm:min-w-[260px]"
+        className="w-full sm:flex-none sm:w-80 md:w-96 lg:w-[28rem]"
       />
 
       <div className="flex gap-2">
