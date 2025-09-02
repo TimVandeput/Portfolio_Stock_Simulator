@@ -50,6 +50,8 @@ export default function SymbolsClient() {
   const [lastImportedAt, setLastImportedAt] = useState<string | null>(null);
   const [lastSummary, setLastSummary] = useState<ImportSummaryDTO | null>(null);
 
+  const [importBusy, setImportBusy] = useState(false);
+
   useEffect(() => {
     if (isLoading || !hasAccess) return;
     const as = getCookie("auth.as");
@@ -124,11 +126,15 @@ export default function SymbolsClient() {
 
   const onImport = useCallback(async () => {
     setError("");
+    setImportBusy(true);
+    setImportRunning(true);
     try {
       await importSymbols(universe);
       await fetchPage(0);
     } catch (e) {
       setError(getErrorMessage(e) || "Import failed.");
+    } finally {
+      setImportBusy(false);
     }
   }, [universe, fetchPage]);
 
@@ -212,13 +218,19 @@ export default function SymbolsClient() {
                   <option value="GSPC">S&amp;P 500</option>
                 </select>
 
-                <NeumorphicButton
-                  onClick={onImport}
-                  disabled={importRunning}
-                  aria-live="polite"
-                >
-                  {importRunning ? "Importing…" : "Import / Refresh"}
-                </NeumorphicButton>
+                <div className="w-[160px]">
+                  <NeumorphicButton
+                    onClick={onImport}
+                    disabled={importBusy || importRunning}
+                    aria-live="polite"
+                    aria-busy={importBusy || importRunning}
+                    className="w-full"
+                  >
+                    {importBusy || importRunning
+                      ? "Importing…"
+                      : "Import / Refresh"}
+                  </NeumorphicButton>
+                </div>
               </div>
             </div>
 
