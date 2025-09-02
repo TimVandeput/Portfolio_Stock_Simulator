@@ -26,6 +26,10 @@ public class User {
     @Column(nullable = false, length = 60)
     private String password;
 
+    @Column(name = "is_fake", nullable = false)
+    @Builder.Default
+    private boolean isFake = false;
+
     @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

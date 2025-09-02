@@ -39,6 +39,7 @@ public class AuthService {
                         .username(req.getUsername().trim())
                         .password(req.getPassword())
                         .roles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN))
+                        .isFake(false)
                         .build());
 
         return new RegistrationResponse(created.getId(), created.getUsername(), created.getRoles());
@@ -59,6 +60,7 @@ public class AuthService {
 
         String access = jwtService.generateAccessToken(user.getUsername(), chosen);
         RefreshToken refresh = refreshTokenService.create(user);
+        refreshTokenService.setAuthenticatedAs(refresh.getToken(), chosen);
 
         return new AuthResponse(access, refresh.getToken(), "Bearer",
                 user.getUsername(), user.getRoles(), chosen);
@@ -72,7 +74,7 @@ public class AuthService {
             throw new InvalidRefreshTokenException();
         }
         RefreshToken fresh = refreshTokenService.rotate(old);
-        Role authenticatedAs = Role.ROLE_USER;
+        Role authenticatedAs = fresh.getAuthenticatedAs() != null ? fresh.getAuthenticatedAs() : Role.ROLE_USER;
         String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), authenticatedAs);
         return new AuthResponse(access, fresh.getToken(), "Bearer",
                 fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/quotes")
-@CrossOrigin(origins = "http://localhost:3000")
 public class QuoteController {
 
     private final QuoteService quoteService;

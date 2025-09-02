@@ -32,7 +32,7 @@ export default function HomeClient() {
     new Array(dashboardItems.length).fill(fromLogin ? false : true)
   );
   const [showText, setShowText] = useState<boolean[]>(
-    new Array(dashboardItems.length).fill(fromLogin ? false : true)
+    new Array(dashboardItems.length).fill(false)
   );
 
   const [animationStarted, setAnimationStarted] = useState(false);
@@ -45,11 +45,14 @@ export default function HomeClient() {
     setButtonAnimations(
       new Array(dashboardItems.length).fill(fromLogin ? false : true)
     );
-    setShowText(
-      new Array(dashboardItems.length).fill(fromLogin ? false : true)
-    );
     setAnimationStarted(false);
   }, [dashboardItems.length, fromLogin]);
+
+  useEffect(() => {
+    if (!animateFromLogin) {
+      setShowText(new Array(dashboardItems.length).fill(true));
+    }
+  }, [animateFromLogin, dashboardItems.length]);
   const hasAnimated = useRef(false);
 
   const getResponsiveColumns = () => {
@@ -82,6 +85,26 @@ export default function HomeClient() {
       setAnimationStarted(true);
     }, initialDelay);
   }, [dashboardItems.length]);
+
+  useEffect(() => {
+    if (!animateFromLogin || !animationStarted) return;
+    const duration = 1900;
+    const timers: number[] = [];
+    for (let i = 0; i < dashboardItems.length; i++) {
+      const t = window.setTimeout(() => {
+        setShowText((prev) => {
+          if (prev[i]) return prev;
+          const next = [...prev];
+          next[i] = true;
+          return next;
+        });
+      }, i * stagger + duration);
+      timers.push(t);
+    }
+    return () => {
+      timers.forEach((id) => clearTimeout(id));
+    };
+  }, [animateFromLogin, animationStarted, dashboardItems.length, stagger]);
 
   const getRandomStartPosition = (index: number) => {
     const directions = [
@@ -150,16 +173,11 @@ export default function HomeClient() {
                     )}
                   </button>
                   <span
-                    className="text-primary text-sm sm:text-base text-center font-bold transition-opacity duration-500 mt-2"
+                    className={`text-primary text-sm sm:text-base text-center font-bold mt-2 ${
+                      animateFromLogin ? "transition-opacity duration-400" : ""
+                    }`}
                     style={{
-                      opacity: animateFromLogin
-                        ? animationStarted
-                          ? 1
-                          : 0
-                        : 1,
-                      transitionDelay: animationStarted
-                        ? `${index * stagger + textOffset}ms`
-                        : "0ms",
+                      opacity: showText[index] ? 1 : 0,
                     }}
                   >
                     {item.name}

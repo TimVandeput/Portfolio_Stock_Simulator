@@ -45,8 +45,8 @@ export default function Header({
   const filteredNavItems = filterNavItemsByRole(navItems, role);
 
   const hideLogout = pathname === "/";
-  const hideNav = pathname === "/home";
-  const hideHamburger = pathname === "/home";
+  const hideNav = pathname === "/home" || hideLogout;
+  const hideHamburger = pathname === "/home" || hideLogout;
 
   const isDashboard = pathname === "/home";
   const filteredForView = filteredNavItems.filter(
@@ -73,9 +73,9 @@ export default function Header({
       <div className="w-full h-full grid grid-cols-[auto_1fr_auto] items-center">
         <div className="flex items-center gap-3 pl-4 md:pl-6">
           <div className="hidden md:flex items-center">
-            {!hideLogout && (
-              <DesktopNav navItems={filteredForView} hideNav={hideNav} />
-            )}
+            <div className={hideNav ? "invisible" : ""}>
+              <DesktopNav navItems={filteredForView} hideNav={false} />
+            </div>
 
             <Link href="/home" aria-label="Go to Home" className="ml-4">
               <Image
@@ -90,7 +90,7 @@ export default function Header({
             </Link>
           </div>
 
-          {/* Mobile: hamburger + mobile logo */}
+          {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
             <div
               className="w-11 h-11 flex items-center justify-center"
@@ -119,15 +119,14 @@ export default function Header({
 
         {/* Page title */}
         <div className="flex items-center justify-center">
-          {showCenteredTitle && (
-            <h1
-              className="text-sm md:text-2xl lg:text-3xl font-extrabold tracking-wide text-center truncate max-w-[50vw] leading-tight px-2"
-              style={{ color: "var(--text-secondary)" }}
-              title={pageTitle}
-            >
-              {pageTitle}
-            </h1>
-          )}
+          <h1
+            className={`text-sm md:text-2xl lg:text-3xl font-extrabold tracking-wide text-center truncate max-w-[50vw] leading-tight px-2 ${
+              !showCenteredTitle ? "invisible" : ""
+            }`}
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {pageTitle}
+          </h1>
         </div>
 
         {/* Theme/Trail/Logout */}

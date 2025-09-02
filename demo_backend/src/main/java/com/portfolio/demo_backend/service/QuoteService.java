@@ -5,6 +5,7 @@ import com.portfolio.demo_backend.config.FinnhubProperties;
 import com.portfolio.demo_backend.dto.QuoteDTO;
 import com.portfolio.demo_backend.integration.finnhub.FinnhubQuoteRaw;
 import com.portfolio.demo_backend.mapper.QuoteMapper;
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,10 +25,10 @@ public class QuoteService {
     }
 
     public QuoteDTO getLastQuote(String symbol) throws IOException {
-        String url = "https://finnhub.io/api/v1/quote?symbol=" + symbol + "&token=" + props.getToken();
+        String url = props.getApiBase() + "/quote?symbol=" + symbol + "&token=" + props.getToken();
 
         Request request = new Request.Builder().url(url).get().build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected code " + response.code() + " - " + response.message());
             }
@@ -35,5 +36,9 @@ public class QuoteService {
             FinnhubQuoteRaw raw = mapper.readValue(body, FinnhubQuoteRaw.class);
             return QuoteMapper.toDTO(raw);
         }
+    }
+
+    protected Call newCall(Request request) {
+        return client.newCall(request);
     }
 }

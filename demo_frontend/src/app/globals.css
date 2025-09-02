@@ -311,6 +311,37 @@ body {
   color: var(--success-text);
 }
 
+/* Chip (toggle) */
+.chip {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+.chip:hover {
+  background: var(--btn-hover);
+}
+
+/* Selected chip */
+.chip-selected {
+  background: var(--text-primary) !important;
+  color: var(--btn-bg) !important;
+  box-shadow: var(--shadow-neu-inset);
+}
+
+/* Dark theme: selected chip */
+.dark .chip {
+  color: var(--input-text);
+  border-color: var(--border-color);
+}
+.dark .chip:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.dark .chip-selected {
+  background: var(--text-primary) !important;
+  color: var(--btn-bg) !important;
+  box-shadow: var(--shadow-neu-inset);
+}
+
 /* Login specific styles */
 .login-container {
   background: var(--bg-primary);
@@ -384,4 +415,41 @@ body {
 
 .page-text {
   color: var(--text-primary);
+}
+
+/* Dark-mode select */
+.dark select {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--text-primary);
+}
+
+.dark select option {
+  background: var(--bg-surface);
+  color: var(--input-text);
+}
+
+.dark .react-select__menu,
+.dark .select-dropdown,
+.dark .rs__menu {
+  background: var(--bg-surface) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--text-primary) !important;
+}
+
+.dark .react-select__option,
+.dark .select-dropdown__option,
+.dark .rs__option {
+  color: var(--input-text) !important;
+  background: transparent !important;
+}
+
+.dark .react-select__option--is-focused,
+.dark .select-dropdown__option--hover,
+.dark .rs__option--is-focused {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark select::-ms-expand {
+  filter: invert(1);
 }
