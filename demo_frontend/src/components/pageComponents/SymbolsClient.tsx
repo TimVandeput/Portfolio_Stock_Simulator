@@ -232,8 +232,8 @@ export default function SymbolsClient() {
               {error && <StatusMessage message={error} />}
             </div>
 
-            <SymbolsTableDesktop page={page} onToggle={onToggle} />
-            <SymbolsListMobile page={page} onToggle={onToggle} />
+            <SymbolsTableDesktop page={page} mode="admin" onToggle={onToggle} />
+            <SymbolsListMobile page={page} mode="admin" onToggle={onToggle} />
 
             <SymbolsPagination
               pageIdx={pageIdx}

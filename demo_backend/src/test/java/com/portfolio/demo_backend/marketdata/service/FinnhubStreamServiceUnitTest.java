@@ -19,7 +19,7 @@ class FinnhubStreamServiceUnitTest {
         FinnhubStreamService svc = new FinnhubStreamService(props);
 
         AtomicBoolean called = new AtomicBoolean(false);
-        svc.addListener("AAPL", (s, p) -> {
+        svc.addListener("AAPL", (s, p, pc) -> {
             if (s.equals("AAPL") && p == 123.45)
                 called.set(true);
         });

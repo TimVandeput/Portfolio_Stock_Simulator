@@ -37,13 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
+
+        final String path = request.getRequestURI();
+
         if (path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = resolveAccessToken(request);
+
         if (token != null && !token.isBlank()) {
             try {
                 String username = jwtService.extractUsername(token);
@@ -59,14 +62,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (username != null && role != null) {
                     var auth = new UsernamePasswordAuthenticationToken(
                             username, null, List.of(new SimpleGrantedAuthority(role)));
-                    logger.info("JWT OK for {} with authorities {}", username,
-                            List.of(new SimpleGrantedAuthority(role)));
-
                     SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    logger.info("JWT OK for {} with authorities {} on {}",
+                            username, auth.getAuthorities(), path);
                 }
             } catch (Exception ignored) {
-                // Invalid or expired token → leave unauthenticated
             }
+        } else {
+            logger.debug("No JWT provided on {}", path);
         }
 
         filterChain.doFilter(request, response);

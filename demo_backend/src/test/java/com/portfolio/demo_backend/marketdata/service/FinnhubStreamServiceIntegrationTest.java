@@ -38,7 +38,7 @@ class FinnhubStreamServiceIntegrationTest {
             FinnhubStreamService svc = new FinnhubStreamService(props);
 
             CountDownLatch latch = new CountDownLatch(1);
-            svc.addListener("AAPL", (s, p) -> {
+            svc.addListener("AAPL", (s, p, pc) -> {
                 if ("AAPL".equals(s) && p == 123.45) {
                     latch.countDown();
                 }

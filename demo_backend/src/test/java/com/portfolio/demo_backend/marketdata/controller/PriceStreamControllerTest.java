@@ -17,51 +17,51 @@ import static org.mockito.Mockito.*;
 
 class PriceStreamControllerTest {
 
-    @Test
-    void connects_andSendsHeartbeat_thenPrice() throws Exception {
-        FinnhubStreamService service = mock(FinnhubStreamService.class);
-        PriceStreamController ctrl = new PriceStreamController(service);
-        var mockMvc = MockMvcBuilders.standaloneSetup(ctrl).build();
+        @Test
+        void connects_andSendsHeartbeat_thenPrice() throws Exception {
+                FinnhubStreamService service = mock(FinnhubStreamService.class);
+                PriceStreamController ctrl = new PriceStreamController(service);
+                var mockMvc = MockMvcBuilders.standaloneSetup(ctrl).build();
 
-        ArgumentCaptor<FinnhubStreamService.PriceListener> listenerCaptor = ArgumentCaptor
-                .forClass(FinnhubStreamService.PriceListener.class);
+                ArgumentCaptor<FinnhubStreamService.PriceListener> listenerCaptor = ArgumentCaptor
+                                .forClass(FinnhubStreamService.PriceListener.class);
 
-        doNothing().when(service).addListener(eq("AAPL"), listenerCaptor.capture());
+                doNothing().when(service).addListener(eq("AAPL"), listenerCaptor.capture());
 
-        MockHttpServletResponse resp = mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/stream/prices")
-                        .param("symbols", "AAPL")
-                        .accept(MediaType.TEXT_EVENT_STREAM_VALUE))
-                .andReturn().getResponse();
+                MockHttpServletResponse resp = mockMvc.perform(
+                                MockMvcRequestBuilders.get("/api/stream/prices")
+                                                .param("symbols", "AAPL")
+                                                .accept(MediaType.TEXT_EVENT_STREAM_VALUE))
+                                .andReturn().getResponse();
 
-        String body = resp.getContentAsString();
-        assertThat(body).contains("event:heartbeat");
+                String body = resp.getContentAsString();
+                assertThat(body).contains("event:heartbeat");
 
-        verify(service, times(1)).addListener(eq("AAPL"), any());
-        FinnhubStreamService.PriceListener l = listenerCaptor.getValue();
-        assertThat(l).isNotNull();
+                verify(service, times(1)).addListener(eq("AAPL"), any());
+                FinnhubStreamService.PriceListener l = listenerCaptor.getValue();
+                assertThat(l).isNotNull();
 
-        l.onPrice("AAPL", 123.45);
+                l.onPrice("AAPL", 123.45, 2.5);
 
-        assertThat(resp.getContentType()).isEqualTo(MediaType.TEXT_EVENT_STREAM_VALUE);
-    }
+                assertThat(resp.getContentType()).isEqualTo(MediaType.TEXT_EVENT_STREAM_VALUE);
+        }
 
-    @Test
-    void capsAt50Symbols_insteadOfRejecting() throws Exception {
-        FinnhubStreamService service = mock(FinnhubStreamService.class);
-        PriceStreamController ctrl = new PriceStreamController(service);
-        var mockMvc = MockMvcBuilders.standaloneSetup(ctrl).build();
+        @Test
+        void capsAt50Symbols_insteadOfRejecting() throws Exception {
+                FinnhubStreamService service = mock(FinnhubStreamService.class);
+                PriceStreamController ctrl = new PriceStreamController(service);
+                var mockMvc = MockMvcBuilders.standaloneSetup(ctrl).build();
 
-        String tooMany = IntStream.range(0, 55).mapToObj(i -> "SYM" + i).collect(Collectors.joining(","));
+                String tooMany = IntStream.range(0, 55).mapToObj(i -> "SYM" + i).collect(Collectors.joining(","));
 
-        var res = mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/stream/prices")
-                        .param("symbols", tooMany)
-                        .accept(MediaType.TEXT_EVENT_STREAM_VALUE))
-                .andReturn().getResponse();
+                var res = mockMvc.perform(
+                                MockMvcRequestBuilders.get("/api/stream/prices")
+                                                .param("symbols", tooMany)
+                                                .accept(MediaType.TEXT_EVENT_STREAM_VALUE))
+                                .andReturn().getResponse();
 
-        assertThat(res.getStatus()).isEqualTo(200);
+                assertThat(res.getStatus()).isEqualTo(200);
 
-        verify(service, times(50)).addListener(any(), any());
-    }
+                verify(service, times(50)).addListener(any(), any());
+        }
 }

@@ -1,8 +1,8 @@
 import type { PriceEvent } from "@/types";
 
 type Handlers = {
-  onPrice?: (e: PriceEvent) => void;
-  onHeartbeat?: (e: PriceEvent) => void;
+  onPrice?: (event: PriceEvent) => void;
+  onHeartbeat?: (event: PriceEvent) => void;
   onOpen?: (ev: Event) => void;
   onError?: (ev: Event) => void;
   onClose?: () => void;
@@ -18,21 +18,56 @@ export function openPriceStream(
   handlers: Handlers = {}
 ): StreamController {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-  const params = new URLSearchParams({ symbols: symbols.join(",") });
-  const url = `${baseUrl}/api/stream/prices?${params.toString()}`;
+  const mkUrl = () => {
+    const params = new URLSearchParams({
+      symbols: symbols.join(","),
+      v: String(Date.now()),
+    });
+    return `${baseUrl}/api/stream/prices?${params.toString()}`;
+  };
 
   let es: EventSource | null = null;
   let closed = false;
+  let reopenTimer: ReturnType<typeof setTimeout> | null = null;
+  let backoff = 800;
+
+  const clearReopen = () => {
+    if (reopenTimer) {
+      clearTimeout(reopenTimer);
+      reopenTimer = null;
+    }
+  };
+
+  const scheduleReopen = () => {
+    if (closed) return;
+    clearReopen();
+    reopenTimer = setTimeout(() => {
+      backoff = Math.min(backoff * 1.5, 5_000);
+      open();
+    }, backoff);
+  };
 
   const open = () => {
     if (closed) return;
-    es = new EventSource(url, { withCredentials: true });
+    clearReopen();
 
-    es.onopen = (ev) => handlers.onOpen?.(ev);
+    es = new EventSource(mkUrl(), {
+      withCredentials: true,
+    });
 
-    es.onerror = (ev) => {
-      handlers.onError?.(ev);
-      if (es && es.readyState === 2 && !closed) {
+    es.onopen = (ev) => {
+      console.log("✅ SSE Connected");
+      backoff = 800;
+      handlers.onOpen?.(ev);
+    };
+
+    es.onmessage = (evt) => {
+      try {
+        const data = JSON.parse((evt as MessageEvent).data) as PriceEvent;
+        if (data?.type === "price") handlers.onPrice?.(data);
+        else if (data?.type === "heartbeat") handlers.onHeartbeat?.(data);
+      } catch (e) {
+        console.error("❌ SSE PARSE ERROR:", e);
       }
     };
 
@@ -40,8 +75,8 @@ export function openPriceStream(
       try {
         const data = JSON.parse((evt as MessageEvent).data) as PriceEvent;
         handlers.onPrice?.(data);
-      } catch {
-        // ignore malformed
+      } catch (e) {
+        console.error("❌ PRICE PARSE ERROR:", e);
       }
     });
 
@@ -50,9 +85,25 @@ export function openPriceStream(
         const data = JSON.parse((evt as MessageEvent).data) as PriceEvent;
         handlers.onHeartbeat?.(data);
       } catch {
-        // ignore malformed
+        /* ignore */
       }
     });
+
+    es.onerror = (ev) => {
+      console.error("🚨 SSE ERROR");
+      handlers.onError?.(ev);
+
+      if (!closed) {
+        if (es && es.readyState === 2 /* CLOSED */) {
+          console.log("🔄 Reconnecting...");
+          try {
+            es.close();
+          } catch {}
+          es = null;
+          scheduleReopen();
+        }
+      }
+    };
   };
 
   open();
@@ -60,10 +111,11 @@ export function openPriceStream(
   return {
     close: () => {
       closed = true;
-      if (es) {
-        es.close();
-        es = null;
-      }
+      clearReopen();
+      try {
+        es?.close();
+      } catch {}
+      es = null;
       handlers.onClose?.();
     },
     readyState: () => (es ? es.readyState : 2),

@@ -25,7 +25,7 @@ class PriceStreamControllerLifecycleTest {
         doAnswer(inv -> {
             String sym = inv.getArgument(0);
             FinnhubStreamService.PriceListener l = inv.getArgument(1);
-            l.onPrice(sym, 123.45);
+            l.onPrice(sym, 123.45, 2.5);
             return null;
         }).when(svc).addListener(eq("AAPL"), any());
 

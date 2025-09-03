@@ -17,8 +17,8 @@ class FinnhubStreamServiceListenersTest {
         FinnhubStreamService svc = new FinnhubStreamService(props);
 
         AtomicInteger calls = new AtomicInteger(0);
-        svc.addListener("TSLA", (s, p) -> calls.incrementAndGet());
-        svc.addListener("TSLA", (s, p) -> calls.incrementAndGet());
+        svc.addListener("TSLA", (s, p, pc) -> calls.incrementAndGet());
+        svc.addListener("TSLA", (s, p, pc) -> calls.incrementAndGet());
 
         java.lang.reflect.Method m = FinnhubStreamService.class.getDeclaredMethod("handle", String.class);
         m.setAccessible(true);
@@ -122,7 +122,7 @@ class FinnhubStreamServiceListenersTest {
         f.setAccessible(true);
         f.set(svc, d);
 
-        FinnhubStreamService.PriceListener listener = (s, p) -> {
+        FinnhubStreamService.PriceListener listener = (s, p, pc) -> {
         };
         svc.addListener("IBM", listener);
 
@@ -178,9 +178,9 @@ class FinnhubStreamServiceListenersTest {
         f.setAccessible(true);
         f.set(svc, d);
 
-        FinnhubStreamService.PriceListener l1 = (s, p) -> {
+        FinnhubStreamService.PriceListener l1 = (s, p, pc) -> {
         };
-        FinnhubStreamService.PriceListener l2 = (s, p) -> {
+        FinnhubStreamService.PriceListener l2 = (s, p, pc) -> {
         };
         svc.addListener("MSFT", l1);
         svc.addListener("MSFT", l2);

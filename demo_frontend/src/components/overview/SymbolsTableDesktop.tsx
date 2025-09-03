@@ -2,24 +2,56 @@
 
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import NeumorphicButton from "@/components/button/NeumorphicButton";
+
+type Price = { last?: number; percentChange?: number; lastUpdate?: number };
+type Mode = "admin" | "market";
 
 type Props = {
   page: Page<SymbolDTO> | null;
-  onToggle: (row: SymbolDTO, next: boolean) => void;
+  mode: Mode;
+  onToggle?: (row: SymbolDTO, next: boolean) => void;
+  prices?: Record<string, Price>;
+  onBuy?: (row: SymbolDTO) => void;
 };
 
-export default function SymbolsTableDesktop({ page, onToggle }: Props) {
+export default function SymbolsTableDesktop({
+  page,
+  mode,
+  onToggle,
+  prices,
+  onBuy,
+}: Props) {
+  const isAdmin = mode === "admin";
+  const isMarket = mode === "market";
+
+  const getPrice = (sym: string): Price => prices?.[sym] ?? {};
+  const colCount = isMarket ? 7 : 5;
+
+  const isRecentUpdate = (price: Price): boolean => {
+    if (!price.lastUpdate) return false;
+    return Date.now() - price.lastUpdate < 2000;
+  };
+
+  const colEls = [
+    <col key="sym" className="w-[10ch]" />,
+    <col key="name" />,
+    <col key="exch" className="w-[14ch]" />,
+    <col key="cur" className="w-[9ch]" />,
+    ...(isMarket
+      ? [
+          <col key="last" className="w-[10ch]" />,
+          <col key="chg" className="w-[10ch]" />,
+        ]
+      : []),
+    <col key="act" className="w-[18ch]" />,
+  ];
+
   return (
     <div className="hidden md:block rounded-2xl overflow-hidden border shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm table-fixed">
-          <colgroup>
-            <col className="w-[10ch]" />
-            <col />
-            <col className="w-[14ch]" />
-            <col className="w-[9ch]" />
-            <col className="w-[18ch]" />
-          </colgroup>
+          <colgroup>{colEls}</colgroup>
 
           <thead className="bg-[var(--surface)]">
             <tr className="text-left">
@@ -27,8 +59,14 @@ export default function SymbolsTableDesktop({ page, onToggle }: Props) {
               <th className="px-4 py-3 whitespace-nowrap">Name</th>
               <th className="px-4 py-3 whitespace-nowrap">Exchange</th>
               <th className="px-4 py-3 whitespace-nowrap">Currency</th>
+              {isMarket && (
+                <>
+                  <th className="px-4 py-3 whitespace-nowrap">Last</th>
+                  <th className="px-4 py-3 whitespace-nowrap">% Chg</th>
+                </>
+              )}
               <th className="px-4 py-3 text-center whitespace-nowrap">
-                Enabled
+                {isAdmin ? "Enabled" : "Actions"}
               </th>
             </tr>
           </thead>
@@ -36,57 +74,106 @@ export default function SymbolsTableDesktop({ page, onToggle }: Props) {
           <tbody>
             {page?.content?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center opacity-70">
+                <td
+                  colSpan={colCount}
+                  className="px-4 py-6 text-center opacity-70"
+                >
                   No symbols found.
                 </td>
               </tr>
             )}
-            {page?.content?.map((row) => (
-              <tr key={row.id} className="border-t">
-                <td
-                  className="px-4 py-3 font-semibold whitespace-nowrap"
-                  title={row.symbol}
-                >
-                  {row.symbol}
-                </td>
 
-                <td className="px-4 py-3 max-w-0">
-                  <span className="block truncate" title={row.name}>
-                    {row.name}
-                  </span>
-                </td>
+            {page?.content?.map((row) => {
+              const p = isMarket ? getPrice(row.symbol) : {};
+              const pc = p.percentChange ?? 0;
+              const pcClass =
+                pc > 0
+                  ? "text-emerald-500"
+                  : pc < 0
+                  ? "text-rose-500"
+                  : "opacity-80";
 
-                <td
-                  className="px-4 py-3 whitespace-nowrap"
-                  title={row.exchange}
-                >
-                  {row.exchange}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">{row.currency}</td>
+              const isRecent = isRecentUpdate(p);
 
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-2">
-                    {row.inUse && (
-                      <span className="px-2 py-0.5 text-[11px] rounded-full border">
-                        In use
-                      </span>
-                    )}
-                    <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={row.enabled}
-                        onChange={(e) => onToggle(row, e.target.checked)}
-                        className="h-4 w-4 accent-[var(--primary)]"
-                        aria-label={`Toggle ${row.symbol}`}
-                      />
-                      <span className="opacity-80">
-                        {row.enabled ? "On" : "Off"}
-                      </span>
-                    </label>
-                  </div>
-                </td>
-              </tr>
-            ))}
+              return (
+                <tr key={row.id} className="border-t">
+                  <td
+                    className="px-4 py-3 font-semibold whitespace-nowrap"
+                    title={row.symbol}
+                  >
+                    {row.symbol}
+                  </td>
+
+                  <td className="px-4 py-3 max-w-0">
+                    <span className="block truncate" title={row.name}>
+                      {row.name}
+                    </span>
+                  </td>
+
+                  <td
+                    className="px-4 py-3 whitespace-nowrap"
+                    title={row.exchange}
+                  >
+                    {row.exchange}
+                  </td>
+
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {row.currency}
+                  </td>
+
+                  {isMarket && (
+                    <>
+                      <td
+                        className="px-4 py-3 whitespace-nowrap font-mono text-amber-500"
+                        title={p.last?.toString() ?? ""}
+                      >
+                        {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
+                      </td>
+                      <td
+                        className={`px-4 py-3 whitespace-nowrap font-mono ${pcClass}`}
+                        title={`${pc.toFixed(2)}%`}
+                      >
+                        {p.percentChange !== undefined
+                          ? `${pc > 0 ? "+" : ""}${pc.toFixed(2)}%`
+                          : "—"}
+                      </td>
+                    </>
+                  )}
+
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      {isAdmin && row.inUse && (
+                        <span className="px-2 py-0.5 text-[11px] rounded-full border">
+                          In use
+                        </span>
+                      )}
+
+                      {isAdmin ? (
+                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={row.enabled}
+                            onChange={(e) => onToggle?.(row, e.target.checked)}
+                            className="h-4 w-4 accent-[var(--primary)]"
+                            aria-label={`Toggle ${row.symbol}`}
+                          />
+                          <span className="opacity-80">
+                            {row.enabled ? "On" : "Off"}
+                          </span>
+                        </label>
+                      ) : (
+                        <NeumorphicButton
+                          onClick={() => onBuy?.(row)}
+                          disabled={!row.enabled}
+                        >
+                          Buy
+                        </NeumorphicButton>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
