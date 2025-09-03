@@ -164,14 +164,14 @@ public class SymbolService {
 
     private int capFor(String universe) {
         if (universe == null)
-            return 150;
+            return 50;
         switch (universe.toUpperCase(Locale.ROOT)) {
             case "NDX":
-                return 150;
+                return 50;
             case "GSPC":
-                return 150;
+                return 50;
             default:
-                return 150;
+                return 50;
         }
     }
 
