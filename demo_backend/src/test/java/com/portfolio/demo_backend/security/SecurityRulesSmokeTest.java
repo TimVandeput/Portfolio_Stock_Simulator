@@ -43,7 +43,7 @@ class SecurityRulesSmokeTest {
     @Test
     void stream_requiresAuth() throws Exception {
         mockMvc.perform(get("/api/stream/prices").param("symbols", "AAPL"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -69,7 +69,7 @@ class SecurityRulesSmokeTest {
         @Bean
         JwtAuthenticationFilter jwtAuthenticationFilter() {
             JwtProperties props = new JwtProperties();
-            props.setSecret("TestSecretKeyForJwtThatIsLongEnough_1234567890"); // >= 32 bytes
+            props.setSecret("TestSecretKeyForJwtThatIsLongEnough_1234567890");
             props.setExpiration(900_000L);
             props.setRefreshExpiration(604_800_000L);
             JwtService jwtService = new JwtService(props);
