@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.integration.finnhub;
+package com.portfolio.demo_backend.marketdata.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
