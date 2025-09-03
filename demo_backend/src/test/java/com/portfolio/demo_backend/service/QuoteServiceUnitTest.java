@@ -3,7 +3,8 @@ package com.portfolio.demo_backend.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.FinnhubProperties;
 import com.portfolio.demo_backend.dto.QuoteDTO;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubQuoteRaw;
+import com.portfolio.demo_backend.marketdata.dto.FinnhubQuoteRaw;
+
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Protocol;

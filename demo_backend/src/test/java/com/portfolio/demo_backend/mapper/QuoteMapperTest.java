@@ -1,7 +1,8 @@
 package com.portfolio.demo_backend.mapper;
 
 import com.portfolio.demo_backend.dto.QuoteDTO;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubQuoteRaw;
+import com.portfolio.demo_backend.marketdata.dto.FinnhubQuoteRaw;
+
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

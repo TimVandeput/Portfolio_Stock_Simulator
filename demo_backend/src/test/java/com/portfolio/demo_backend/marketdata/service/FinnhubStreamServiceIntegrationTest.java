@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.marketdata;
+package com.portfolio.demo_backend.marketdata.service;
 
 import com.portfolio.demo_backend.config.FinnhubProperties;
 import okhttp3.Response;

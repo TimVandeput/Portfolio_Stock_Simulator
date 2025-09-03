@@ -2,7 +2,7 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.SymbolDTO;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
+import com.portfolio.demo_backend.marketdata.integration.FinnhubAdminClient;
 import com.portfolio.demo_backend.model.SymbolEntity;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.Test;
