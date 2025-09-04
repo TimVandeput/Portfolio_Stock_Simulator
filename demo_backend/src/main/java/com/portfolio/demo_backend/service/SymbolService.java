@@ -8,7 +8,9 @@ import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
 import com.portfolio.demo_backend.repository.SymbolRepository;
+import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,16 +19,17 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SymbolService {
 
     private final SymbolRepository symbolRepository;
     private final SymbolInUseChecker inUseChecker;
+    private final RapidApiClient rapidApiClient;
 
     private final AtomicBoolean importRunning = new AtomicBoolean(false);
     private volatile Instant lastImportedAt;
@@ -37,7 +40,7 @@ public class SymbolService {
             throw new ImportInProgressException();
         }
         try {
-            var summary = importFromFreeUniverse(universe);
+            var summary = importFromRapidApi(universe);
             lastImportedAt = Instant.now();
             lastSummary = summary;
             return summary;
@@ -46,63 +49,41 @@ public class SymbolService {
         }
     }
 
-    private ImportSummaryDTO importFromFreeUniverse(String universe) throws IOException {
-        List<SymbolItem> all = finnhub.listSymbolsByExchange("US");
-        final Set<String> allowedMics = allowedMicsFor(universe);
-        final int limit = capFor(universe);
+    private ImportSummaryDTO importFromRapidApi(String universe) throws IOException {
+        log.info("Importing symbols from RapidAPI for universe: {}", universe);
 
-        List<NormItem> selected = all.stream()
-                .filter(Objects::nonNull)
-                .filter(it -> it.symbol != null && !it.symbol.isBlank())
-                .filter(it -> it.description != null && !it.description.isBlank())
-                .filter(it -> it.type == null || "Common Stock".equalsIgnoreCase(it.type))
-                .filter(it -> it.currency == null || "USD".equalsIgnoreCase(it.currency))
-                .filter(it -> {
-                    if (it.mic == null)
-                        return true;
-                    return allowedMics.isEmpty() || allowedMics.contains(it.mic);
-                })
-                .map(it -> new NormItem(norm(it.symbol), it))
-                .filter(ni -> ni.sym != null && !ni.sym.isBlank())
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toMap(
-                                ni -> ni.sym,
-                                ni -> ni,
-                                (a, b) -> a,
-                                LinkedHashMap::new),
-                        m -> m.values().stream()
-                                .sorted(Comparator.comparing(ni -> ni.sym))
-                                .limit(limit)
-                                .collect(Collectors.toList())));
+        List<RapidApiClient.SymbolInfo> symbols = rapidApiClient.getTopSymbols(universe, 50);
+
+        if (symbols.isEmpty()) {
+            log.warn("No symbols returned from RapidAPI for universe: {}", universe);
+            return new ImportSummaryDTO(0, 0, 0);
+        }
 
         int imported = 0, updated = 0;
 
-        for (NormItem ni : selected) {
-            SymbolItem it = ni.raw;
-            String sym = ni.sym;
-
-            SymbolEntity e = symbolRepository.findBySymbol(sym).orElseGet(SymbolEntity::new);
+        for (RapidApiClient.SymbolInfo symbolInfo : symbols) {
+            SymbolEntity e = symbolRepository.findBySymbol(symbolInfo.symbol).orElseGet(SymbolEntity::new);
             boolean isNew = (e.getId() == null);
 
             if (isNew) {
-                e.setSymbol(sym);
+                e.setSymbol(symbolInfo.symbol);
                 e.setEnabled(true);
+                imported++;
+            } else {
+                updated++;
             }
 
-            e.setName(it.description);
-            e.setExchange(it.mic != null ? it.mic : "US");
-            e.setCurrency(it.currency);
-            e.setMic(it.mic);
+            e.setName(symbolInfo.name);
+            e.setExchange(symbolInfo.exchange);
+            e.setMic(symbolInfo.mic);
+            e.setCurrency(symbolInfo.currency);
 
             symbolRepository.save(e);
-            if (isNew)
-                imported++;
-            else
-                updated++;
         }
 
-        int skipped = Math.max(0, all.size() - selected.size());
-        return new ImportSummaryDTO(imported, updated, skipped);
+        log.info("Import completed: {} new, {} updated, {} total symbols from RapidAPI",
+                imported, updated, symbols.size());
+        return new ImportSummaryDTO(imported, updated, 0);
     }
 
     public Page<SymbolDTO> list(String q, Boolean enabled, Pageable pageable) {
@@ -140,45 +121,5 @@ public class SymbolService {
         return new ImportStatusDTO(importRunning.get(),
                 lastImportedAt != null ? lastImportedAt.toString() : null,
                 lastSummary);
-    }
-
-    private String norm(String s) {
-        return s == null ? null : s.trim().toUpperCase(Locale.ROOT);
-    }
-
-    private Set<String> allowedMicsFor(String universe) {
-        if (universe == null)
-            return Set.of("XNAS", "XNYS");
-        switch (universe.toUpperCase(Locale.ROOT)) {
-            case "NDX":
-                return Set.of("XNAS");
-            case "GSPC":
-                return Set.of("XNAS", "XNYS");
-            default:
-                return Set.of("XNAS", "XNYS");
-        }
-    }
-
-    private int capFor(String universe) {
-        if (universe == null)
-            return 50;
-        switch (universe.toUpperCase(Locale.ROOT)) {
-            case "NDX":
-                return 50;
-            case "GSPC":
-                return 50;
-            default:
-                return 50;
-        }
-    }
-
-    private static class NormItem {
-        final String sym;
-        final SymbolItem raw;
-
-        NormItem(String sym, SymbolItem raw) {
-            this.sym = sym;
-            this.raw = raw;
-        }
     }
 }
