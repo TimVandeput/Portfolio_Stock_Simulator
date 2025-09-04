@@ -7,8 +7,6 @@ import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
-import com.portfolio.demo_backend.marketdata.integration.FinnhubAdminClient;
-import com.portfolio.demo_backend.marketdata.integration.FinnhubAdminClient.SymbolItem;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -28,7 +26,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class SymbolService {
 
     private final SymbolRepository symbolRepository;
-    private final FinnhubAdminClient finnhub;
     private final SymbolInUseChecker inUseChecker;
 
     private final AtomicBoolean importRunning = new AtomicBoolean(false);
