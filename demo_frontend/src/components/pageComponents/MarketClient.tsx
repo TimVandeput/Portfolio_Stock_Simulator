@@ -45,6 +45,7 @@ export default function MarketClient() {
 
   const [prices, setPrices] = useState<Prices>({});
   const [lastPriceUpdate, setLastPriceUpdate] = useState<number>(0);
+  const [fetchingPrices, setFetchingPrices] = useState(false);
 
   const qRef = useRef(q);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -57,6 +58,7 @@ export default function MarketClient() {
     if (!hasAccess) return;
 
     try {
+      setFetchingPrices(true);
       console.log("🔄 Polling prices...");
       const allPrices = await getAllCurrentPrices();
       console.log(
@@ -96,6 +98,8 @@ export default function MarketClient() {
           console.warn("Access denied for price polling");
         }
       }
+    } finally {
+      setFetchingPrices(false);
     }
   }, [hasAccess]);
 
@@ -200,19 +204,6 @@ export default function MarketClient() {
     return items;
   }, [pageIdx, totalPages]);
 
-  const lastUpdateText = useMemo(() => {
-    if (!lastPriceUpdate) return "Never";
-    const now = Date.now();
-    const diff = now - lastPriceUpdate;
-    const minutes = Math.floor(diff / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s ago`;
-    }
-    return `${seconds}s ago`;
-  }, [lastPriceUpdate]);
-
   return (
     <>
       {showModal ? (
@@ -259,12 +250,22 @@ export default function MarketClient() {
             <div className="min-h-[28px] mb-1">
               {error && <StatusMessage message={error} />}
               {/* Price update status */}
-              {lastPriceUpdate > 0 && (
-                <div className="text-xs opacity-60 mb-2">
-                  Prices last updated: {lastUpdateText} • Auto-refresh every 2
-                  minutes
+              {fetchingPrices && (
+                <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
+                  <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-[var(--accent)]"></div>
+                  <span>Loading latest prices...</span>
                 </div>
               )}
+              {/* Show loading indicator when we have symbols but no prices loaded yet */}
+              {!fetchingPrices &&
+                lastPriceUpdate === 0 &&
+                page &&
+                page.content.length > 0 && (
+                  <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
+                    <div className="inline-block animate-pulse rounded-full h-3 w-3 bg-[var(--accent)]"></div>
+                    <span>Waiting for price data...</span>
+                  </div>
+                )}
             </div>
 
             {/* Overview tables in market mode */}
