@@ -1,25 +1,8 @@
 import { HttpClient, ApiError } from "@/lib/api/http";
+import type { YahooQuote } from "@/types";
 
 const client = new HttpClient();
 
-// Yahoo Finance Quote type (matches your backend)
-export type YahooQuote = {
-  symbol: string;
-  price: number | null;
-  change: number | null;
-  changePercent: number | null;
-  currency: string;
-  marketCap: number | null;
-  previousClose: number | null;
-  dayHigh: number | null;
-  dayLow: number | null;
-  volume: number | null;
-};
-
-/**
- * Get current prices for all enabled symbols (bulk fetch from Yahoo Finance)
- * Perfect for overview pages - loads all 674 symbols in ~5 seconds
- */
 export async function getAllCurrentPrices(): Promise<
   Record<string, YahooQuote>
 > {
@@ -38,9 +21,6 @@ export async function getAllCurrentPrices(): Promise<
   }
 }
 
-/**
- * Get current price for a specific symbol
- */
 export async function getCurrentPrice(symbol: string): Promise<YahooQuote> {
   try {
     return await client.get<YahooQuote>(
@@ -57,12 +37,4 @@ export async function getCurrentPrice(symbol: string): Promise<YahooQuote> {
     }
     throw err;
   }
-}
-
-/**
- * DEPRECATED: Use getAllCurrentPrices() instead for better performance
- */
-export async function getLastQuote(symbol: string): Promise<YahooQuote> {
-  console.warn("getLastQuote() is deprecated. Use getCurrentPrice() instead.");
-  return getCurrentPrice(symbol);
 }

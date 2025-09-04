@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.RapidApiProperties;
+import com.portfolio.demo_backend.marketdata.SymbolConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -222,20 +223,9 @@ public class RapidApiClient {
 
     private List<String> getCoreSymbolsForUniverse(String universe) {
         if ("NDX".equalsIgnoreCase(universe) || "NASDAQ".equalsIgnoreCase(universe)) {
-            return List.of(
-                    "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NFLX", "NVDA", "ADBE", "PYPL",
-                    "INTC", "CMCSA", "CSCO", "PEP", "COST", "AVGO", "TXN", "QCOM", "TMUS", "AMGN",
-                    "SBUX", "AMD", "INTU", "ISRG", "BKNG", "GILD", "MDLZ", "ADP", "REGN", "ATVI",
-                    "FISV", "CSX", "ILMN", "MRVL", "KDP", "ORLY", "LRCX", "EXC", "XEL", "VRSK",
-                    "CTSH", "FAST", "ROST", "CTAS", "PAYX", "ODFL", "CPRT", "MNST", "KLAC", "DDOG");
+            return SymbolConstants.NASDAQ_CORE_SYMBOLS;
         } else {
-            // S&P 500 core symbols
-            return List.of(
-                    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK.B", "UNH", "JNJ",
-                    "XOM", "JPM", "V", "PG", "MA", "HD", "CVX", "LLY", "ABBV", "PFE",
-                    "KO", "AVGO", "MRK", "BAC", "PEP", "TMO", "COST", "WMT", "DIS", "ABT",
-                    "ACN", "CRM", "DHR", "NEE", "VZ", "ADBE", "TXN", "RTX", "NKE", "BMY",
-                    "QCOM", "PM", "T", "LIN", "UPS", "HON", "ORCL", "LOW", "WFC", "UNP");
+            return SymbolConstants.SP500_CORE_SYMBOLS;
         }
     }
 
@@ -245,7 +235,7 @@ public class RapidApiClient {
 
         try {
             List<SymbolInfo> trending = getTrendingSymbols();
-            trending.sort((a, b) -> a.symbol.compareTo(b.symbol)); // Alphabetical for consistency
+            trending.sort((a, b) -> a.symbol.compareTo(b.symbol));
 
             for (SymbolInfo symbol : trending) {
                 if (coreSymbols.size() >= limit)
@@ -308,44 +298,6 @@ public class RapidApiClient {
                                 result.add(info);
                             }
                         }
-                    }
-                }
-            }
-
-            return result;
-        }
-    }
-
-    private List<SymbolInfo> getSymbolsBySearch(String query, int maxResults) throws IOException {
-        String url = props.getBaseUrl() + "/auto-complete?q=" + query + "&region=US";
-
-        Request req = new Request.Builder()
-                .url(url)
-                .header("x-rapidapi-key", props.getKey())
-                .header("x-rapidapi-host", props.getHost())
-                .header("User-Agent", "Portfolio-Backend/1.0")
-                .build();
-
-        try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful()) {
-                throw new IOException("Auto-complete API failed: " + resp.code());
-            }
-
-            String responseBody = resp.body().string();
-            var response = mapper.readTree(responseBody);
-            List<SymbolInfo> result = new ArrayList<>();
-
-            var quotes = response.get("quotes");
-            if (quotes != null && quotes.isArray()) {
-                int count = 0;
-                for (JsonNode quote : quotes) {
-                    if (count >= maxResults)
-                        break;
-
-                    SymbolInfo info = parseSymbolFromQuote(quote);
-                    if (info != null) {
-                        result.add(info);
-                        count++;
                     }
                 }
             }

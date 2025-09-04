@@ -5,4 +5,3 @@ export * from "./components";
 export * from "./symbol";
 export * from "./quote";
 export * from "./pagination";
-export * from "./stream";

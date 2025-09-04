@@ -10,11 +10,9 @@ import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 
 import { listSymbols } from "@/lib/api/symbols";
 import { getAllCurrentPrices } from "@/lib/api/prices";
-import { openPriceStream, type StreamController } from "@/lib/api/stream";
 import { ApiError } from "@/lib/api/http";
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
-import type { PriceEvent } from "@/types";
 
 type Prices = Record<
   string,
@@ -46,20 +44,67 @@ export default function MarketClient() {
   const [loading, setLoading] = useState(false);
 
   const [prices, setPrices] = useState<Prices>({});
-
-  const prevPricesRef = useRef<Record<string, number>>({});
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<number>(0);
 
   const qRef = useRef(q);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     qRef.current = q;
   }, [q]);
+
+  const fetchPrices = useCallback(async () => {
+    if (!hasAccess) return;
+
+    try {
+      console.log("🔄 Polling prices...");
+      const allPrices = await getAllCurrentPrices();
+      console.log(
+        "✅ Got prices for",
+        Object.keys(allPrices).length,
+        "symbols"
+      );
+
+      setPrices((prev) => {
+        const newPrices: Prices = { ...prev };
+        let updatedCount = 0;
+
+        Object.entries(allPrices).forEach(([symbol, priceData]) => {
+          if (priceData && priceData.price !== null) {
+            newPrices[symbol] = {
+              last: priceData.price,
+              percentChange: priceData.changePercent ?? undefined,
+              lastUpdate: Date.now(),
+            };
+            updatedCount++;
+          }
+        });
+
+        console.log(`💰 Updated prices for ${updatedCount} symbols`);
+        return newPrices;
+      });
+
+      setLastPriceUpdate(Date.now());
+      setError("");
+    } catch (priceError) {
+      console.error("❌ Failed to poll prices:", priceError);
+
+      if (priceError instanceof ApiError) {
+        if (priceError.status === 401) {
+          console.warn("Authentication required for price polling");
+        } else if (priceError.status === 403) {
+          console.warn("Access denied for price polling");
+        }
+      }
+    }
+  }, [hasAccess]);
 
   const fetchPage = useCallback(
     async (idx: number) => {
       setError("");
       setLoading(true);
       try {
-        console.log("🔍 Fetching page", idx, "hasAccess:", hasAccess);
+        console.log("🔍 Fetching page", idx);
         const res = await listSymbols({
           q: qRef.current.trim() || undefined,
           enabled: true,
@@ -69,78 +114,15 @@ export default function MarketClient() {
         setPage(res);
         setPageIdx(idx);
 
-        // Get current symbols for this page
-        const symbols = res.content.map((s) => s.symbol);
-
-        // Load initial prices from Yahoo Finance API
-        try {
-          console.log("🔄 Loading initial prices for symbols:", symbols);
-          const initialPrices = await getAllCurrentPrices();
-          console.log(
-            "✅ Got initial prices:",
-            Object.keys(initialPrices).length,
-            "symbols"
-          );
-
-          setPrices((prev) => {
-            const newPrices: Prices = {};
-            let pricesFound = 0;
-            for (const s of res.content) {
-              const yahooPriceData = initialPrices[s.symbol];
-              if (yahooPriceData && yahooPriceData.price !== null) {
-                // Use Yahoo Finance data for initial load
-                newPrices[s.symbol] = {
-                  last: yahooPriceData.price,
-                  percentChange: yahooPriceData.changePercent ?? undefined,
-                  lastUpdate: Date.now(),
-                };
-                pricesFound++;
-                console.log(
-                  `💰 Price for ${s.symbol}: $${yahooPriceData.price} (${yahooPriceData.changePercent}%)`
-                );
-              } else {
-                // Preserve existing price data if Yahoo Finance doesn't have it
-                newPrices[s.symbol] = prev[s.symbol] || {};
-                console.log(`❌ No price data for ${s.symbol}`);
-              }
-            }
-            console.log(
-              `✅ Set prices for ${pricesFound}/${res.content.length} symbols`
-            );
-            return newPrices;
-          });
-        } catch (priceError) {
-          console.error("❌ Failed to load initial prices:", priceError);
-
-          // Handle specific error types
-          if (priceError instanceof ApiError) {
-            if (priceError.status === 401) {
-              setError("Please log in to view market prices");
-            } else if (priceError.status === 403) {
-              setError("Access denied. Please check your permissions.");
-            } else {
-              setError(`Failed to load prices: ${priceError.message}`);
-            }
-          } else if (
-            priceError instanceof Error &&
-            priceError.message.includes("fetch")
-          ) {
-            setError(
-              "Cannot connect to price server. Please check if the backend is running."
-            );
-          } else {
-            setError("Failed to load prices. Please try again.");
+        setPrices((prev) => {
+          const newPrices: Prices = {};
+          for (const s of res.content) {
+            newPrices[s.symbol] = prev[s.symbol] || {};
           }
+          return newPrices;
+        });
 
-          // Fall back to preserving existing prices without Yahoo Finance data
-          setPrices((prev) => {
-            const newPrices: Prices = {};
-            for (const s of res.content) {
-              newPrices[s.symbol] = prev[s.symbol] || {};
-            }
-            return newPrices;
-          });
-        }
+        await fetchPrices();
       } catch (e) {
         console.error("❌ Failed to load symbols:", e);
         setError((e as any)?.message || "Failed to load markets.");
@@ -148,17 +130,36 @@ export default function MarketClient() {
         setLoading(false);
       }
     },
-    [pageSize, hasAccess]
+    [pageSize, fetchPrices]
   );
+
+  useEffect(() => {
+    if (!hasAccess) {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      return;
+    }
+
+    console.log("🔄 Starting price polling every 2 minutes");
+    pollingIntervalRef.current = setInterval(fetchPrices, 120000);
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [hasAccess, fetchPrices]);
 
   useEffect(() => {
     if (hasAccess) {
       console.log("✅ Access granted, fetching initial page");
       fetchPage(0);
-    } else {
-      console.log("❌ Access denied, not fetching data");
     }
   }, [hasAccess, fetchPage]);
+
   useEffect(() => {
     if (!hasAccess) return;
     fetchPage(0);
@@ -170,78 +171,6 @@ export default function MarketClient() {
     return () => clearTimeout(t);
   }, [q, hasAccess, fetchPage]);
 
-  const visibleSymbols = useMemo(
-    () => (page?.content ?? []).map((s) => s.symbol),
-    [page?.content]
-  );
-  const symKey = useMemo(() => visibleSymbols.join(","), [visibleSymbols]);
-
-  const streamRef = useRef<StreamController | null>(null);
-  const lastKeyRef = useRef<string>("");
-
-  const mountedOnceRef = useRef(false);
-
-  useEffect(() => {
-    if (!hasAccess || visibleSymbols.length === 0) return;
-
-    if (!mountedOnceRef.current) {
-      mountedOnceRef.current = true;
-    }
-
-    if (lastKeyRef.current === symKey && streamRef.current) {
-      return;
-    }
-
-    if (streamRef.current) {
-      try {
-        streamRef.current.close();
-      } catch {}
-      streamRef.current = null;
-    }
-
-    const ctrl = openPriceStream(visibleSymbols, {
-      onPrice: (e: PriceEvent) => {
-        console.log("📈 SSE Price update:", e.symbol, e.price, e.percentChange);
-        if (e.type !== "price" || !e.symbol) return;
-
-        setPrices((prev) => {
-          prevPricesRef.current[e.symbol] = e.price;
-
-          return {
-            ...prev,
-            [e.symbol]: {
-              percentChange: e.percentChange,
-              last: e.price,
-              lastUpdate: Date.now(),
-            },
-          };
-        });
-      },
-      onOpen: () => {
-        console.log(
-          "🔌 SSE connection opened for symbols:",
-          visibleSymbols.join(",")
-        );
-      },
-      onHeartbeat: () => {
-        console.log("💓 SSE heartbeat");
-      },
-      onError: (error) => {
-        console.error("❌ SSE connection error:", error);
-      },
-    });
-
-    streamRef.current = ctrl;
-    lastKeyRef.current = symKey;
-
-    return () => {
-      try {
-        streamRef.current?.close();
-      } catch {}
-      streamRef.current = null;
-      lastKeyRef.current = "";
-    };
-  }, [symKey, hasAccess]);
   const handleBuy = useCallback((row: SymbolDTO) => {
     console.log("Buy clicked:", row.symbol);
     alert(`Buy ${row.symbol} — hook up your order modal here.`);
@@ -270,6 +199,19 @@ export default function MarketClient() {
     }
     return items;
   }, [pageIdx, totalPages]);
+
+  const lastUpdateText = useMemo(() => {
+    if (!lastPriceUpdate) return "Never";
+    const now = Date.now();
+    const diff = now - lastPriceUpdate;
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s ago`;
+    }
+    return `${seconds}s ago`;
+  }, [lastPriceUpdate]);
 
   return (
     <>
@@ -316,17 +258,16 @@ export default function MarketClient() {
 
             <div className="min-h-[28px] mb-1">
               {error && <StatusMessage message={error} />}
-              {/* Debug info - remove this later */}
-              {process.env.NODE_ENV === "development" && (
+              {/* Price update status */}
+              {lastPriceUpdate > 0 && (
                 <div className="text-xs opacity-60 mb-2">
-                  Debug: hasAccess={String(hasAccess)}, isLoading=
-                  {String(isLoading)}, symbols={visibleSymbols.length}, prices=
-                  {Object.keys(prices).length}
+                  Prices last updated: {lastUpdateText} • Auto-refresh every 2
+                  minutes
                 </div>
               )}
             </div>
 
-            {/* Overview tables in market mode with live prices & Buy action */}
+            {/* Overview tables in market mode */}
             <SymbolsTableDesktop
               page={page}
               mode="market"
