@@ -189,34 +189,19 @@ public class RapidApiClient {
         List<String> coreSymbols = getCoreSymbolsForUniverse(universe);
         List<SymbolInfo> result = new ArrayList<>();
 
-        for (String symbol : coreSymbols) {
-            if (result.size() >= limit)
+        for (int i = 0; i < Math.min(coreSymbols.size(), limit); i += 10) {
+            int endIndex = Math.min(i + 10, Math.min(coreSymbols.size(), limit));
+            List<String> batch = coreSymbols.subList(i, endIndex);
+
+            List<SymbolInfo> batchInfo = getSymbolDetails(batch);
+            result.addAll(batchInfo);
+
+            if (result.size() >= limit) {
                 break;
-
-            SymbolInfo symbolInfo = new SymbolInfo();
-            symbolInfo.symbol = symbol;
-            symbolInfo.name = symbol + " Inc.";
-            symbolInfo.exchange = determineExchangeFromSymbol(symbol);
-            symbolInfo.currency = "USD";
-
-            if (symbolInfo.exchange.toLowerCase().contains("nasdaq") ||
-                    "NMS".equalsIgnoreCase(symbolInfo.exchange)) {
-                symbolInfo.mic = "XNAS";
-            } else if (symbolInfo.exchange.toLowerCase().contains("nyse") ||
-                    "NYQ".equalsIgnoreCase(symbolInfo.exchange)) {
-                symbolInfo.mic = "XNYS";
-            } else {
-                symbolInfo.mic = "XNAS";
             }
-
-            result.add(symbolInfo);
         }
 
-        if (result.size() < limit) {
-            supplementWithDynamicSymbols(result, universe, limit);
-        }
-
-        log.info("Successfully fetched {} symbols for universe {} (deterministic core + dynamic supplement)",
+        log.info("Successfully fetched {} symbols for universe {} ",
                 result.size(), universe);
         return result;
     }
@@ -229,105 +214,80 @@ public class RapidApiClient {
         }
     }
 
-    private void supplementWithDynamicSymbols(List<SymbolInfo> coreSymbols, String universe, int limit) {
-        if (coreSymbols.size() >= limit)
-            return;
-
-        try {
-            List<SymbolInfo> trending = getTrendingSymbols();
-            trending.sort((a, b) -> a.symbol.compareTo(b.symbol));
-
-            for (SymbolInfo symbol : trending) {
-                if (coreSymbols.size() >= limit)
-                    break;
-                boolean exists = coreSymbols.stream().anyMatch(s -> s.symbol.equals(symbol.symbol));
-                if (!exists && matchesUniverse(symbol, universe)) {
-                    coreSymbols.add(symbol);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to supplement with trending symbols: {}", e.getMessage());
+    private List<SymbolInfo> getSymbolDetails(List<String> symbols) throws IOException {
+        if (symbols.isEmpty()) {
+            return List.of();
         }
-    }
 
-    private boolean matchesUniverse(SymbolInfo symbol, String universe) {
-        if ("NDX".equalsIgnoreCase(universe) || "NASDAQ".equalsIgnoreCase(universe)) {
-            return "XNAS".equals(symbol.mic) || "NMS".equalsIgnoreCase(symbol.exchange) ||
-                    "NCM".equalsIgnoreCase(symbol.exchange) || "NASDAQ".equalsIgnoreCase(symbol.exchange) ||
-                    "NGM".equalsIgnoreCase(symbol.exchange) || "NAS".equalsIgnoreCase(symbol.exchange);
-        }
-        return true;
-    }
-
-    private String determineExchangeFromSymbol(String symbol) {
-        if (symbol.contains("."))
-            return "NYSE";
-        return "NMS";
-    }
-
-    private List<SymbolInfo> getTrendingSymbols() throws IOException {
-        String url = props.getBaseUrl() + "/market/get-trending-tickers?region=US";
+        String symbolsParam = String.join(",", symbols);
+        String url = props.getBaseUrl() + "/market/v2/get-quotes?region=US&symbols=" + symbolsParam;
 
         Request req = new Request.Builder()
                 .url(url)
-                .header("x-rapidapi-key", props.getKey())
-                .header("x-rapidapi-host", props.getHost())
-                .header("User-Agent", "Portfolio-Backend/1.0")
+                .addHeader("X-RapidAPI-Key", props.getKey())
+                .addHeader("X-RapidAPI-Host", props.getHost())
                 .build();
 
         try (Response resp = http.newCall(req).execute()) {
             if (!resp.isSuccessful()) {
-                throw new IOException("Trending API failed: " + resp.code());
+                log.error("Symbol details API failed: {} - {}", resp.code(),
+                        resp.body() != null ? resp.body().string() : "No response body");
+                throw new IOException("Symbol details API failed: " + resp.code());
             }
 
-            String responseBody = resp.body().string();
-            var response = mapper.readTree(responseBody);
+            String body = resp.body().string();
+            JsonNode root = mapper.readTree(body);
+
+            log.info("Yahoo Finance API response for symbol details: {}", body);
+
             List<SymbolInfo> result = new ArrayList<>();
 
-            var finance = response.get("finance");
-            if (finance != null && finance.get("result") != null && finance.get("result").isArray()) {
-                var resultArray = finance.get("result");
-                if (resultArray.size() > 0) {
-                    var firstResult = resultArray.get(0);
-                    var quotes = firstResult.get("quotes");
+            if (root.has("quoteResponse") && root.get("quoteResponse").has("result")) {
+                JsonNode results = root.get("quoteResponse").get("result");
+                log.info("Processing {} results from Yahoo Finance API", results.size());
 
-                    if (quotes != null && quotes.isArray()) {
-                        for (JsonNode quote : quotes) {
-                            SymbolInfo info = parseSymbolFromQuote(quote);
-                            if (info != null) {
-                                result.add(info);
-                            }
-                        }
+                for (JsonNode item : results) {
+                    String symbol = item.path("symbol").asText();
+                    String longName = item.path("longName").asText(null);
+                    String shortName = item.path("shortName").asText(null);
+                    String fullExchange = item.path("fullExchangeName").asText(null);
+                    String exchange = item.path("exchange").asText(null);
+                    String currency = item.path("currency").asText(null);
+
+                    log.info("Symbol: {}, LongName: {}, ShortName: {}, FullExchange: {}, Exchange: {}, Currency: {}",
+                            symbol, longName, shortName, fullExchange, exchange, currency);
+
+                    if (symbol == null || symbol.isBlank() ||
+                            (longName == null || longName.isBlank()) && (shortName == null || shortName.isBlank())) {
+                        log.warn("Skipping symbol {} - missing symbol or name", symbol);
+                        continue;
                     }
+
+                    SymbolInfo symbolInfo = new SymbolInfo();
+                    symbolInfo.symbol = symbol;
+                    symbolInfo.name = longName != null && !longName.isBlank() ? longName : shortName;
+                    symbolInfo.exchange = fullExchange != null && !fullExchange.isBlank() ? fullExchange
+                            : exchange != null && !exchange.isBlank() ? exchange : "NASDAQ";
+                    symbolInfo.currency = currency != null && !currency.isBlank() ? currency : "USD";
+
+                    String exchangeLower = symbolInfo.exchange.toLowerCase();
+                    if (exchangeLower.contains("nasdaq")) {
+                        symbolInfo.mic = "XNAS";
+                    } else if (exchangeLower.contains("nyse") || exchangeLower.contains("new york")) {
+                        symbolInfo.mic = "XNYS";
+                    } else {
+                        symbolInfo.mic = "XNAS";
+                    }
+
+                    result.add(symbolInfo);
+                    log.info("Added symbol: {} - {}", symbolInfo.symbol, symbolInfo.name);
                 }
+            } else {
+                log.error("No quoteResponse or result found in API response. Full response: {}", body);
             }
 
+            log.info("Successfully processed {} symbols from Yahoo Finance", result.size());
             return result;
         }
-    }
-
-    private SymbolInfo parseSymbolFromQuote(JsonNode quote) {
-        String symbol = quote.has("symbol") ? quote.get("symbol").asText() : null;
-        if (symbol == null || symbol.isBlank() || symbol.contains("=") || symbol.contains(".") || symbol.length() > 5) {
-            return null;
-        }
-
-        SymbolInfo info = new SymbolInfo();
-        info.symbol = symbol;
-        info.name = quote.has("longname") ? quote.get("longname").asText()
-                : quote.has("shortname") ? quote.get("shortname").asText() : symbol + " Inc.";
-        info.exchange = quote.has("exchange") ? quote.get("exchange").asText() : "UNKNOWN";
-        info.currency = "USD";
-
-        if ("NASDAQ".equalsIgnoreCase(info.exchange) || "NMS".equalsIgnoreCase(info.exchange) ||
-                "NCM".equalsIgnoreCase(info.exchange) || "NGM".equalsIgnoreCase(info.exchange)) {
-            info.mic = "XNAS";
-        } else if ("NYSE".equalsIgnoreCase(info.exchange) || "NYQ".equalsIgnoreCase(info.exchange)) {
-            info.mic = "XNYS";
-        } else {
-            info.mic = info.exchange;
-        }
-
-        return info;
     }
 }
