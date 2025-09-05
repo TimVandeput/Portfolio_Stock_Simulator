@@ -1,6 +1,6 @@
 package com.portfolio.demo_backend.marketdata.controller;
 
-import com.portfolio.demo_backend.dto.YahooQuoteDTO;
+import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
