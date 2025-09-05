@@ -101,6 +101,13 @@ public class GlobalExceptionHandler {
                 req.getMethod(), req.getRequestURI(), req.getHeader("Accept"),
                 ex.toString(), ex);
 
+        String accept = req.getHeader("Accept");
+        if (accept != null && accept.contains(MediaType.TEXT_EVENT_STREAM_VALUE)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("stream error");
+        }
+
         Map<String, String> body = new HashMap<>();
         body.put("error", ex.getClass().getSimpleName() + ": " + String.valueOf(ex.getMessage()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
