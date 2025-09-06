@@ -108,7 +108,7 @@ export default function SymbolsTableDesktop({
                   className={`border-t transition-all duration-500 ${
                     isPulsing
                       ? "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.01]"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      : ""
                   }`}
                 >
                   <td
