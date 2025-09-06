@@ -50,7 +50,7 @@ public class SecurityConfig {
 
                     auth.requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated();
                     auth.requestMatchers(HttpMethod.GET, "/api/prices/**").authenticated();
-                    auth.requestMatchers(HttpMethod.GET, "/api/stream/**").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/stream/**").permitAll();
 
                     auth.requestMatchers("/api/users/**").permitAll();
 

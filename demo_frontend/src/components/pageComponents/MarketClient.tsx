@@ -10,9 +10,11 @@ import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 
 import { listSymbols } from "@/lib/api/symbols";
 import { getAllCurrentPrices } from "@/lib/api/prices";
+import { openPriceStream, type StreamController } from "@/lib/api/stream";
 import { ApiError } from "@/lib/api/http";
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import type { PriceEvent } from "@/types";
 
 type Prices = Record<
   string,
@@ -44,25 +46,33 @@ export default function MarketClient() {
   const [loading, setLoading] = useState(false);
 
   const [prices, setPrices] = useState<Prices>({});
-  const [lastPriceUpdate, setLastPriceUpdate] = useState<number>(0);
-  const [fetchingPrices, setFetchingPrices] = useState(false);
+  const [initialPricesLoaded, setInitialPricesLoaded] = useState(false);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  const [pulsatingSymbols, setPulsatingSymbols] = useState<Set<string>>(
+    new Set()
+  );
 
+  const prevPricesRef = useRef<Record<string, number>>({});
+  const streamRef = useRef<StreamController | null>(null);
+  const pulseTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const qRef = useRef(q);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     qRef.current = q;
   }, [q]);
 
-  const fetchPrices = useCallback(async () => {
-    if (!hasAccess) return;
+  const loadInitialPrices = useCallback(async () => {
+    if (!hasAccess || !page || page.content.length === 0 || loadingPrices)
+      return;
 
     try {
-      setFetchingPrices(true);
-      console.log("🔄 Polling prices...");
+      setLoadingPrices(true);
+      console.log("🔄 Loading initial prices via Yahoo batch...");
+
       const allPrices = await getAllCurrentPrices();
+
       console.log(
-        "✅ Got prices for",
+        "✅ Got initial prices for",
         Object.keys(allPrices).length,
         "symbols"
       );
@@ -78,30 +88,29 @@ export default function MarketClient() {
               percentChange: priceData.changePercent ?? undefined,
               lastUpdate: Date.now(),
             };
+            prevPricesRef.current[symbol] = priceData.price;
             updatedCount++;
           }
         });
 
-        console.log(`💰 Updated prices for ${updatedCount} symbols`);
+        console.log(`💰 Loaded initial prices for ${updatedCount} symbols`);
         return newPrices;
       });
 
-      setLastPriceUpdate(Date.now());
+      setInitialPricesLoaded(true);
       setError("");
     } catch (priceError) {
-      console.error("❌ Failed to poll prices:", priceError);
-
-      if (priceError instanceof ApiError) {
-        if (priceError.status === 401) {
-          console.warn("Authentication required for price polling");
-        } else if (priceError.status === 403) {
-          console.warn("Access denied for price polling");
-        }
-      }
+      console.error("❌ Failed to load initial prices:", priceError);
+      setError("Failed to load initial prices");
     } finally {
-      setFetchingPrices(false);
+      setLoadingPrices(false);
     }
-  }, [hasAccess]);
+  }, [hasAccess, page, loadingPrices]);
+
+  const fetchPrices = useCallback(async () => {
+    // This function is no longer needed with streaming approach
+    return;
+  }, []);
 
   const fetchPage = useCallback(
     async (idx: number) => {
@@ -117,16 +126,6 @@ export default function MarketClient() {
         });
         setPage(res);
         setPageIdx(idx);
-
-        setPrices((prev) => {
-          const newPrices: Prices = {};
-          for (const s of res.content) {
-            newPrices[s.symbol] = prev[s.symbol] || {};
-          }
-          return newPrices;
-        });
-
-        await fetchPrices();
       } catch (e) {
         console.error("❌ Failed to load symbols:", e);
         setError((e as any)?.message || "Failed to load markets.");
@@ -138,24 +137,101 @@ export default function MarketClient() {
   );
 
   useEffect(() => {
-    if (!hasAccess) {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-      return;
+    if (hasAccess && !initialPricesLoaded && !loadingPrices) {
+      loadInitialPrices();
     }
+  }, [hasAccess, initialPricesLoaded, loadingPrices, loadInitialPrices]);
 
-    console.log("🔄 Starting price polling every 2 minutes");
-    pollingIntervalRef.current = setInterval(fetchPrices, 120000);
+  useEffect(() => {
+    if (!hasAccess || !initialPricesLoaded) return;
 
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
+    console.log("🔗 Starting Finnhub price stream...");
+
+    const getStreamingSymbols = async () => {
+      try {
+        const symbolsPage = await listSymbols({ size: 200 }); // Get first 200 symbols for streaming
+        return symbolsPage.content.map((s) => s.symbol);
+      } catch (e) {
+        console.error("Failed to get symbols for streaming:", e);
+        return [];
       }
     };
-  }, [hasAccess, fetchPrices]);
+
+    getStreamingSymbols().then((symbols) => {
+      if (symbols.length === 0) return;
+
+      const stream = openPriceStream(symbols, {
+        onPrice: (priceEvent) => {
+          const { symbol, price, percentChange } = priceEvent;
+
+          setPrices((prev) => {
+            const currentPrice = prev[symbol]?.last;
+
+            if (currentPrice !== price) {
+              prevPricesRef.current[symbol] = currentPrice || price;
+
+              console.log(
+                `💥 Price update: ${symbol} ${currentPrice} → ${price}`
+              );
+
+              setPulsatingSymbols((prevPulsing) => {
+                const newPulsing = new Set(prevPulsing);
+                newPulsing.add(symbol);
+                return newPulsing;
+              });
+
+              if (pulseTimeoutRef.current[symbol]) {
+                clearTimeout(pulseTimeoutRef.current[symbol]);
+              }
+
+              pulseTimeoutRef.current[symbol] = setTimeout(() => {
+                setPulsatingSymbols((prevPulsing) => {
+                  const newPulsing = new Set(prevPulsing);
+                  newPulsing.delete(symbol);
+                  return newPulsing;
+                });
+                delete pulseTimeoutRef.current[symbol];
+              }, 1500);
+
+              return {
+                ...prev,
+                [symbol]: {
+                  last: price,
+                  percentChange,
+                  lastUpdate: Date.now(),
+                },
+              };
+            }
+            return prev;
+          });
+        },
+        onOpen: () => {
+          console.log("✅ Price stream connected");
+        },
+        onError: () => {
+          console.error("❌ Price stream error");
+        },
+        onClose: () => {
+          console.log("🔌 Price stream closed");
+        },
+      });
+
+      streamRef.current = stream;
+    });
+
+    return () => {
+      if (streamRef.current) {
+        console.log("🔌 Closing price stream...");
+        streamRef.current.close();
+        streamRef.current = null;
+      }
+
+      Object.values(pulseTimeoutRef.current).forEach((timeout) => {
+        clearTimeout(timeout);
+      });
+      pulseTimeoutRef.current = {};
+    };
+  }, [hasAccess, initialPricesLoaded]);
 
   useEffect(() => {
     if (hasAccess) {
@@ -250,15 +326,15 @@ export default function MarketClient() {
             <div className="min-h-[28px] mb-1">
               {error && <StatusMessage message={error} />}
               {/* Price update status */}
-              {fetchingPrices && (
+              {loadingPrices && (
                 <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
                   <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-[var(--accent)]"></div>
-                  <span>Loading latest prices...</span>
+                  <span>Loading initial prices...</span>
                 </div>
               )}
               {/* Show loading indicator when we have symbols but no prices loaded yet */}
-              {!fetchingPrices &&
-                lastPriceUpdate === 0 &&
+              {!loadingPrices &&
+                !initialPricesLoaded &&
                 page &&
                 page.content.length > 0 && (
                   <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
@@ -273,12 +349,14 @@ export default function MarketClient() {
               page={page}
               mode="market"
               prices={prices}
+              pulsatingSymbols={pulsatingSymbols}
               onBuy={handleBuy}
             />
             <SymbolsListMobile
               page={page}
               mode="market"
               prices={prices}
+              pulsatingSymbols={pulsatingSymbols}
               onBuy={handleBuy}
             />
 

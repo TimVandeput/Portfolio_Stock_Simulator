@@ -12,6 +12,7 @@ type Props = {
   mode: Mode;
   onToggle?: (row: SymbolDTO, next: boolean) => void;
   prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
   onBuy?: (row: SymbolDTO) => void;
 };
 
@@ -20,6 +21,7 @@ export default function SymbolsTableDesktop({
   mode,
   onToggle,
   prices,
+  pulsatingSymbols = new Set(),
   onBuy,
 }: Props) {
   const isAdmin = mode === "admin";
@@ -94,9 +96,17 @@ export default function SymbolsTableDesktop({
                   : "opacity-80";
 
               const isRecent = isRecentUpdate(p);
+              const isPulsing = pulsatingSymbols.has(row.symbol);
 
               return (
-                <tr key={row.id} className="border-t">
+                <tr
+                  key={row.id}
+                  className={`border-t transition-all duration-500 ${
+                    isPulsing
+                      ? "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.01]"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  }`}
+                >
                   <td
                     className="px-4 py-3 font-semibold whitespace-nowrap"
                     title={row.symbol}
@@ -124,13 +134,19 @@ export default function SymbolsTableDesktop({
                   {isMarket && (
                     <>
                       <td
-                        className="px-4 py-3 whitespace-nowrap font-mono text-amber-500"
+                        className={`px-4 py-3 whitespace-nowrap font-mono transition-all duration-300 ${
+                          isPulsing
+                            ? "text-amber-600 dark:text-amber-400 font-bold shadow-lg shadow-amber-500/50 bg-amber-100/50 dark:bg-amber-900/50 rounded-md"
+                            : "text-amber-500"
+                        }`}
                         title={p.last?.toString() ?? ""}
                       >
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono ${pcClass}`}
+                        className={`px-4 py-3 whitespace-nowrap font-mono transition-all duration-300 ${pcClass} ${
+                          isPulsing ? "font-bold shadow-md" : ""
+                        }`}
                         title={`${pc.toFixed(2)}%`}
                       >
                         {p.percentChange !== undefined

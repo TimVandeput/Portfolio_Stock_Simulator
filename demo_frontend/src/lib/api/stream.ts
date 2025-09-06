@@ -57,6 +57,11 @@ export function openPriceStream(
 
     es.onopen = (ev) => {
       console.log("✅ SSE Connected");
+      console.log(
+        "🔍 Streaming symbols:",
+        symbols.slice(0, 5),
+        `(${symbols.length} total)`
+      );
       backoff = 800;
       handlers.onOpen?.(ev);
     };
@@ -74,6 +79,12 @@ export function openPriceStream(
     es.addEventListener("price", (evt) => {
       try {
         const data = JSON.parse((evt as MessageEvent).data) as PriceEvent;
+        console.log(
+          "💰 PRICE UPDATE:",
+          data.symbol,
+          data.price,
+          `(${data.percentChange}%)`
+        );
         handlers.onPrice?.(data);
       } catch (e) {
         console.error("❌ PRICE PARSE ERROR:", e);
@@ -83,6 +94,7 @@ export function openPriceStream(
     es.addEventListener("heartbeat", (evt) => {
       try {
         const data = JSON.parse((evt as MessageEvent).data) as PriceEvent;
+        console.log("💓 HEARTBEAT received");
         handlers.onHeartbeat?.(data);
       } catch {
         /* ignore */
