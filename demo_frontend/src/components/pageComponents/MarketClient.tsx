@@ -361,56 +361,63 @@ export default function MarketClient() {
             />
 
             {/* Pagination */}
-            <div className="flex items-center justify-between mt-3 gap-3">
-              <div className="text-sm opacity-80">
+            <div className="mt-3">
+              <div className="text-sm opacity-80 text-center sm:hidden mb-3">
                 Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
                 {totalElements}
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  className="neu-button px-4 py-2 rounded-xl"
-                  disabled={!canPrev || loading}
-                  onClick={() => fetchPage(pageIdx - 1)}
-                >
-                  Prev
-                </button>
-
-                <div className="flex items-center gap-1">
-                  {pageItems.map((item, i) =>
-                    item === "..." ? (
-                      <span
-                        key={`dots-${i}`}
-                        className="px-2 select-none opacity-70"
-                      >
-                        …
-                      </span>
-                    ) : (
-                      <button
-                        key={item}
-                        onClick={() => fetchPage(item)}
-                        disabled={loading || item === pageIdx}
-                        className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
-                          item === pageIdx
-                            ? "chip-selected"
-                            : "hover:bg-[var(--surface)]"
-                        }`}
-                        aria-current={item === pageIdx ? "page" : undefined}
-                        aria-label={`Go to page ${item + 1}`}
-                      >
-                        {item + 1}
-                      </button>
-                    )
-                  )}
+              <div className="flex items-center justify-between gap-3">
+                <div className="hidden sm:block text-sm opacity-80">
+                  Page {pageIdx + 1} / {Math.max(totalPages, 1)} • Total{" "}
+                  {totalElements}
                 </div>
 
-                <button
-                  className="neu-button px-4 py-2 rounded-xl"
-                  disabled={!canNext || loading}
-                  onClick={() => fetchPage(pageIdx + 1)}
-                >
-                  Next
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="neu-button px-4 py-2 rounded-xl"
+                    disabled={!canPrev || loading}
+                    onClick={() => fetchPage(pageIdx - 1)}
+                  >
+                    Prev
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {pageItems.map((item, i) =>
+                      item === "..." ? (
+                        <span
+                          key={`dots-${i}`}
+                          className="px-2 select-none opacity-70"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          onClick={() => fetchPage(item)}
+                          disabled={loading || item === pageIdx}
+                          className={`px-3 py-1 rounded-full text-sm border transition-colors chip ${
+                            item === pageIdx
+                              ? "chip-selected"
+                              : "hover:bg-[var(--surface)]"
+                          }`}
+                          aria-current={item === pageIdx ? "page" : undefined}
+                          aria-label={`Go to page ${item + 1}`}
+                        >
+                          {item + 1}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    className="neu-button px-4 py-2 rounded-xl"
+                    disabled={!canNext || loading}
+                    onClick={() => fetchPage(pageIdx + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
           </div>

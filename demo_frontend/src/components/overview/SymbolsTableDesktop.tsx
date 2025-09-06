@@ -42,8 +42,8 @@ export default function SymbolsTableDesktop({
     <col key="cur" className="w-[9ch]" />,
     ...(isMarket
       ? [
-          <col key="last" className="w-[10ch]" />,
-          <col key="chg" className="w-[10ch]" />,
+          <col key="last" className="w-[12ch]" />,
+          <col key="chg" className="w-[12ch]" />,
         ]
       : []),
     <col key="act" className="w-[18ch]" />,
@@ -63,8 +63,12 @@ export default function SymbolsTableDesktop({
               <th className="px-4 py-3 whitespace-nowrap">Currency</th>
               {isMarket && (
                 <>
-                  <th className="px-4 py-3 whitespace-nowrap">Last</th>
-                  <th className="px-4 py-3 whitespace-nowrap">% Chg</th>
+                  <th className="px-4 py-3 whitespace-nowrap text-right">
+                    Last
+                  </th>
+                  <th className="px-4 py-3 whitespace-nowrap text-right">
+                    % Chg
+                  </th>
                 </>
               )}
               <th className="px-4 py-3 text-center whitespace-nowrap">
@@ -134,7 +138,7 @@ export default function SymbolsTableDesktop({
                   {isMarket && (
                     <>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono transition-all duration-300 ${
+                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
                           isPulsing
                             ? "text-amber-600 dark:text-amber-400 font-bold shadow-lg shadow-amber-500/50 bg-amber-100/50 dark:bg-amber-900/50 rounded-md"
                             : "text-amber-500"
@@ -144,7 +148,7 @@ export default function SymbolsTableDesktop({
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono transition-all duration-300 ${pcClass} ${
+                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass} ${
                           isPulsing ? "font-bold shadow-md" : ""
                         }`}
                         title={`${pc.toFixed(2)}%`}

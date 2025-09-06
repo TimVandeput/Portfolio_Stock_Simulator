@@ -1,4 +1,5 @@
 import type { PriceEvent } from "@/types";
+import { getCookie } from "@/lib/utils/cookies";
 
 type Handlers = {
   onPrice?: (event: PriceEvent) => void;
@@ -19,10 +20,14 @@ export function openPriceStream(
 ): StreamController {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
   const mkUrl = () => {
+    const token = getCookie("auth.access");
     const params = new URLSearchParams({
       symbols: symbols.join(","),
       v: String(Date.now()),
     });
+    if (token) {
+      params.set("token", token);
+    }
     return `${baseUrl}/api/stream/prices?${params.toString()}`;
   };
 
