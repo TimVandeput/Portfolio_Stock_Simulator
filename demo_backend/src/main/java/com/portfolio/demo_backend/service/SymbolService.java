@@ -6,9 +6,9 @@ import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient.SymbolItem;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
+import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
+import com.portfolio.demo_backend.marketdata.integration.FinnhubClient.SymbolItem;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -28,7 +28,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class SymbolService {
 
     private final SymbolRepository symbolRepository;
-    private final FinnhubAdminClient finnhub;
+    private final FinnhubClient finnhub;
     private final SymbolInUseChecker inUseChecker;
 
     private final AtomicBoolean importRunning = new AtomicBoolean(false);
@@ -145,6 +145,10 @@ public class SymbolService {
                 lastSummary);
     }
 
+    public List<String> getEnabledSymbols() {
+        return symbolRepository.findEnabledSymbols();
+    }
+
     private String norm(String s) {
         return s == null ? null : s.trim().toUpperCase(Locale.ROOT);
     }
@@ -164,14 +168,14 @@ public class SymbolService {
 
     private int capFor(String universe) {
         if (universe == null)
-            return 150;
+            return 50;
         switch (universe.toUpperCase(Locale.ROOT)) {
             case "NDX":
-                return 150;
+                return 50;
             case "GSPC":
-                return 150;
+                return 50;
             default:
-                return 150;
+                return 50;
         }
     }
 

@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.marketdata;
+package com.portfolio.demo_backend.marketdata.service;
 
 import com.portfolio.demo_backend.config.FinnhubProperties;
 import okhttp3.*;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FinnhubStreamService {
 
     public interface PriceListener {
-        void onPrice(String symbol, double price);
+        void onPrice(String symbol, double price, Double percentChange);
     }
 
     private final OkHttpClient client = new OkHttpClient();
@@ -31,13 +31,18 @@ public class FinnhubStreamService {
     private final ObjectMapper mapper = new ObjectMapper();
     private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
     private final Random jitter = new Random();
+    private final Map<String, Double> lastPrices = new ConcurrentHashMap<>();
+    private final Map<String, Double> dailyOpenPrices = new ConcurrentHashMap<>();
 
     public FinnhubStreamService(FinnhubProperties props) {
         this.props = props;
+        log.info("FinnhubStreamService constructor called with enabled={} token={}",
+                props.isEnabled(), props.getToken() != null ? "***TOKEN***" : "null");
     }
 
     @PostConstruct
     public void connect() {
+        log.info("FinnhubStreamService @PostConstruct connect() method called");
         if (!props.isEnabled() || props.getToken() == null || props.getToken().isBlank()) {
             log.info("Finnhub streaming disabled (enabled={} tokenPresent={})",
                     props.isEnabled(), props.getToken() != null && !props.getToken().isBlank());
@@ -49,12 +54,15 @@ public class FinnhubStreamService {
         ws = client.newWebSocket(req, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
+                log.info("Finnhub WebSocket opened successfully");
                 reconnectAttempts.set(0);
                 try {
                     for (String sym : listeners.keySet()) {
                         String msg = "{\"type\":\"subscribe\",\"symbol\":\"" + sym + "\"}";
+                        log.debug("Subscribing to symbol: {}", sym);
                         webSocket.send(msg);
                     }
+                    log.info("Subscribed to {} symbols", listeners.size());
                 } catch (Exception ex) {
                     log.warn("Error while re-subscribing on open", ex);
                 }
@@ -62,6 +70,7 @@ public class FinnhubStreamService {
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
+                log.debug("Received WebSocket message: {}", text);
                 handle(text);
             }
 
@@ -109,10 +118,14 @@ public class FinnhubStreamService {
     }
 
     public void subscribe(String symbol) {
+        log.debug("Adding subscription for symbol: {}", symbol);
         listeners.computeIfAbsent(symbol, k -> new CopyOnWriteArrayList<>());
         if (ws != null) {
             String msg = "{\"type\":\"subscribe\",\"symbol\":\"" + symbol + "\"}";
+            log.debug("Sending subscribe message: {}", msg);
             ws.send(msg);
+        } else {
+            log.warn("WebSocket is null when trying to subscribe to {}", symbol);
         }
     }
 
@@ -135,6 +148,19 @@ public class FinnhubStreamService {
         subscribe(symbol);
     }
 
+    public Double getLastPrice(String symbol) {
+        return lastPrices.get(symbol);
+    }
+
+    public Double getPercentChange(String symbol) {
+        Double current = lastPrices.get(symbol);
+        Double open = dailyOpenPrices.get(symbol);
+        if (current != null && open != null && open != 0) {
+            return ((current - open) / open) * 100.0;
+        }
+        return null;
+    }
+
     private void handle(String json) {
         try {
             JsonNode root = mapper.readTree(json);
@@ -155,9 +181,18 @@ public class FinnhubStreamService {
                 } catch (Exception e) {
                     continue;
                 }
+
+                dailyOpenPrices.computeIfAbsent(sym, k -> price);
+
+                lastPrices.put(sym, price);
+
+                Double percentChange = getPercentChange(sym);
+
+                log.debug("Price update for {}: {} ({}%)", sym, price, percentChange);
+
                 var ls = listeners.get(sym);
                 if (ls != null)
-                    ls.forEach(l -> l.onPrice(sym, price));
+                    ls.forEach(l -> l.onPrice(sym, price, percentChange));
             }
         } catch (Exception ex) {
             log.debug("Failed to parse Finnhub WS message: {}", ex.getMessage());

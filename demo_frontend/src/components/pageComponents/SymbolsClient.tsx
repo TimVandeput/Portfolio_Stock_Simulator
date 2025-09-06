@@ -74,7 +74,9 @@ export default function SymbolsClient() {
       } catch {
         // ignore
       } finally {
-        if (!stop) timer = setTimeout(poll, 3000);
+        // polling: 10s if import is running, 60s if not running
+        const nextPoll = importRunning ? 10000 : 60000;
+        if (!stop) timer = setTimeout(poll, nextPoll);
       }
     }
 
@@ -83,7 +85,7 @@ export default function SymbolsClient() {
       stop = true;
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading, hasAccess]);
+  }, [isLoading, hasAccess, importRunning]);
 
   const qRef = useRef(q);
   useEffect(() => {
@@ -232,8 +234,8 @@ export default function SymbolsClient() {
               {error && <StatusMessage message={error} />}
             </div>
 
-            <SymbolsTableDesktop page={page} onToggle={onToggle} />
-            <SymbolsListMobile page={page} onToggle={onToggle} />
+            <SymbolsTableDesktop page={page} mode="admin" onToggle={onToggle} />
+            <SymbolsListMobile page={page} mode="admin" onToggle={onToggle} />
 
             <SymbolsPagination
               pageIdx={pageIdx}

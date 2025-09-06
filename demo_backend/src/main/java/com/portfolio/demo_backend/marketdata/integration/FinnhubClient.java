@@ -1,8 +1,10 @@
-package com.portfolio.demo_backend.integration.finnhub;
+package com.portfolio.demo_backend.marketdata.integration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.FinnhubProperties;
+import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
+import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import org.springframework.stereotype.Component;
@@ -12,7 +14,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FinnhubAdminClient {
+public class FinnhubClient {
 
     private final FinnhubProperties props;
     private final OkHttpClient http = new OkHttpClient();
@@ -49,8 +51,15 @@ public class FinnhubAdminClient {
                 .build();
         Request req = new Request.Builder().url(url).get().build();
         try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful())
-                throw new IOException("Finnhub constituents " + resp.code());
+            if (!resp.isSuccessful()) {
+                if (resp.code() == 429) {
+                    throw new ApiRateLimitException("Finnhub");
+                } else if (resp.code() >= 500) {
+                    throw new MarketDataUnavailableException("Finnhub", "Server error: " + resp.code());
+                } else {
+                    throw new IOException("Finnhub constituents " + resp.code());
+                }
+            }
             ConstituentsResponse cr = mapper.readValue(resp.body().string(), ConstituentsResponse.class);
             return cr.constituents != null ? cr.constituents : List.of();
         }
@@ -64,8 +73,15 @@ public class FinnhubAdminClient {
                 .build();
         Request req = new Request.Builder().url(url).get().build();
         try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful())
-                throw new IOException("Finnhub profile2 " + resp.code());
+            if (!resp.isSuccessful()) {
+                if (resp.code() == 429) {
+                    throw new ApiRateLimitException("Finnhub");
+                } else if (resp.code() >= 500) {
+                    throw new MarketDataUnavailableException("Finnhub", "Server error: " + resp.code());
+                } else {
+                    throw new IOException("Finnhub profile2 " + resp.code());
+                }
+            }
             return mapper.readValue(resp.body().string(), Profile2.class);
         }
     }
@@ -78,8 +94,15 @@ public class FinnhubAdminClient {
                 .build();
         Request req = new Request.Builder().url(url).get().build();
         try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful())
-                throw new IOException("Finnhub stock/symbol " + resp.code());
+            if (!resp.isSuccessful()) {
+                if (resp.code() == 429) {
+                    throw new ApiRateLimitException("Finnhub");
+                } else if (resp.code() >= 500) {
+                    throw new MarketDataUnavailableException("Finnhub", "Server error: " + resp.code());
+                } else {
+                    throw new IOException("Finnhub stock/symbol " + resp.code());
+                }
+            }
             SymbolItem[] arr = mapper.readValue(resp.body().string(), SymbolItem[].class);
             return arr != null ? List.of(arr) : List.of();
         }
