@@ -172,6 +172,8 @@ public class RapidApiClient {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
+            } catch (ApiRateLimitException | MarketDataUnavailableException e) {
+                throw e;
             } catch (Exception e) {
                 log.error("Error fetching quotes for batch {}: {}", symbolsParam, e.getMessage(), e);
                 throw new IOException("Failed to fetch quotes: " + e.getMessage(), e);
