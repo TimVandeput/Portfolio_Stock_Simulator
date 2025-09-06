@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 import StatusMessage from "@/components/status/StatusMessage";
+import MarketStatus from "@/components/status/MarketStatus";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import SymbolsTableDesktop from "@/components/overview/SymbolsTableDesktop";
 import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
@@ -293,9 +294,12 @@ export default function MarketClient() {
         <div className="market-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
           <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-              <h1 className="page-title text-2xl sm:text-3xl font-bold">
-                MARKETS
-              </h1>
+              <div className="flex flex-col gap-2">
+                <h1 className="page-title text-2xl sm:text-3xl font-bold">
+                  MARKETS
+                </h1>
+                <MarketStatus />
+              </div>
 
               {/* Search + page size */}
               <div className="flex flex-wrap items-center gap-3">
