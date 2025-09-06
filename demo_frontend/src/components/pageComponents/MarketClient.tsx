@@ -41,6 +41,7 @@ export default function MarketClient() {
   const [q, setQ] = useState("");
   const [pageIdx, setPageIdx] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+  const [sortBy, setSortBy] = useState<string>("symbol");
 
   const [page, setPage] = useState<Page<SymbolDTO> | null>(null);
   const [error, setError] = useState("");
@@ -281,6 +282,34 @@ export default function MarketClient() {
     return items;
   }, [pageIdx, totalPages]);
 
+  const sortedPage = useMemo(() => {
+    if (!page || !page.content) return page;
+
+    const sorted = [...page.content].sort((a, b) => {
+      const priceA = prices[a.symbol];
+      const priceB = prices[b.symbol];
+
+      switch (sortBy) {
+        case "symbol":
+          return a.symbol.localeCompare(b.symbol);
+        case "exchange":
+          return a.exchange.localeCompare(b.exchange);
+        case "price-high":
+          return (priceB?.last ?? 0) - (priceA?.last ?? 0);
+        case "price-low":
+          return (priceA?.last ?? 0) - (priceB?.last ?? 0);
+        case "change-high":
+          return (priceB?.percentChange ?? 0) - (priceA?.percentChange ?? 0);
+        case "change-low":
+          return (priceA?.percentChange ?? 0) - (priceB?.percentChange ?? 0);
+        default:
+          return 0;
+      }
+    });
+
+    return { ...page, content: sorted };
+  }, [page, prices, sortBy]);
+
   return (
     <>
       {showModal ? (
@@ -301,7 +330,7 @@ export default function MarketClient() {
                 <MarketStatus />
               </div>
 
-              {/* Search + page size */}
+              {/* Search + page size + sort */}
               <div className="flex flex-wrap items-center gap-3">
                 <NeumorphicInput
                   type="text"
@@ -322,6 +351,21 @@ export default function MarketClient() {
                         {n}
                       </option>
                     ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm opacity-80">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                  >
+                    <option value="symbol">Symbol</option>
+                    <option value="exchange">Exchange</option>
+                    <option value="price-high">Price ↓</option>
+                    <option value="price-low">Price ↑</option>
+                    <option value="change-high">% Chg ↓</option>
+                    <option value="change-low">% Chg ↑</option>
                   </select>
                 </div>
               </div>
@@ -350,14 +394,14 @@ export default function MarketClient() {
 
             {/* Overview tables in market mode */}
             <SymbolsTableDesktop
-              page={page}
+              page={sortedPage}
               mode="market"
               prices={prices}
               pulsatingSymbols={pulsatingSymbols}
               onBuy={handleBuy}
             />
             <SymbolsListMobile
-              page={page}
+              page={sortedPage}
               mode="market"
               prices={prices}
               pulsatingSymbols={pulsatingSymbols}
