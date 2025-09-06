@@ -2,6 +2,9 @@ package com.portfolio.demo_backend.exception;
 
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
+import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationException;
+import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
+import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -92,6 +95,31 @@ public class GlobalExceptionHandler {
         pd.setTitle("Import in progress");
         pd.setType(URI.create("https://docs/validation#import-in-progress"));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    }
+
+    @ExceptionHandler(StreamAuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleStreamAuth(StreamAuthenticationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(ApiRateLimitException.class)
+    public ResponseEntity<ProblemDetail> handleApiRateLimit(ApiRateLimitException ex) {
+        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        pd.setTitle("API Rate Limit Exceeded");
+        pd.setType(URI.create("https://docs/marketdata#rate-limit"));
+        pd.setProperty("provider", ex.getProvider());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(pd);
+    }
+
+    @ExceptionHandler(MarketDataUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleMarketDataUnavailable(MarketDataUnavailableException ex) {
+        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        pd.setTitle("Market Data Unavailable");
+        pd.setType(URI.create("https://docs/marketdata#unavailable"));
+        pd.setProperty("provider", ex.getProvider());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(pd);
     }
 
     @ExceptionHandler(Exception.class)

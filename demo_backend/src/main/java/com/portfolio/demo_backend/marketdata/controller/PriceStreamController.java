@@ -2,6 +2,7 @@ package com.portfolio.demo_backend.marketdata.controller;
 
 import com.portfolio.demo_backend.marketdata.dto.PriceEvent;
 import com.portfolio.demo_backend.marketdata.service.FinnhubStreamService;
+import com.portfolio.demo_backend.marketdata.service.StreamAuthenticationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,17 +23,20 @@ import java.util.stream.Collectors;
 public class PriceStreamController {
 
     private final FinnhubStreamService finnhub;
+    private final StreamAuthenticationService authService;
 
     private static final int MAX_SYMBOLS = 50;
     private static final long TIMEOUT_MS = 0L;
 
     @GetMapping(path = "/prices", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamPrices(@RequestParam("symbols") String symbolsCsv,
+            @RequestParam("token") String token,
             HttpServletResponse response) {
+
+        authService.validateToken(token);
 
         response.addHeader("Cache-Control", "no-cache");
         response.addHeader("X-Accel-Buffering", "no");
-
         final SseEmitter emitter = new SseEmitter(TIMEOUT_MS);
         final List<String> symbols = parseSymbols(symbolsCsv);
 

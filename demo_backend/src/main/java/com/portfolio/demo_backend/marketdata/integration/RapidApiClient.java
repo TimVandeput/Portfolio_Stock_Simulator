@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.RapidApiProperties;
 import com.portfolio.demo_backend.marketdata.SymbolConstants;
+import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
+import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -117,12 +119,14 @@ public class RapidApiClient {
                                 "RapidAPI authentication/authorization failed - 403 Forbidden. Check your subscription.");
                     }
                     if (resp.code() == 429) {
-                        log.warn("Rate limit hit, sleeping for 1 second...");
-                        Thread.sleep(1000);
-                        continue;
+                        throw new ApiRateLimitException("RapidAPI Yahoo Finance");
                     }
                     if (resp.code() == 401) {
                         throw new IOException("RapidAPI authentication failed - check key");
+                    }
+                    if (resp.code() >= 500) {
+                        throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
+                                "Server error: " + resp.code());
                     }
 
                     throw new IOException("RapidAPI request failed: " + resp.code());
