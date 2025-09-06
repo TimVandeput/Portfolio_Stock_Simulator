@@ -2,6 +2,13 @@ package com.portfolio.demo_backend.exception;
 
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
+import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationException;
+import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
+import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
@@ -20,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -89,10 +97,50 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGlobalException(Exception ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    @ExceptionHandler(StreamAuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleStreamAuth(StreamAuthenticationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
+
+    @ExceptionHandler(ApiRateLimitException.class)
+    public ResponseEntity<ProblemDetail> handleApiRateLimit(ApiRateLimitException ex) {
+        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        pd.setTitle("API Rate Limit Exceeded");
+        pd.setType(URI.create("https://docs/marketdata#rate-limit"));
+        pd.setProperty("provider", ex.getProvider());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(pd);
+    }
+
+    @ExceptionHandler(MarketDataUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleMarketDataUnavailable(MarketDataUnavailableException ex) {
+        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        pd.setTitle("Market Data Unavailable");
+        pd.setType(URI.create("https://docs/marketdata#unavailable"));
+        pd.setProperty("provider", ex.getProvider());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(pd);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGlobalException(Exception ex,
+            jakarta.servlet.http.HttpServletRequest req) {
+        log.error("Unhandled exception at {} {} (accept={}): {}",
+                req.getMethod(), req.getRequestURI(), req.getHeader("Accept"),
+                ex.toString(), ex);
+
+        String accept = req.getHeader("Accept");
+        if (accept != null && accept.contains(MediaType.TEXT_EVENT_STREAM_VALUE)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("stream error");
+        }
+
+        Map<String, String> body = new HashMap<>();
+        body.put("error", ex.getClass().getSimpleName() + ": " + String.valueOf(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
 }

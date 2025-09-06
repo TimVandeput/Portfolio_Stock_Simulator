@@ -28,7 +28,7 @@ export default function FiltersBar({
         placeholder="Search symbol or name…"
         value={q}
         onChange={setQ}
-        className="w-full sm:min-w-[260px]"
+        className="w-full sm:flex-none sm:w-80 md:w-96 lg:w-[28rem]"
       />
 
       <div className="flex gap-2">
@@ -46,7 +46,7 @@ export default function FiltersBar({
       </div>
 
       <div className="flex items-center gap-2 sm:ml-auto">
-        <span className="text-sm opacity-80 hidden xs:inline">Rows:</span>
+        <span className="text-sm opacity-80 xs:inline">Rows:</span>
         <select
           value={pageSize}
           onChange={(e) => setPageSize(parseInt(e.target.value))}

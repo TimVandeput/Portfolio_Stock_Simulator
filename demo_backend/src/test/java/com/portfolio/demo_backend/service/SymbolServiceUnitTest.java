@@ -1,161 +1,206 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.dto.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
-import com.portfolio.demo_backend.integration.finnhub.FinnhubAdminClient;
+import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.model.SymbolEntity;
 import com.portfolio.demo_backend.repository.SymbolRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SymbolServiceUnitTest {
 
     @Mock
-    SymbolRepository repo;
+    private SymbolRepository symbolRepository;
 
     @Mock
-    FinnhubAdminClient finnhub;
+    private FinnhubClient finnhubClient;
 
     @Mock
-    SymbolInUseChecker inUseChecker;
+    private SymbolInUseChecker symbolInUseChecker;
 
     @InjectMocks
-    SymbolService service;
+    private SymbolService symbolService;
 
-    SymbolEntity aapl, msft;
+    @Test
+    void importUniverse_ndx_success_returnsImportSummary() throws IOException {
+        List<FinnhubClient.SymbolItem> mockSymbols = List.of(
+                createSymbolItem("AAPL", "Apple Inc", "XNAS", "USD", "Common Stock"),
+                createSymbolItem("MSFT", "Microsoft Corporation", "XNAS", "USD", "Common Stock"));
+        when(finnhubClient.listSymbolsByExchange("US")).thenReturn(mockSymbols);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.findBySymbol("MSFT")).thenReturn(Optional.empty());
+        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    @BeforeEach
-    void setup() {
-        aapl = new SymbolEntity();
-        aapl.setId(1L);
-        aapl.setSymbol("AAPL");
-        aapl.setName("Apple Inc.");
-        aapl.setExchange("NASDAQ");
-        aapl.setCurrency("USD");
-        aapl.setEnabled(true);
+        ImportSummaryDTO result = symbolService.importUniverse("NDX");
 
-        msft = new SymbolEntity();
-        msft.setId(2L);
-        msft.setSymbol("MSFT");
-        msft.setName("Microsoft Corp.");
-        msft.setExchange("NASDAQ");
-        msft.setCurrency("USD");
-        msft.setEnabled(true);
+        assertThat(result).isNotNull();
+        assertThat(result.imported).isEqualTo(2);
+        assertThat(result.updated).isEqualTo(0);
+        verify(symbolRepository, times(2)).save(any(SymbolEntity.class));
     }
 
     @Test
-    void importUniverse_happyPath_importsAndUpdates_counts() throws Exception {
-        FinnhubAdminClient.SymbolItem item1 = new FinnhubAdminClient.SymbolItem();
-        item1.symbol = "AAPL";
-        item1.description = "Apple Inc.";
-        item1.type = "Common Stock";
-        item1.currency = "USD";
-        item1.mic = "XNAS";
+    void importUniverse_duplicateCall_throwsImportInProgressException() throws IOException {
+        List<FinnhubClient.SymbolItem> mockSymbols = List
+                .of(createSymbolItem("AAPL", "Apple Inc", "XNAS", "USD", "Common Stock"));
+        when(finnhubClient.listSymbolsByExchange("US")).thenReturn(mockSymbols);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return invocation.getArgument(0);
+        });
 
-        FinnhubAdminClient.SymbolItem item2 = new FinnhubAdminClient.SymbolItem();
-        item2.symbol = "MSFT";
-        item2.description = "Microsoft Corp.";
-        item2.type = "Common Stock";
-        item2.currency = "USD";
-        item2.mic = "XNAS";
+        Thread importThread = new Thread(() -> {
+            try {
+                symbolService.importUniverse("NDX");
+            } catch (IOException e) {
+            }
+        });
+        importThread.start();
 
-        when(finnhub.listSymbolsByExchange("US")).thenReturn(List.of(item1, item2));
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
-        when(repo.findBySymbol("AAPL")).thenReturn(Optional.empty());
-        when(repo.findBySymbol("MSFT")).thenReturn(Optional.of(msft));
+        assertThatThrownBy(() -> symbolService.importUniverse("NDX"))
+                .isInstanceOf(ImportInProgressException.class);
 
-        when(repo.save(any(SymbolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        ImportSummaryDTO sum = service.importUniverse("NDX");
-
-        assertThat(sum.imported).isEqualTo(1);
-        assertThat(sum.updated).isEqualTo(1);
-        assertThat(sum.skipped).isEqualTo(0);
-
-        verify(repo).findBySymbol("AAPL");
-        verify(repo).findBySymbol("MSFT");
-        verify(repo, times(2)).save(any(SymbolEntity.class));
+        try {
+            importThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Test
-    void importUniverse_skipsOnClientError() throws Exception {
-        FinnhubAdminClient.SymbolItem item = new FinnhubAdminClient.SymbolItem();
-        item.symbol = "GOOG";
-        item.description = "";
-        item.type = "Common Stock";
-        item.currency = "USD";
-        item.mic = "XNAS";
+    void importUniverse_finnhubException_propagatesException() throws IOException {
+        when(finnhubClient.listSymbolsByExchange("US")).thenThrow(new IOException("Finnhub API error"));
 
-        when(finnhub.listSymbolsByExchange("US")).thenReturn(List.of(item));
-
-        ImportSummaryDTO sum = service.importUniverse("NDX");
-
-        assertThat(sum.imported).isZero();
-        assertThat(sum.updated).isZero();
-        assertThat(sum.skipped).isEqualTo(1);
-        verify(repo, never()).save(any());
+        assertThatThrownBy(() -> symbolService.importUniverse("NDX"))
+                .isInstanceOf(IOException.class)
+                .hasMessage("Finnhub API error");
     }
 
     @Test
-    void list_delegatesToRepo_mapsInUseFlag() {
-        Page<SymbolEntity> page = new PageImpl<>(List.of(aapl), PageRequest.of(0, 25), 1);
-        when(repo.search(isNull(), isNull(), any(Pageable.class))).thenReturn(page);
-        when(inUseChecker.isInUse("AAPL")).thenReturn(false);
+    void list_withQuery_returnsFilteredResults() {
+        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Page<SymbolEntity> mockPage = new PageImpl<>(List.of(symbol));
+        Pageable pageable = PageRequest.of(0, 10);
 
-        Page<SymbolDTO> dtoPage = service.list(null, null, PageRequest.of(0, 25));
+        when(symbolRepository.search(eq("AAPL"), eq(true), any(Pageable.class))).thenReturn(mockPage);
+        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(false);
 
-        assertThat(dtoPage.getTotalElements()).isEqualTo(1);
-        SymbolDTO dto = dtoPage.getContent().get(0);
-        assertThat(dto.symbol).isEqualTo("AAPL");
-        assertThat(dto.inUse).isFalse();
+        Page<SymbolDTO> result = symbolService.list("AAPL", true, pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
+        assertThat(result.getContent().get(0).name).isEqualTo("Apple Inc");
+        assertThat(result.getContent().get(0).enabled).isTrue();
+        assertThat(result.getContent().get(0).inUse).isFalse();
     }
 
     @Test
-    void setEnabled_disableWhenNotInUse_updates() {
-        when(repo.findById(1L)).thenReturn(Optional.of(aapl));
-        when(inUseChecker.isInUse("AAPL")).thenReturn(false);
-        when(repo.save(any(SymbolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+    void setEnabled_enableSymbol_success() {
+        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", false);
+        symbol.setId(1L);
+        when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
+        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(false);
+        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        SymbolDTO dto = service.setEnabled(1L, false);
+        SymbolDTO result = symbolService.setEnabled(1L, true);
 
-        assertThat(dto.enabled).isFalse();
-        verify(repo).save(any(SymbolEntity.class));
+        assertThat(result.enabled).isTrue();
+        verify(symbolRepository).save(symbol);
+        assertThat(symbol.isEnabled()).isTrue();
     }
 
     @Test
-    void setEnabled_disableWhenInUse_throws_andNotSaved() {
-        when(repo.findById(1L)).thenReturn(Optional.of(aapl));
-        when(inUseChecker.isInUse("AAPL")).thenReturn(true);
+    void setEnabled_disableSymbolInUse_throwsSymbolInUseException() {
+        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        symbol.setId(1L);
+        when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
+        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.setEnabled(1L, false))
+        assertThatThrownBy(() -> symbolService.setEnabled(1L, false))
                 .isInstanceOf(SymbolInUseException.class);
 
-        verify(repo, never()).save(any());
+        verify(symbolRepository, never()).save(any(SymbolEntity.class));
     }
 
     @Test
-    void setEnabled_enableEvenIfInUse_isAllowed() {
-        aapl.setEnabled(false);
-        when(repo.findById(1L)).thenReturn(Optional.of(aapl));
-        when(inUseChecker.isInUse("AAPL")).thenReturn(true);
-        when(repo.save(any(SymbolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+    void setEnabled_symbolNotFound_throwsResponseStatusException() {
+        when(symbolRepository.findById(999L)).thenReturn(Optional.empty());
 
-        SymbolDTO dto = service.setEnabled(1L, true);
+        assertThatThrownBy(() -> symbolService.setEnabled(999L, true))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Symbol not found");
+    }
 
-        assertThat(dto.enabled).isTrue();
-        verify(repo).save(any(SymbolEntity.class));
+    @Test
+    void importStatus_noImportYet_returnsCorrectStatus() {
+        ImportStatusDTO result = symbolService.importStatus();
+
+        assertThat(result.running).isFalse();
+        assertThat(result.lastImportedAt).isNull();
+        assertThat(result.lastSummary).isNull();
+    }
+
+    @Test
+    void getEnabledSymbols_returnsSymbolList() {
+        when(symbolRepository.findEnabledSymbols()).thenReturn(List.of("AAPL", "MSFT", "GOOGL"));
+
+        List<String> result = symbolService.getEnabledSymbols();
+
+        assertThat(result).containsExactly("AAPL", "MSFT", "GOOGL");
+    }
+
+    private SymbolEntity createSymbolEntity(String symbol, String name, boolean enabled) {
+        SymbolEntity entity = new SymbolEntity();
+        entity.setSymbol(symbol);
+        entity.setName(name);
+        entity.setEnabled(enabled);
+        entity.setExchange("NASDAQ");
+        entity.setCurrency("USD");
+        entity.setMic("XNAS");
+        return entity;
+    }
+
+    private FinnhubClient.SymbolItem createSymbolItem(String symbol, String description, String mic, String currency,
+            String type) {
+        FinnhubClient.SymbolItem item = new FinnhubClient.SymbolItem();
+        item.symbol = symbol;
+        item.description = description;
+        item.mic = mic;
+        item.currency = currency;
+        item.type = type;
+        return item;
     }
 }

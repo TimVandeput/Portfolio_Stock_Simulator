@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(eh -> eh.authenticationEntryPoint(new RestAuthEntryPoint()))
                 .addFilterBefore(jwtAuthenticationFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> {
@@ -46,29 +47,26 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/symbols/import/status").hasAuthority("ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.POST, "/api/symbols/import").hasAuthority("ROLE_ADMIN");
                     auth.requestMatchers(HttpMethod.PUT, "/api/symbols/*/enabled").hasAuthority("ROLE_ADMIN");
+
                     auth.requestMatchers(HttpMethod.GET, "/api/symbols/**").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/prices/**").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/stream/**").permitAll();
 
-                    auth.requestMatchers(HttpMethod.GET, "/api/quotes/**").authenticated();
-
-                    if (environment != null
-                            && java.util.Arrays.asList(environment.getActiveProfiles()).contains("test")) {
-                        auth.requestMatchers(HttpMethod.POST, "/api/users/*/mystery-page").permitAll();
-                    } else {
-                        auth.requestMatchers(HttpMethod.POST, "/api/users/*/mystery-page").hasRole("ADMIN");
-                    }
                     auth.requestMatchers("/api/users/**").permitAll();
 
                     auth.anyRequest().authenticated();
                 });
+
         return http.build();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*"));
+        cfg.setAllowedOrigins(List.of(
+                "http://localhost:3000"));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        cfg.setAllowedHeaders(List.of("*")); 
+        cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("Location", "Authorization"));
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);

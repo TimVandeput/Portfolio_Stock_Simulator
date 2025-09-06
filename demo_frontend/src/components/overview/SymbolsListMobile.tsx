@@ -2,66 +2,162 @@
 
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import NeumorphicButton from "@/components/button/NeumorphicButton";
+
+type Price = { last?: number; percentChange?: number; lastUpdate?: number };
+type Mode = "admin" | "market";
 
 type Props = {
   page: Page<SymbolDTO> | null;
-  onToggle: (row: SymbolDTO, next: boolean) => void;
+  mode: Mode;
+  onToggle?: (row: SymbolDTO, next: boolean) => void;
+  prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
+  onBuy?: (row: SymbolDTO) => void;
 };
 
-export default function SymbolsListMobile({ page, onToggle }: Props) {
+export default function SymbolsListMobile({
+  page,
+  mode,
+  onToggle,
+  prices,
+  pulsatingSymbols = new Set(),
+  onBuy,
+}: Props) {
+  const isAdmin = mode === "admin";
+  const isMarket = mode === "market";
+  const getPrice = (sym: string): Price => prices?.[sym] ?? {};
+
+  const isRecentUpdate = (price: Price): boolean => {
+    if (!price.lastUpdate) return false;
+    return Date.now() - price.lastUpdate < 2000;
+  };
+
+  if (!page || page.content.length === 0) {
+    return (
+      <div className="md:hidden rounded-2xl border shadow-sm p-4 text-center opacity-70">
+        No symbols found.
+      </div>
+    );
+  }
+
   return (
     <div className="md:hidden">
-      {(!page || page.content.length === 0) && (
-        <div className="rounded-2xl border shadow-sm p-4 text-center opacity-70">
-          No symbols found.
-        </div>
-      )}
-
       <ul className="space-y-3">
-        {page?.content?.map((row) => (
-          <li
-            key={row.id}
-            className="rounded-2xl border shadow-sm p-4 bg-[var(--background)]"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-base">{row.symbol}</span>
-                  {row.inUse && (
-                    <span className="px-2 py-0.5 text-[11px] rounded-full border">
-                      In use
+        {page.content.map((row) => {
+          const p = isMarket ? getPrice(row.symbol) : {};
+          const pc = p.percentChange ?? 0;
+          const pcClass =
+            pc > 0
+              ? "text-emerald-500"
+              : pc < 0
+              ? "text-rose-500"
+              : "opacity-80";
+
+          const isRecent = isRecentUpdate(p);
+          const isPulsing = pulsatingSymbols.has(row.symbol);
+
+          return (
+            <li
+              key={row.id}
+              className={`rounded-2xl border shadow-sm p-4 transition-all duration-500 ${
+                isPulsing
+                  ? "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.02]"
+                  : "bg-[var(--background)] hover:shadow-md"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-base">
+                      {row.symbol}
                     </span>
-                  )}
+                    {isAdmin && row.inUse && (
+                      <span className="px-2 py-0.5 text-[11px] rounded-full border">
+                        In use
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm opacity-80">{row.name}</div>
                 </div>
-                <div className="text-sm opacity-80">{row.name}</div>
+
+                {isAdmin ? (
+                  <label className="inline-flex items-center gap-2 cursor-pointer select-none shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={row.enabled}
+                      onChange={(e) => onToggle?.(row, e.target.checked)}
+                      className="h-4 w-4 accent-[var(--primary)]"
+                      aria-label={`Toggle ${row.symbol}`}
+                    />
+                    <span className="opacity-80 text-sm">
+                      {row.enabled ? "On" : "Off"}
+                    </span>
+                  </label>
+                ) : (
+                  <NeumorphicButton
+                    onClick={() => onBuy?.(row)}
+                    disabled={!row.enabled}
+                  >
+                    Buy
+                  </NeumorphicButton>
+                )}
               </div>
 
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none shrink-0">
-                <input
-                  type="checkbox"
-                  checked={row.enabled}
-                  onChange={(e) => onToggle(row, e.target.checked)}
-                  className="h-4 w-4 accent-[var(--primary)]"
-                  aria-label={`Toggle ${row.symbol}`}
-                />
-                <span className="opacity-80 text-sm">
-                  {row.enabled ? "On" : "Off"}
-                </span>
-              </label>
-            </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl border p-2">
+                  <div className="opacity-70">Exchange</div>
+                  <div>{row.exchange}</div>
+                </div>
+                <div className="rounded-xl border p-2">
+                  <div className="opacity-70">Currency</div>
+                  <div>{row.currency}</div>
+                </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-              <div className="rounded-xl border p-2">
-                <div className="opacity-70">Exchange</div>
-                <div>{row.exchange}</div>
+                {isMarket && (
+                  <>
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-300 ${
+                        isPulsing
+                          ? "border-amber-400 shadow-lg shadow-amber-500/30 bg-amber-50 dark:bg-amber-900/30"
+                          : ""
+                      }`}
+                    >
+                      <div className="opacity-70">Last</div>
+                      <div
+                        className={`font-mono transition-all duration-300 ${
+                          isPulsing
+                            ? "text-amber-600 dark:text-amber-400 font-bold"
+                            : "text-amber-500"
+                        }`}
+                      >
+                        {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
+                      </div>
+                    </div>
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-300 ${
+                        isPulsing
+                          ? "border-amber-400 shadow-lg shadow-amber-500/30 bg-amber-50 dark:bg-amber-900/30"
+                          : ""
+                      }`}
+                    >
+                      <div className="opacity-70">% Chg</div>
+                      <div
+                        className={`${pcClass} font-mono transition-all duration-300 ${
+                          isPulsing ? "font-bold" : ""
+                        }`}
+                      >
+                        {p.percentChange !== undefined
+                          ? `${pc > 0 ? "+" : ""}${pc.toFixed(2)}%`
+                          : "—"}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="rounded-xl border p-2">
-                <div className="opacity-70">Currency</div>
-                <div>{row.currency}</div>
-              </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
