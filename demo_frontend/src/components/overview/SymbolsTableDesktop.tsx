@@ -82,7 +82,7 @@ export default function SymbolsTableDesktop({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="px-4 py-6 text-center opacity-70"
+                  className="px-4 py-6 text-center opacity-70 border-t"
                 >
                   No symbols found.
                 </td>
