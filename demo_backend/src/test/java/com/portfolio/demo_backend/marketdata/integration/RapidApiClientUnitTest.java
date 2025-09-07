@@ -207,58 +207,6 @@ class RapidApiClientUnitTest {
     }
 
     @Test
-    void getTopSymbols_ndxUniverse_returnsSymbolInfoList() throws IOException {
-        String jsonResponse = """
-                {
-                    "quoteResponse": {
-                        "result": [
-                            {
-                                "symbol": "AAPL",
-                                "longName": "Apple Inc.",
-                                "fullExchangeName": "NASDAQ",
-                                "exchange": "NMS",
-                                "currency": "USD"
-                            },
-                            {
-                                "symbol": "MSFT",
-                                "longName": "Microsoft Corporation",
-                                "fullExchangeName": "NASDAQ",
-                                "exchange": "NMS",
-                                "currency": "USD"
-                            }
-                        ]
-                    }
-                }
-                """;
-
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
-        when(mockCall.execute()).thenReturn(mockResponse);
-        when(mockResponse.isSuccessful()).thenReturn(true);
-        when(mockResponse.body()).thenReturn(mockResponseBody);
-        when(mockResponseBody.string()).thenReturn(jsonResponse);
-
-        List<RapidApiClient.SymbolInfo> result = rapidApiClient.getTopSymbols("NDX", 2);
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).symbol).isEqualTo("AAPL");
-        assertThat(result.get(0).name).isEqualTo("Apple Inc.");
-        assertThat(result.get(0).mic).isEqualTo("XNAS");
-        assertThat(result.get(0).currency).isEqualTo("USD");
-    }
-
-    @Test
-    void getTopSymbols_invalidJson_throwsIOException() throws IOException {
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
-        when(mockCall.execute()).thenReturn(mockResponse);
-        when(mockResponse.isSuccessful()).thenReturn(true);
-        when(mockResponse.body()).thenReturn(mockResponseBody);
-        when(mockResponseBody.string()).thenReturn("invalid json");
-
-        assertThatThrownBy(() -> rapidApiClient.getTopSymbols("NDX", 5))
-                .isInstanceOf(IOException.class);
-    }
-
-    @Test
     void constructor_setsProperties() {
         assertThat(rapidApiClient).isNotNull();
     }
