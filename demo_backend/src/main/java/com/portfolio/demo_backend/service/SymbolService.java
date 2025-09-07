@@ -51,20 +51,21 @@ public class SymbolService {
 
     private ImportSummaryDTO importFromFreeUniverse(String universe) throws IOException {
         List<SymbolItem> all = finnhub.listSymbolsByExchange("US");
+        List<NormItem> selected = selectAndFilterSymbols(all, universe);
+        ImportCounts counts = saveSelectedSymbols(selected);
+
+        int skipped = Math.max(0, all.size() - selected.size());
+        return new ImportSummaryDTO(counts.imported, counts.updated, skipped);
+    }
+
+    private List<NormItem> selectAndFilterSymbols(List<SymbolItem> allSymbols, String universe) {
         final Set<String> allowedMics = allowedMicsFor(universe);
         final int limit = capFor(universe);
 
-        List<NormItem> selected = all.stream()
+        return allSymbols.stream()
                 .filter(Objects::nonNull)
-                .filter(it -> it.symbol != null && !it.symbol.isBlank())
-                .filter(it -> it.description != null && !it.description.isBlank())
-                .filter(it -> it.type == null || "Common Stock".equalsIgnoreCase(it.type))
-                .filter(it -> it.currency == null || "USD".equalsIgnoreCase(it.currency))
-                .filter(it -> {
-                    if (it.mic == null)
-                        return true;
-                    return allowedMics.isEmpty() || allowedMics.contains(it.mic);
-                })
+                .filter(this::isValidSymbolItem)
+                .filter(it -> isAllowedExchange(it, allowedMics))
                 .map(it -> new NormItem(norm(it.symbol), it))
                 .filter(ni -> ni.sym != null && !ni.sym.isBlank())
                 .collect(Collectors.collectingAndThen(
@@ -77,35 +78,62 @@ public class SymbolService {
                                 .sorted(Comparator.comparing(ni -> ni.sym))
                                 .limit(limit)
                                 .collect(Collectors.toList())));
+    }
 
+    private boolean isValidSymbolItem(SymbolItem item) {
+        return item.symbol != null && !item.symbol.isBlank() &&
+                item.description != null && !item.description.isBlank() &&
+                (item.type == null || "Common Stock".equalsIgnoreCase(item.type)) &&
+                (item.currency == null || "USD".equalsIgnoreCase(item.currency));
+    }
+
+    private boolean isAllowedExchange(SymbolItem item, Set<String> allowedMics) {
+        if (item.mic == null) {
+            return true;
+        }
+        return allowedMics.isEmpty() || allowedMics.contains(item.mic);
+    }
+
+    private ImportCounts saveSelectedSymbols(List<NormItem> selected) {
         int imported = 0, updated = 0;
 
         for (NormItem ni : selected) {
-            SymbolItem it = ni.raw;
-            String sym = ni.sym;
+            SymbolItem item = ni.raw;
+            String symbol = ni.sym;
 
-            SymbolEntity e = symbolRepository.findBySymbol(sym).orElseGet(SymbolEntity::new);
-            boolean isNew = (e.getId() == null);
+            SymbolEntity entity = symbolRepository.findBySymbol(symbol).orElseGet(SymbolEntity::new);
+            boolean isNew = (entity.getId() == null);
 
             if (isNew) {
-                e.setSymbol(sym);
-                e.setEnabled(true);
+                entity.setSymbol(symbol);
+                entity.setEnabled(true);
+                imported++;
+            } else {
+                updated++;
             }
 
-            e.setName(it.description);
-            e.setExchange(it.mic != null ? it.mic : "US");
-            e.setCurrency(it.currency);
-            e.setMic(it.mic);
-
-            symbolRepository.save(e);
-            if (isNew)
-                imported++;
-            else
-                updated++;
+            updateSymbolEntity(entity, item);
+            symbolRepository.save(entity);
         }
 
-        int skipped = Math.max(0, all.size() - selected.size());
-        return new ImportSummaryDTO(imported, updated, skipped);
+        return new ImportCounts(imported, updated);
+    }
+
+    private void updateSymbolEntity(SymbolEntity entity, SymbolItem item) {
+        entity.setName(item.description);
+        entity.setExchange(item.mic != null ? item.mic : "US");
+        entity.setCurrency(item.currency);
+        entity.setMic(item.mic);
+    }
+
+    private static class ImportCounts {
+        final int imported;
+        final int updated;
+
+        ImportCounts(int imported, int updated) {
+            this.imported = imported;
+            this.updated = updated;
+        }
     }
 
     public Page<SymbolDTO> list(String q, Boolean enabled, Pageable pageable) {
