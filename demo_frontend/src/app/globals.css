@@ -371,6 +371,10 @@ body {
   transform: rotateY(180deg);
 }
 
+.rotate-y-180 .login-card-front {
+  box-shadow: none;
+}
+
 /* Dashboard/Home specific styles */
 .dashboard-container {
   background: var(--bg-primary);
