@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.mapper;
+package com.portfolio.demo_backend.marketdata.mapper;
 
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
