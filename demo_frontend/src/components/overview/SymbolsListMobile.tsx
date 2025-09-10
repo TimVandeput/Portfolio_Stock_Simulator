@@ -62,7 +62,7 @@ export default function SymbolsListMobile({
               key={row.id}
               className={`rounded-2xl border shadow-sm p-4 transition-all duration-500 ${
                 isPulsing
-                  ? "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.02]"
+                  ? "bg-amber-100 dark:bg-amber-900/30"
                   : "bg-[var(--background)] hover:shadow-md"
               }`}
             >
@@ -116,36 +116,22 @@ export default function SymbolsListMobile({
 
                 {isMarket && (
                   <>
-                    <div
-                      className={`rounded-xl border p-2 transition-all duration-300 ${
-                        isPulsing
-                          ? "border-amber-400 shadow-lg shadow-amber-500/30 bg-amber-50 dark:bg-amber-900/30"
-                          : ""
-                      }`}
-                    >
+                    <div className="rounded-xl border p-2">
                       <div className="opacity-70">Last</div>
                       <div
                         className={`font-mono transition-all duration-300 ${
                           isPulsing
-                            ? "text-amber-600 dark:text-amber-400 font-bold"
+                            ? "text-amber-600 dark:text-amber-400"
                             : "text-amber-500"
                         }`}
                       >
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </div>
                     </div>
-                    <div
-                      className={`rounded-xl border p-2 transition-all duration-300 ${
-                        isPulsing
-                          ? "border-amber-400 shadow-lg shadow-amber-500/30 bg-amber-50 dark:bg-amber-900/30"
-                          : ""
-                      }`}
-                    >
+                    <div className="rounded-xl border p-2">
                       <div className="opacity-70">% Chg</div>
                       <div
-                        className={`${pcClass} font-mono transition-all duration-300 ${
-                          isPulsing ? "font-bold" : ""
-                        }`}
+                        className={`${pcClass} font-mono transition-all duration-300`}
                       >
                         {p.percentChange !== undefined
                           ? `${pc > 0 ? "+" : ""}${pc.toFixed(2)}%`

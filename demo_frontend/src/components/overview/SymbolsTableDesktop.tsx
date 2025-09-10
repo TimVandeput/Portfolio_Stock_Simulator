@@ -106,9 +106,7 @@ export default function SymbolsTableDesktop({
                 <tr
                   key={row.id}
                   className={`border-t transition-all duration-500 ${
-                    isPulsing
-                      ? "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.01]"
-                      : ""
+                    isPulsing ? "bg-amber-100 dark:bg-amber-900/30" : ""
                   }`}
                 >
                   <td
@@ -140,7 +138,7 @@ export default function SymbolsTableDesktop({
                       <td
                         className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
                           isPulsing
-                            ? "text-amber-600 dark:text-amber-400 font-bold shadow-lg shadow-amber-500/50 bg-amber-100/50 dark:bg-amber-900/50 rounded-md"
+                            ? "text-amber-600 dark:text-amber-400"
                             : "text-amber-500"
                         }`}
                         title={p.last?.toString() ?? ""}
@@ -148,9 +146,7 @@ export default function SymbolsTableDesktop({
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass} ${
-                          isPulsing ? "font-bold shadow-md" : ""
-                        }`}
+                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
                         title={`${pc.toFixed(2)}%`}
                       >
                         {p.percentChange !== undefined
