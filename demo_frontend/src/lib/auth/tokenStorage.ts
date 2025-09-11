@@ -65,32 +65,22 @@ export function clearTokens() {
 }
 
 export function getAccessToken() {
-  if (isBrowser()) {
-    const cookieToken = getCookie(ACCESS_KEY);
-    if (cookieToken !== _accessToken) {
-      _accessToken = cookieToken;
-      emitAuthChange();
-    }
+  if (!_accessToken && isBrowser()) {
+    _accessToken = getCookie(ACCESS_KEY);
   }
   return _accessToken;
 }
+
 export function getRefreshToken() {
-  if (isBrowser()) {
-    const cookieToken = getCookie(REFRESH_KEY);
-    if (cookieToken !== _refreshToken) {
-      _refreshToken = cookieToken;
-      emitAuthChange();
-    }
+  if (!_refreshToken && isBrowser()) {
+    _refreshToken = getCookie(REFRESH_KEY);
   }
   return _refreshToken;
 }
+
 export function getAuthenticatedAs() {
-  if (isBrowser()) {
-    const cookieRole = getCookie(AS_KEY) as Role | null;
-    if (cookieRole !== _authenticatedAs) {
-      _authenticatedAs = cookieRole;
-      emitAuthChange();
-    }
+  if (!_authenticatedAs && isBrowser()) {
+    _authenticatedAs = (getCookie(AS_KEY) as Role | null) ?? null;
   }
   return _authenticatedAs;
 }
