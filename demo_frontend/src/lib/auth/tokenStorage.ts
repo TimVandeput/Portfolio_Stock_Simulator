@@ -23,6 +23,13 @@ const AS_KEY = "auth.as";
 
 const isBrowser = () => typeof window !== "undefined";
 
+// Helper to emit auth change events
+const emitAuthChange = () => {
+  if (isBrowser()) {
+    window.dispatchEvent(new Event("authChanged"));
+  }
+};
+
 export function loadTokensFromStorage() {
   if (!isBrowser()) return;
   _accessToken = getCookie(ACCESS_KEY);
@@ -43,6 +50,7 @@ export function setTokens(tokens: {
     setCookie(REFRESH_KEY, _refreshToken ?? "");
     if (_authenticatedAs) setCookie(AS_KEY, _authenticatedAs);
   }
+  emitAuthChange();
 }
 
 export function clearTokens() {
@@ -54,14 +62,27 @@ export function clearTokens() {
     removeCookie(REFRESH_KEY);
     removeCookie(AS_KEY);
   }
+  emitAuthChange();
 }
 
 export function getAccessToken() {
+  // Load from cookies if not already loaded
+  if (!_accessToken && isBrowser()) {
+    _accessToken = getCookie(ACCESS_KEY);
+  }
   return _accessToken;
 }
 export function getRefreshToken() {
+  // Load from cookies if not already loaded
+  if (!_refreshToken && isBrowser()) {
+    _refreshToken = getCookie(REFRESH_KEY);
+  }
   return _refreshToken;
 }
 export function getAuthenticatedAs() {
+  // Load from cookies if not already loaded
+  if (!_authenticatedAs && isBrowser()) {
+    _authenticatedAs = (getCookie(AS_KEY) as Role | null) ?? null;
+  }
   return _authenticatedAs;
 }

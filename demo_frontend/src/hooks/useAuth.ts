@@ -57,7 +57,7 @@ export function useAccessControl(config: AccessControlConfig) {
       return {
         allowed: false,
         reason: "login",
-        message: "You need to log in to access this page.",
+        message: "Please log in to access this page. Your session may have expired.",
       };
     }
 
