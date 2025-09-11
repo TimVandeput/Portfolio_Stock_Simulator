@@ -23,6 +23,12 @@ const AS_KEY = "auth.as";
 
 const isBrowser = () => typeof window !== "undefined";
 
+const emitAuthChange = () => {
+  if (isBrowser()) {
+    window.dispatchEvent(new Event("authChanged"));
+  }
+};
+
 export function loadTokensFromStorage() {
   if (!isBrowser()) return;
   _accessToken = getCookie(ACCESS_KEY);
@@ -42,7 +48,10 @@ export function setTokens(tokens: {
     setCookie(ACCESS_KEY, _accessToken ?? "");
     setCookie(REFRESH_KEY, _refreshToken ?? "");
     if (_authenticatedAs) setCookie(AS_KEY, _authenticatedAs);
+
+    sessionStorage.removeItem("sessionExpired");
   }
+  emitAuthChange();
 }
 
 export function clearTokens() {
@@ -53,15 +62,39 @@ export function clearTokens() {
     removeCookie(ACCESS_KEY);
     removeCookie(REFRESH_KEY);
     removeCookie(AS_KEY);
+
+    sessionStorage.removeItem("sessionExpired");
   }
+  emitAuthChange();
 }
 
 export function getAccessToken() {
+  if (isBrowser()) {
+    const cookieToken = getCookie(ACCESS_KEY);
+    if (cookieToken !== _accessToken) {
+      _accessToken = cookieToken;
+      emitAuthChange();
+    }
+  }
   return _accessToken;
 }
 export function getRefreshToken() {
+  if (isBrowser()) {
+    const cookieToken = getCookie(REFRESH_KEY);
+    if (cookieToken !== _refreshToken) {
+      _refreshToken = cookieToken;
+      emitAuthChange();
+    }
+  }
   return _refreshToken;
 }
 export function getAuthenticatedAs() {
+  if (isBrowser()) {
+    const cookieRole = getCookie(AS_KEY) as Role | null;
+    if (cookieRole !== _authenticatedAs) {
+      _authenticatedAs = cookieRole;
+      emitAuthChange();
+    }
+  }
   return _authenticatedAs;
 }

@@ -30,9 +30,21 @@ export function useAuth(): AuthState {
 
     checkAuth();
 
-    const interval = setInterval(checkAuth, 1000);
+    const handleStorageChange = () => {
+      checkAuth();
+    };
 
-    return () => clearInterval(interval);
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChanged", handleAuthChange);
+    };
   }, []);
 
   return authState;
@@ -54,10 +66,17 @@ export function useAccessControl(config: AccessControlConfig) {
     }
 
     if (!auth.isAuthenticated) {
+      const sessionExpired =
+        typeof window !== "undefined" &&
+        sessionStorage.getItem("sessionExpired") === "true";
+
       return {
         allowed: false,
         reason: "login",
-        message: "You need to log in to access this page.",
+        message: sessionExpired
+          ? "Your session has expired. Please log in again to continue."
+          : "You need to log in to access this page.",
+        isSessionExpired: sessionExpired,
       };
     }
 
@@ -69,6 +88,7 @@ export function useAccessControl(config: AccessControlConfig) {
           message: `You don't have permission to access this page. ${
             config.allowedRoles.includes("ROLE_ADMIN") ? "Admin" : "User"
           } access required.`,
+          isSessionExpired: false,
         };
       }
     }
@@ -92,6 +112,7 @@ export function useAccessControl(config: AccessControlConfig) {
       : {
           reason: accessResult.reason as "login" | "role",
           message: accessResult.message || "Access denied",
+          isSessionExpired: accessResult.isSessionExpired || false,
         },
   };
 }

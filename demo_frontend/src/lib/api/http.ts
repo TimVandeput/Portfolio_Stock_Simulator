@@ -132,7 +132,13 @@ export class HttpClient {
           "[HttpClient] tryRefresh failed: response not ok",
           res.status
         );
+        console.log("🔄 Session expired. Redirecting to login...");
         clearTokens();
+
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("sessionExpired", "true");
+          window.location.href = "/";
+        }
         return false;
       }
 
@@ -148,7 +154,13 @@ export class HttpClient {
       return true;
     } catch (err) {
       console.error("[HttpClient] tryRefresh error:", err);
+      console.log("🔄 Session expired. Redirecting to login...");
       clearTokens();
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("sessionExpired", "true");
+        window.location.href = "/";
+      }
       return false;
     }
   }
