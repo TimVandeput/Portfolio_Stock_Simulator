@@ -30,9 +30,21 @@ export function useAuth(): AuthState {
 
     checkAuth();
 
-    const interval = setInterval(checkAuth, 1000);
+    const handleStorageChange = () => {
+      checkAuth();
+    };
 
-    return () => clearInterval(interval);
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChanged", handleAuthChange);
+    };
   }, []);
 
   return authState;
@@ -58,6 +70,7 @@ export function useAccessControl(config: AccessControlConfig) {
         allowed: false,
         reason: "login",
         message: "Please log in to access this page. Your session may have expired.",
+
       };
     }
 

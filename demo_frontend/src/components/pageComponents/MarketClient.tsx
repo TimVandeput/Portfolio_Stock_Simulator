@@ -12,7 +12,6 @@ import SymbolsTableDesktop from "@/components/overview/SymbolsTableDesktop";
 import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 
 import { listSymbols } from "@/lib/api/symbols";
-import { ApiError } from "@/lib/api/http";
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 
@@ -31,7 +30,9 @@ export default function MarketClient() {
   } = usePrices();
 
   useEffect(() => {
-    if (!isLoading && !hasAccess && accessError) setShowModal(true);
+    if (!isLoading && !hasAccess && accessError?.reason === "role") {
+      setShowModal(true);
+    }
   }, [isLoading, hasAccess, accessError]);
 
   useEffect(() => {
@@ -165,6 +166,23 @@ export default function MarketClient() {
           message={accessError?.message || "Access denied"}
           onClose={() => setShowModal(false)}
         />
+      ) : !hasAccess && accessError?.reason === "login" ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">
+              Authentication Required
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {accessError?.message}
+            </p>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="neu-button px-6 py-2 rounded-xl font-medium"
+            >
+              Login
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="market-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
           <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">

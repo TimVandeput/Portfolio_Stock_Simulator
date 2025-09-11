@@ -11,6 +11,7 @@ import React, {
 import { getAllCurrentPrices } from "@/lib/api/prices";
 import { listSymbols } from "@/lib/api/symbols";
 import { openPriceStream, type StreamController } from "@/lib/api/stream";
+import { getAccessToken } from "@/lib/auth/tokenStorage";
 import type { PriceEvent } from "@/types";
 
 export type Price = {
@@ -52,9 +53,12 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
   const pulseTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const initializationRef = useRef(false);
 
+  // Check if user is authenticated
+  const isAuthenticated = () => !!getAccessToken();
+
   // Load initial prices from Yahoo API
   const loadInitialPrices = useCallback(async () => {
-    if (isInitialLoading || hasInitialPrices) return;
+    if (isInitialLoading || hasInitialPrices || !isAuthenticated()) return;
 
     try {
       setIsInitialLoading(true);
@@ -100,7 +104,7 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
 
   // Start real-time price streaming
   const startPriceStream = useCallback(async () => {
-    if (!hasInitialPrices) return;
+    if (!hasInitialPrices || !isAuthenticated()) return;
 
     console.log("🔗 Starting Finnhub price stream...");
 
@@ -161,7 +165,9 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
           console.log("✅ Price stream connected");
         },
         onError: () => {
-          console.error("❌ Price stream error");
+          console.error("❌ Price stream error - possibly auth related");
+          // Stream error might be due to token expiry
+          // The stream will attempt to reconnect automatically
         },
         onClose: () => {
           console.log("🔌 Price stream closed");
@@ -171,16 +177,49 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
       streamRef.current = stream;
     } catch (e) {
       console.error("Failed to start price stream:", e);
+      // If listSymbols fails due to auth, it will be handled by HttpClient
+      // and user will be redirected via useAccessControl
     }
   }, [hasInitialPrices]);
 
-  // Initialize prices on mount
+  // Initialize prices on mount and listen for auth changes
   useEffect(() => {
+    const handleAuthChange = () => {
+      if (isAuthenticated() && !hasInitialPrices && !isInitialLoading) {
+        console.log("🔄 Auth detected, loading initial prices...");
+        loadInitialPrices();
+      } else if (!isAuthenticated()) {
+        // User logged out, clean up
+        console.log("🚫 No auth, cleaning up price data...");
+        if (streamRef.current) {
+          streamRef.current.close();
+          streamRef.current = null;
+        }
+        setPrices({});
+        setHasInitialPrices(false);
+        setError(null);
+        // Clear all pulse timeouts
+        Object.values(pulseTimeoutRef.current).forEach((timeout) => {
+          clearTimeout(timeout);
+        });
+        pulseTimeoutRef.current = {};
+        setPulsatingSymbols(new Set());
+      }
+    };
+
+    // Initial check
     if (!initializationRef.current) {
       initializationRef.current = true;
-      loadInitialPrices();
+      handleAuthChange();
     }
-  }, [loadInitialPrices]);
+
+    // Listen for auth changes
+    window.addEventListener("authChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("authChanged", handleAuthChange);
+    };
+  }, [loadInitialPrices, hasInitialPrices, isInitialLoading]);
 
   // Start streaming once initial prices are loaded
   useEffect(() => {
