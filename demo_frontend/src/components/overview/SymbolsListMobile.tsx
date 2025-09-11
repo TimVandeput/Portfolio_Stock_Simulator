@@ -2,9 +2,8 @@
 
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import type { Price } from "@/contexts/PriceContext";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-
-type Price = { last?: number; percentChange?: number; lastUpdate?: number };
 type Mode = "admin" | "market";
 
 type Props = {
