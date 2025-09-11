@@ -92,10 +92,11 @@ export default function SymbolsTableDesktop({
             {page?.content?.map((row) => {
               const p = isMarket ? getPrice(row.symbol) : {};
               const pc = p.percentChange ?? 0;
+              const roundedPc = parseFloat(pc.toFixed(2));
               const pcClass =
-                pc > 0
+                roundedPc > 0
                   ? "text-emerald-500"
-                  : pc < 0
+                  : roundedPc < 0
                   ? "text-rose-500"
                   : "opacity-80";
 
@@ -150,7 +151,12 @@ export default function SymbolsTableDesktop({
                         title={`${pc.toFixed(2)}%`}
                       >
                         {p.percentChange !== undefined
-                          ? `${pc > 0 ? "+" : ""}${pc.toFixed(2)}%`
+                          ? (() => {
+                              if (roundedPc === 0) return "0.00%";
+                              return `${
+                                roundedPc > 0 ? "+" : ""
+                              }${roundedPc.toFixed(2)}%`;
+                            })()
                           : "—"}
                       </td>
                     </>
