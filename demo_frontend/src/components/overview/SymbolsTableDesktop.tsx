@@ -141,13 +141,12 @@ export default function SymbolsTableDesktop({
                             ? "text-amber-600 dark:text-amber-400"
                             : "text-amber-500"
                         }`}
-                        title={p.last?.toString() ?? ""}
                       >
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </td>
                       <td
                         className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
-                        title={`${pc.toFixed(2)}%`}
+                        title={pc !== 0 ? `${pc}%` : undefined}
                       >
                         {p.percentChange !== undefined
                           ? (() => {
