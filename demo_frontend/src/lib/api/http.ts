@@ -136,7 +136,6 @@ export class HttpClient {
         clearTokens();
 
         if (typeof window !== "undefined") {
-          sessionStorage.setItem("sessionExpired", "true");
           window.location.href = "/";
         }
         return false;
@@ -158,7 +157,6 @@ export class HttpClient {
       clearTokens();
 
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("sessionExpired", "true");
         window.location.href = "/";
       }
       return false;

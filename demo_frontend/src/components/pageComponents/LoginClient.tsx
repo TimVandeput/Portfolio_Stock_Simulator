@@ -30,19 +30,9 @@ export default function LoginClient() {
     type: "error" | "success";
   } | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [sessionExpiredMessage, setSessionExpiredMessage] = useState("");
 
   useEffect(() => {
     router.prefetch("/home");
-
-    if (typeof window !== "undefined") {
-      const sessionExpired = sessionStorage.getItem("sessionExpired");
-      if (sessionExpired === "true") {
-        setSessionExpiredMessage("Session expired. Please log in again.");
-        sessionStorage.removeItem("sessionExpired");
-        setTimeout(() => setSessionExpiredMessage(""), 5000);
-      }
-    }
   }, [router]);
 
   useEffect(() => {
@@ -159,7 +149,7 @@ export default function LoginClient() {
             setUsername={setUsername}
             password={password}
             setPassword={setPassword}
-            error={sessionExpiredMessage || error}
+            error={error}
             success={success}
             selectedRole={selectedRole}
             setSelectedRole={setSelectedRole}
@@ -170,7 +160,6 @@ export default function LoginClient() {
               setTimeout(() => {
                 setError("");
                 setSuccess("");
-                setSessionExpiredMessage("");
               }, 500);
             }}
           />

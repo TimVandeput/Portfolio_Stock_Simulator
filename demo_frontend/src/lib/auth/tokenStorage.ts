@@ -48,8 +48,6 @@ export function setTokens(tokens: {
     setCookie(ACCESS_KEY, _accessToken ?? "");
     setCookie(REFRESH_KEY, _refreshToken ?? "");
     if (_authenticatedAs) setCookie(AS_KEY, _authenticatedAs);
-
-    sessionStorage.removeItem("sessionExpired");
   }
   emitAuthChange();
 }
@@ -62,8 +60,6 @@ export function clearTokens() {
     removeCookie(ACCESS_KEY);
     removeCookie(REFRESH_KEY);
     removeCookie(AS_KEY);
-
-    sessionStorage.removeItem("sessionExpired");
   }
   emitAuthChange();
 }

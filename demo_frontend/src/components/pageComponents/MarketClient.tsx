@@ -170,9 +170,7 @@ export default function MarketClient() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">
-              {accessError?.isSessionExpired
-                ? "Session Expired"
-                : "Authentication Required"}
+              Authentication Required
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {accessError?.message}
@@ -181,7 +179,7 @@ export default function MarketClient() {
               onClick={() => (window.location.href = "/")}
               className="neu-button px-6 py-2 rounded-xl font-medium"
             >
-              {accessError?.isSessionExpired ? "Go Back to Login" : "Login"}
+              Login
             </button>
           </div>
         </div>
