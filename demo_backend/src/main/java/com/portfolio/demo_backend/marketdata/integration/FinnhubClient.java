@@ -26,15 +26,6 @@ public class FinnhubClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Profile2 {
-        public String name;
-        public String exchange;
-        public String ticker;
-        public String currency;
-        public String mic;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SymbolItem {
         public String symbol;
         public String description;
@@ -62,27 +53,6 @@ public class FinnhubClient {
             }
             ConstituentsResponse cr = mapper.readValue(resp.body().string(), ConstituentsResponse.class);
             return cr.constituents != null ? cr.constituents : List.of();
-        }
-    }
-
-    public Profile2 getProfile2(String ticker) throws IOException {
-        HttpUrl url = HttpUrl.parse(props.getApiBase() + "/stock/profile2")
-                .newBuilder()
-                .addQueryParameter("symbol", ticker)
-                .addQueryParameter("token", props.getToken())
-                .build();
-        Request req = new Request.Builder().url(url).get().build();
-        try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful()) {
-                if (resp.code() == 429) {
-                    throw new ApiRateLimitException("Finnhub");
-                } else if (resp.code() >= 500) {
-                    throw new MarketDataUnavailableException("Finnhub", "Server error: " + resp.code());
-                } else {
-                    throw new IOException("Finnhub profile2 " + resp.code());
-                }
-            }
-            return mapper.readValue(resp.body().string(), Profile2.class);
         }
     }
 

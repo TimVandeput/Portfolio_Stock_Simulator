@@ -8,6 +8,7 @@ import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
 import RotationPrompt from "@/components/ui/RotationPrompt";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { logout } from "@/lib/api/auth";
@@ -102,39 +103,41 @@ export default function ClientLayout({
 
   return (
     <ThemeProvider>
-      <RotationPrompt />
-      {cursorTrailEnabled && <CursorTrail />}
-      <Header
-        onLogoutClick={handleLogoutClick}
-        isLoggingOut={isLoggingOut}
-        cursorTrailEnabled={cursorTrailEnabled}
-        setCursorTrailEnabled={setCursorTrailEnabled}
-        hideTrailButton={isMobile}
-      />
+      <PriceProvider>
+        <RotationPrompt />
+        {cursorTrailEnabled && <CursorTrail />}
+        <Header
+          onLogoutClick={handleLogoutClick}
+          isLoggingOut={isLoggingOut}
+          cursorTrailEnabled={cursorTrailEnabled}
+          setCursorTrailEnabled={setCursorTrailEnabled}
+          hideTrailButton={isMobile}
+        />
 
-      <main className="flex-1 w-full overflow-y-auto flex flex-col">
-        <div className="relative w-full min-h-full flex flex-col items-center justify-center flex-1">
-          {showConfirmation ? (
-            <ConfirmationModal
-              isOpen={showConfirmation}
-              title="Confirm Logout"
-              message="Are you sure you want to logout? You will need to login again to access your account."
-              confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
-              cancelText="Cancel"
-              onConfirm={handleConfirmLogout}
-              onCancel={handleCancelLogout}
-              confirmDisabled={isLoggingOut}
-              cancelDisabled={isLoggingOut}
-            />
-          ) : (
-            children
-          )}
+        <main className="flex-1 w-full overflow-y-auto flex flex-col">
+          <div className="relative w-full min-h-full flex flex-col items-center justify-center flex-1">
+            {showConfirmation ? (
+              <ConfirmationModal
+                isOpen={showConfirmation}
+                title="Confirm Logout"
+                message="Are you sure you want to logout? You will need to login again to access your account."
+                confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+                cancelText="Cancel"
+                onConfirm={handleConfirmLogout}
+                onCancel={handleCancelLogout}
+                confirmDisabled={isLoggingOut}
+                cancelDisabled={isLoggingOut}
+              />
+            ) : (
+              children
+            )}
 
-          {isLoggingOut && <Loader cover="content" />}
-        </div>
-      </main>
+            {isLoggingOut && <Loader cover="content" />}
+          </div>
+        </main>
 
-      {!isSmallPhone && <Footer />}
+        {!isSmallPhone && <Footer />}
+      </PriceProvider>
     </ThemeProvider>
   );
 }

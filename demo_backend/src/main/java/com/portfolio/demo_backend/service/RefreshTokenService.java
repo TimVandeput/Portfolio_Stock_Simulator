@@ -14,7 +14,7 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-    private final RefreshTokenRepository repo;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private final long refreshTtlMs = 7L * 24 * 60 * 60 * 1000;
 
@@ -28,7 +28,7 @@ public class RefreshTokenService {
                 .revoked(false)
                 .authenticatedAs(authenticatedAs)
                 .build();
-        return repo.save(rt);
+        return refreshTokenRepository.save(rt);
     }
 
     public RefreshToken create(User user) {
@@ -37,20 +37,20 @@ public class RefreshTokenService {
 
     public RefreshToken rotate(RefreshToken old) {
         old.setRevoked(true);
-        repo.save(old);
+        refreshTokenRepository.save(old);
         com.portfolio.demo_backend.model.Role auth = old.getAuthenticatedAs();
         return create(old.getUser(), auth != null ? auth : com.portfolio.demo_backend.model.Role.ROLE_USER);
     }
 
     public void setAuthenticatedAs(String token, com.portfolio.demo_backend.model.Role role) {
-        repo.findByToken(token).ifPresent(rt -> {
+        refreshTokenRepository.findByToken(token).ifPresent(rt -> {
             rt.setAuthenticatedAs(role);
-            repo.save(rt);
+            refreshTokenRepository.save(rt);
         });
     }
 
     public RefreshToken validateUsable(String token) {
-        RefreshToken rt = repo.findByToken(token)
+        RefreshToken rt = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
         if (rt.isRevoked() || rt.getExpiresAt().isBefore(Instant.now())) {
             throw new IllegalArgumentException("Expired or revoked refresh token");
@@ -59,9 +59,9 @@ public class RefreshTokenService {
     }
 
     public void revoke(String token) {
-        repo.findByToken(token).ifPresent(rt -> {
+        refreshTokenRepository.findByToken(token).ifPresent(rt -> {
             rt.setRevoked(true);
-            repo.save(rt);
+            refreshTokenRepository.save(rt);
         });
     }
 

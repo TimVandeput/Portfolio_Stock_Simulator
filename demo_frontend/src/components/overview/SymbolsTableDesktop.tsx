@@ -2,9 +2,8 @@
 
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import type { Price } from "@/contexts/PriceContext";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-
-type Price = { last?: number; percentChange?: number; lastUpdate?: number };
 type Mode = "admin" | "market";
 
 type Props = {
@@ -92,10 +91,11 @@ export default function SymbolsTableDesktop({
             {page?.content?.map((row) => {
               const p = isMarket ? getPrice(row.symbol) : {};
               const pc = p.percentChange ?? 0;
+              const roundedPc = parseFloat(pc.toFixed(2));
               const pcClass =
-                pc > 0
+                roundedPc > 0
                   ? "text-emerald-500"
-                  : pc < 0
+                  : roundedPc < 0
                   ? "text-rose-500"
                   : "opacity-80";
 
@@ -106,9 +106,7 @@ export default function SymbolsTableDesktop({
                 <tr
                   key={row.id}
                   className={`border-t transition-all duration-500 ${
-                    isPulsing
-                      ? "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 shadow-lg shadow-amber-500/30 border-amber-300 dark:border-amber-600 animate-pulse scale-[1.01]"
-                      : ""
+                    isPulsing ? "bg-amber-100 dark:bg-amber-900/30" : ""
                   }`}
                 >
                   <td
@@ -140,7 +138,7 @@ export default function SymbolsTableDesktop({
                       <td
                         className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
                           isPulsing
-                            ? "text-amber-600 dark:text-amber-400 font-bold shadow-lg shadow-amber-500/50 bg-amber-100/50 dark:bg-amber-900/50 rounded-md"
+                            ? "text-amber-600 dark:text-amber-400"
                             : "text-amber-500"
                         }`}
                         title={p.last?.toString() ?? ""}
@@ -148,13 +146,16 @@ export default function SymbolsTableDesktop({
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </td>
                       <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass} ${
-                          isPulsing ? "font-bold shadow-md" : ""
-                        }`}
+                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
                         title={`${pc.toFixed(2)}%`}
                       >
                         {p.percentChange !== undefined
-                          ? `${pc > 0 ? "+" : ""}${pc.toFixed(2)}%`
+                          ? (() => {
+                              if (roundedPc === 0) return "0.00%";
+                              return `${
+                                roundedPc > 0 ? "+" : ""
+                              }${roundedPc.toFixed(2)}%`;
+                            })()
                           : "—"}
                       </td>
                     </>
