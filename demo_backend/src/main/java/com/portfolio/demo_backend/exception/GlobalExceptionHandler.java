@@ -17,12 +17,10 @@ import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.exception.user.InvalidPasscodeException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,21 +78,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SymbolInUseException.class)
-    public ResponseEntity<ProblemDetail> handleSymbolInUse(SymbolInUseException ex) {
-        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        pd.setTitle("Symbol in use");
-        pd.setType(URI.create("https://docs/validation#symbol-in-use"));
-        pd.setProperty("inUse", true);
-        pd.setProperty("symbol", ex.getSymbol());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    public ResponseEntity<Map<String, String>> handleSymbolInUse(SymbolInUseException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(ImportInProgressException.class)
-    public ResponseEntity<ProblemDetail> handleImportBusy(ImportInProgressException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        pd.setTitle("Import in progress");
-        pd.setType(URI.create("https://docs/validation#import-in-progress"));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    public ResponseEntity<Map<String, String>> handleImportBusy(ImportInProgressException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(StreamAuthenticationException.class)
@@ -105,21 +99,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ApiRateLimitException.class)
-    public ResponseEntity<ProblemDetail> handleApiRateLimit(ApiRateLimitException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
-        pd.setTitle("API Rate Limit Exceeded");
-        pd.setType(URI.create("https://docs/marketdata#rate-limit"));
-        pd.setProperty("provider", ex.getProvider());
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(pd);
+    public ResponseEntity<Map<String, String>> handleApiRateLimit(ApiRateLimitException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
     }
 
     @ExceptionHandler(MarketDataUnavailableException.class)
-    public ResponseEntity<ProblemDetail> handleMarketDataUnavailable(MarketDataUnavailableException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
-        pd.setTitle("Market Data Unavailable");
-        pd.setType(URI.create("https://docs/marketdata#unavailable"));
-        pd.setProperty("provider", ex.getProvider());
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(pd);
+    public ResponseEntity<Map<String, String>> handleMarketDataUnavailable(MarketDataUnavailableException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
     @ExceptionHandler(Exception.class)

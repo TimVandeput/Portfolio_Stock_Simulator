@@ -2,6 +2,7 @@ package com.portfolio.demo_backend.marketdata.service;
 
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
+import com.portfolio.demo_backend.marketdata.mapper.MarketDataMapper;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 import com.portfolio.demo_backend.model.SymbolEntity;
@@ -47,7 +48,7 @@ public class PriceService {
 
             Map<String, YahooQuoteDTO> result = new HashMap<>();
             for (RapidApiClient.Quote quote : quotes) {
-                YahooQuoteDTO dto = convertToYahooQuoteDTO(quote);
+                YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
                 result.put(quote.symbol, dto);
             }
 
@@ -91,7 +92,7 @@ public class PriceService {
                 return null;
             }
 
-            return convertToYahooQuoteDTO(quote);
+            return MarketDataMapper.toYahooQuoteDTO(quote);
         } catch (ApiRateLimitException e) {
             log.error("Rate limit exceeded while fetching price for symbol {}: {}", symbol, e.getMessage());
             throw e;
@@ -103,20 +104,5 @@ public class PriceService {
             throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
                     "Failed to fetch price data for " + symbol + ": " + e.getMessage());
         }
-    }
-
-    private YahooQuoteDTO convertToYahooQuoteDTO(RapidApiClient.Quote quote) {
-        YahooQuoteDTO dto = new YahooQuoteDTO();
-        dto.setSymbol(quote.symbol);
-        dto.setPrice(quote.price);
-        dto.setChange(quote.change);
-        dto.setChangePercent(quote.changePercent);
-        dto.setCurrency("USD");
-        dto.setMarketCap(null);
-        dto.setPreviousClose(quote.previousClose);
-        dto.setDayHigh(quote.dayHigh);
-        dto.setDayLow(quote.dayLow);
-        dto.setVolume(null);
-        return dto;
     }
 }

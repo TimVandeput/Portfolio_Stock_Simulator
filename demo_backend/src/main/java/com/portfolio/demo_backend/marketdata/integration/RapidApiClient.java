@@ -2,10 +2,8 @@ package com.portfolio.demo_backend.marketdata.integration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.RapidApiProperties;
-import com.portfolio.demo_backend.marketdata.SymbolConstants;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 import lombok.RequiredArgsConstructor;
@@ -56,35 +54,6 @@ public class RapidApiClient {
 
         @JsonProperty("regularMarketPreviousClose")
         public Double previousClose;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class SymbolInfo {
-        @JsonProperty("symbol")
-        public String symbol;
-
-        @JsonProperty("longName")
-        public String name;
-
-        @JsonProperty("exchange")
-        public String exchange;
-
-        @JsonProperty("currency")
-        public String currency = "USD";
-
-        public String mic;
-
-        @JsonProperty("exchange")
-        public void setExchange(String exchange) {
-            this.exchange = exchange;
-            if ("NASDAQ".equalsIgnoreCase(exchange) || "NMS".equalsIgnoreCase(exchange)) {
-                this.mic = "XNAS";
-            } else if ("NYSE".equalsIgnoreCase(exchange) || "NYQ".equalsIgnoreCase(exchange)) {
-                this.mic = "XNYS";
-            } else {
-                this.mic = exchange;
-            }
-        }
     }
 
     public List<Quote> getQuotes(List<String> symbols) throws IOException {
@@ -187,113 +156,5 @@ public class RapidApiClient {
     public Quote getQuote(String symbol) throws IOException {
         List<Quote> quotes = getQuotes(List.of(symbol));
         return quotes.isEmpty() ? null : quotes.get(0);
-    }
-
-    public List<SymbolInfo> getTopSymbols(String universe, int limit) throws IOException {
-        log.info("Fetching top {} symbols for universe: {}", limit, universe);
-
-        List<String> coreSymbols = getCoreSymbolsForUniverse(universe);
-        List<SymbolInfo> result = new ArrayList<>();
-
-        for (int i = 0; i < Math.min(coreSymbols.size(), limit); i += 10) {
-            int endIndex = Math.min(i + 10, Math.min(coreSymbols.size(), limit));
-            List<String> batch = coreSymbols.subList(i, endIndex);
-
-            List<SymbolInfo> batchInfo = getSymbolDetails(batch);
-            result.addAll(batchInfo);
-
-            if (result.size() >= limit) {
-                break;
-            }
-        }
-
-        log.info("Successfully fetched {} symbols for universe {} ",
-                result.size(), universe);
-        return result;
-    }
-
-    private List<String> getCoreSymbolsForUniverse(String universe) {
-        if ("NDX".equalsIgnoreCase(universe) || "NASDAQ".equalsIgnoreCase(universe)) {
-            return SymbolConstants.NASDAQ_CORE_SYMBOLS;
-        } else {
-            return SymbolConstants.SP500_CORE_SYMBOLS;
-        }
-    }
-
-    private List<SymbolInfo> getSymbolDetails(List<String> symbols) throws IOException {
-        if (symbols.isEmpty()) {
-            return List.of();
-        }
-
-        String symbolsParam = String.join(",", symbols);
-        String url = props.getBaseUrl() + "/market/v2/get-quotes?region=US&symbols=" + symbolsParam;
-
-        Request req = new Request.Builder()
-                .url(url)
-                .addHeader("X-RapidAPI-Key", props.getKey())
-                .addHeader("X-RapidAPI-Host", props.getHost())
-                .build();
-
-        try (Response resp = http.newCall(req).execute()) {
-            if (!resp.isSuccessful()) {
-                log.error("Symbol details API failed: {} - {}", resp.code(),
-                        resp.body() != null ? resp.body().string() : "No response body");
-                throw new IOException("Symbol details API failed: " + resp.code());
-            }
-
-            String body = resp.body().string();
-            JsonNode root = mapper.readTree(body);
-
-            log.info("Yahoo Finance API response for symbol details: {}", body);
-
-            List<SymbolInfo> result = new ArrayList<>();
-
-            if (root.has("quoteResponse") && root.get("quoteResponse").has("result")) {
-                JsonNode results = root.get("quoteResponse").get("result");
-                log.info("Processing {} results from Yahoo Finance API", results.size());
-
-                for (JsonNode item : results) {
-                    String symbol = item.path("symbol").asText();
-                    String longName = item.path("longName").asText(null);
-                    String shortName = item.path("shortName").asText(null);
-                    String fullExchange = item.path("fullExchangeName").asText(null);
-                    String exchange = item.path("exchange").asText(null);
-                    String currency = item.path("currency").asText(null);
-
-                    log.info("Symbol: {}, LongName: {}, ShortName: {}, FullExchange: {}, Exchange: {}, Currency: {}",
-                            symbol, longName, shortName, fullExchange, exchange, currency);
-
-                    if (symbol == null || symbol.isBlank() ||
-                            (longName == null || longName.isBlank()) && (shortName == null || shortName.isBlank())) {
-                        log.warn("Skipping symbol {} - missing symbol or name", symbol);
-                        continue;
-                    }
-
-                    SymbolInfo symbolInfo = new SymbolInfo();
-                    symbolInfo.symbol = symbol;
-                    symbolInfo.name = longName != null && !longName.isBlank() ? longName : shortName;
-                    symbolInfo.exchange = fullExchange != null && !fullExchange.isBlank() ? fullExchange
-                            : exchange != null && !exchange.isBlank() ? exchange : "NASDAQ";
-                    symbolInfo.currency = currency != null && !currency.isBlank() ? currency : "USD";
-
-                    String exchangeLower = symbolInfo.exchange.toLowerCase();
-                    if (exchangeLower.contains("nasdaq")) {
-                        symbolInfo.mic = "XNAS";
-                    } else if (exchangeLower.contains("nyse") || exchangeLower.contains("new york")) {
-                        symbolInfo.mic = "XNYS";
-                    } else {
-                        symbolInfo.mic = "XNAS";
-                    }
-
-                    result.add(symbolInfo);
-                    log.info("Added symbol: {} - {}", symbolInfo.symbol, symbolInfo.name);
-                }
-            } else {
-                log.error("No quoteResponse or result found in API response. Full response: {}", body);
-            }
-
-            log.info("Successfully processed {} symbols from Yahoo Finance", result.size());
-            return result;
-        }
     }
 }

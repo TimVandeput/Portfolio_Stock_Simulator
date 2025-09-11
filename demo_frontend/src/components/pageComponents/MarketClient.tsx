@@ -6,6 +6,7 @@ import NoAccessModal from "@/components/ui/NoAccessModal";
 import StatusMessage from "@/components/status/StatusMessage";
 import MarketStatus from "@/components/status/MarketStatus";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
+import SortDropdown from "@/components/ui/SortDropdown";
 import SymbolsTableDesktop from "@/components/overview/SymbolsTableDesktop";
 import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 
@@ -263,6 +264,15 @@ export default function MarketClient() {
   const canPrev = pageIdx > 0;
   const canNext = pageIdx + 1 < totalPages;
 
+  const marketSortOptions = [
+    { value: "symbol", label: "Symbol" },
+    { value: "exchange", label: "Exchange" },
+    { value: "price-high", label: "Price ↓" },
+    { value: "price-low", label: "Price ↑" },
+    { value: "change-high", label: "% Chg ↓" },
+    { value: "change-low", label: "% Chg ↑" },
+  ];
+
   const pageItems = useMemo<(number | "...")[]>(() => {
     const t = totalPages;
     const c = pageIdx;
@@ -353,21 +363,11 @@ export default function MarketClient() {
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm opacity-80">Sort:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
-                  >
-                    <option value="symbol">Symbol</option>
-                    <option value="exchange">Exchange</option>
-                    <option value="price-high">Price ↓</option>
-                    <option value="price-low">Price ↑</option>
-                    <option value="change-high">% Chg ↓</option>
-                    <option value="change-low">% Chg ↑</option>
-                  </select>
-                </div>
+                <SortDropdown
+                  value={sortBy}
+                  onChange={setSortBy}
+                  options={marketSortOptions}
+                />
               </div>
             </div>
 

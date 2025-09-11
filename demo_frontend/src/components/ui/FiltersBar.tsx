@@ -1,6 +1,7 @@
 "use client";
 
 import NeumorphicInput from "@/components/input/NeumorphicInput";
+import SortDropdown from "@/components/ui/SortDropdown";
 
 type EnabledFilter = "all" | "enabled" | "disabled";
 
@@ -11,6 +12,9 @@ type Props = {
   setEnabledFilter: (f: EnabledFilter) => void;
   pageSize: number;
   setPageSize: (n: number) => void;
+  sortBy?: string;
+  setSortBy?: (s: string) => void;
+  sortOptions?: Array<{ value: string; label: string }>;
 };
 
 export default function FiltersBar({
@@ -20,6 +24,9 @@ export default function FiltersBar({
   setEnabledFilter,
   pageSize,
   setPageSize,
+  sortBy,
+  setSortBy,
+  sortOptions,
 }: Props) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 mb-3">
@@ -53,12 +60,20 @@ export default function FiltersBar({
           className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
           aria-label="Rows per page"
         >
-          {[10, 25, 50, 100].map((n) => (
+          {[10, 25, 50].map((n) => (
             <option key={n} value={n}>
               {n}
             </option>
           ))}
         </select>
+
+        {sortBy && setSortBy && sortOptions && (
+          <SortDropdown
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+          />
+        )}
       </div>
     </div>
   );

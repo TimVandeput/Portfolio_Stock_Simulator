@@ -16,7 +16,7 @@ import type { Universe, SymbolDTO, ImportSummaryDTO } from "@/types/symbol";
 import type { Page } from "@/types/pagination";
 
 import UniverseImportBar from "@/components/button/UniverseImportBar";
-import FiltersBar from "@/components/filter/FiltersBar";
+import FiltersBar from "@/components/ui/FiltersBar";
 import SymbolsMeta from "@/components/status/SymbolsMeta";
 import SymbolsTableDesktop from "@/components/overview/SymbolsTableDesktop";
 import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
@@ -45,6 +45,7 @@ export default function SymbolsClient() {
   >("all");
   const [pageIdx, setPageIdx] = useState(0);
   const [pageSize, setPageSize] = useState(25);
+  const [sortBy, setSortBy] = useState<string>("symbol");
 
   const [page, setPage] = useState<Page<SymbolDTO> | null>(null);
   const [loading, setLoading] = useState(false);
@@ -191,6 +192,34 @@ export default function SymbolsClient() {
   const totalPages = page?.totalPages ?? 0;
   const totalElements = page?.totalElements ?? 0;
 
+  const sortOptions = [
+    { value: "symbol", label: "Symbol" },
+    { value: "name", label: "Name" },
+    { value: "exchange", label: "Exchange" },
+    { value: "currency", label: "Currency" },
+  ];
+
+  const sortedPage = useMemo(() => {
+    if (!page || !page.content) return page;
+
+    const sorted = [...page.content].sort((a, b) => {
+      switch (sortBy) {
+        case "symbol":
+          return a.symbol.localeCompare(b.symbol);
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "exchange":
+          return a.exchange.localeCompare(b.exchange);
+        case "currency":
+          return a.currency.localeCompare(b.currency);
+        default:
+          return 0;
+      }
+    });
+
+    return { ...page, content: sorted };
+  }, [page, sortBy]);
+
   return (
     <>
       {showModal ? (
@@ -228,14 +257,25 @@ export default function SymbolsClient() {
               setEnabledFilter={setEnabledFilter}
               pageSize={pageSize}
               setPageSize={setPageSize}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOptions={sortOptions}
             />
 
             <div className="min-h-[28px] mb-1">
               {error && <StatusMessage message={error} />}
             </div>
 
-            <SymbolsTableDesktop page={page} mode="admin" onToggle={onToggle} />
-            <SymbolsListMobile page={page} mode="admin" onToggle={onToggle} />
+            <SymbolsTableDesktop
+              page={sortedPage}
+              mode="admin"
+              onToggle={onToggle}
+            />
+            <SymbolsListMobile
+              page={sortedPage}
+              mode="admin"
+              onToggle={onToggle}
+            />
 
             <SymbolsPagination
               pageIdx={pageIdx}

@@ -100,45 +100,6 @@ class FinnhubClientUnitTest {
     }
 
     @Test
-    void getProfile2_success_returnsProfile() throws IOException {
-        String jsonResponse = """
-                {
-                    "name": "Apple Inc",
-                    "exchange": "NASDAQ",
-                    "ticker": "AAPL",
-                    "currency": "USD",
-                    "mic": "XNAS"
-                }
-                """;
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
-        when(mockCall.execute()).thenReturn(mockResponse);
-        when(mockResponse.isSuccessful()).thenReturn(true);
-        when(mockResponse.body()).thenReturn(mockResponseBody);
-        when(mockResponseBody.string()).thenReturn(jsonResponse);
-
-        FinnhubClient.Profile2 result = finnhubClient.getProfile2("AAPL");
-
-        assertThat(result).isNotNull();
-        assertThat(result.name).isEqualTo("Apple Inc");
-        assertThat(result.exchange).isEqualTo("NASDAQ");
-        assertThat(result.ticker).isEqualTo("AAPL");
-        assertThat(result.currency).isEqualTo("USD");
-        assertThat(result.mic).isEqualTo("XNAS");
-    }
-
-    @Test
-    void getProfile2_rateLimitError_throwsApiRateLimitException() throws IOException {
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
-        when(mockCall.execute()).thenReturn(mockResponse);
-        when(mockResponse.isSuccessful()).thenReturn(false);
-        when(mockResponse.code()).thenReturn(429);
-
-        assertThatThrownBy(() -> finnhubClient.getProfile2("AAPL"))
-                .isInstanceOf(ApiRateLimitException.class)
-                .hasMessageContaining("Finnhub");
-    }
-
-    @Test
     void listSymbolsByExchange_success_returnsList() throws IOException {
         String jsonResponse = """
                 [

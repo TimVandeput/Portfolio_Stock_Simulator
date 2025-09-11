@@ -77,17 +77,31 @@ export default function Header({
               <DesktopNav navItems={filteredForView} hideNav={false} />
             </div>
 
-            <Link href="/home" aria-label="Go to Home" className="ml-4">
-              <Image
-                src="/logoSS.png"
-                alt="Stock Simulator logo"
-                width={200}
-                height={40}
-                className="h-10 w-auto max-w-[200px] object-contain"
-                draggable={false}
-                priority
-              />
-            </Link>
+            {pathname === "/" || pathname === "/home" ? (
+              <div className="ml-4">
+                <Image
+                  src="/logoSS.png"
+                  alt="Stock Simulator logo"
+                  width={200}
+                  height={40}
+                  className="h-10 w-auto max-w-[200px] object-contain"
+                  draggable={false}
+                  priority
+                />
+              </div>
+            ) : (
+              <Link href="/home" aria-label="Go to Home" className="ml-4">
+                <Image
+                  src="/logoSS.png"
+                  alt="Stock Simulator logo"
+                  width={200}
+                  height={40}
+                  className="h-10 w-auto max-w-[200px] object-contain"
+                  draggable={false}
+                  priority
+                />
+              </Link>
+            )}
           </div>
 
           {/* Mobile */}
@@ -103,7 +117,7 @@ export default function Header({
               <HamburgerButton onClick={() => setOpen(true)} />
             </div>
 
-            <Link href="/home" aria-label="Go to Home">
+            {pathname === "/" || pathname === "/home" ? (
               <Image
                 src="/logoSS_mobile.png"
                 alt="Stock Simulator mobile logo"
@@ -113,7 +127,19 @@ export default function Header({
                 draggable={false}
                 priority
               />
-            </Link>
+            ) : (
+              <Link href="/home" aria-label="Go to Home">
+                <Image
+                  src="/logoSS_mobile.png"
+                  alt="Stock Simulator mobile logo"
+                  width={100}
+                  height={28}
+                  className="h-7 w-auto object-contain"
+                  draggable={false}
+                  priority
+                />
+              </Link>
+            )}
           </div>
         </div>
 
