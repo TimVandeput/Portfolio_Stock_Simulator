@@ -60,7 +60,9 @@ public class SymbolService {
 
     private List<NormItem> selectAndFilterSymbols(List<SymbolItem> allSymbols, String universe) {
         final Set<String> allowedMics = allowedMicsFor(universe);
-        final int limit = capFor(universe);
+        final int remainingCapacity = calculateRemainingCapacity();
+
+        Set<String> existingSymbols = getExistingSymbolsForUniverse(allowedMics);
 
         return allSymbols.stream()
                 .filter(Objects::nonNull)
@@ -74,17 +76,74 @@ public class SymbolService {
                                 ni -> ni,
                                 (a, b) -> a,
                                 LinkedHashMap::new),
-                        m -> m.values().stream()
-                                .sorted(Comparator.comparing(ni -> ni.sym))
-                                .limit(limit)
-                                .collect(Collectors.toList())));
+                        m -> {
+                            List<NormItem> result = new ArrayList<>();
+                            List<NormItem> newSymbols = new ArrayList<>();
+                            List<NormItem> existingUpdates = new ArrayList<>();
+
+                            for (NormItem ni : m.values()) {
+                                if (existingSymbols.contains(ni.sym)) {
+                                    existingUpdates.add(ni);
+                                } else {
+                                    newSymbols.add(ni);
+                                }
+                            }
+
+                            result.addAll(existingUpdates);
+
+                            newSymbols.stream()
+                                    .sorted(Comparator.comparing(ni -> ni.sym))
+                                    .limit(remainingCapacity)
+                                    .forEach(result::add);
+
+                            return result;
+                        }));
     }
 
     private boolean isValidSymbolItem(SymbolItem item) {
-        return item.symbol != null && !item.symbol.isBlank() &&
-                item.description != null && !item.description.isBlank() &&
-                (item.type == null || "Common Stock".equalsIgnoreCase(item.type)) &&
-                (item.currency == null || "USD".equalsIgnoreCase(item.currency));
+        // Basic validation
+        if (item.symbol == null || item.symbol.isBlank() ||
+                item.description == null || item.description.isBlank()) {
+            return false;
+        }
+
+        // Only USD common stocks
+        if (item.type != null && !"Common Stock".equalsIgnoreCase(item.type)) {
+            return false;
+        }
+        if (item.currency != null && !"USD".equalsIgnoreCase(item.currency)) {
+            return false;
+        }
+
+        // Filter out SPACs and acquisition companies
+        String description = item.description.toUpperCase();
+        if (description.contains("ACQUISITION") ||
+                description.contains("SPAC") ||
+                description.contains("SPECIAL PURPOSE") ||
+                description.contains("-A") ||
+                description.contains("CORP-A") ||
+                description.contains("INC-A")) {
+            return false;
+        }
+
+        // Filter out symbols with numbers (often indicate different share classes or
+        // warrants)
+        String symbol = item.symbol.toUpperCase();
+        if (symbol.matches(".*[0-9].*")) {
+            return false;
+        }
+
+        // Filter out warrants and units (common SPAC indicators)
+        if (symbol.endsWith("W") || symbol.endsWith("U") || symbol.contains(".")) {
+            return false;
+        }
+
+        // Filter out very short symbols (often ETFs or unusual instruments)
+        if (symbol.length() < 2) {
+            return false;
+        }
+
+        return true;
     }
 
     private boolean isAllowedExchange(SymbolItem item, Set<String> allowedMics) {
@@ -181,6 +240,21 @@ public class SymbolService {
         return s == null ? null : s.trim().toUpperCase(Locale.ROOT);
     }
 
+    private int calculateRemainingCapacity() {
+        final int MAX_SYMBOLS_PER_IMPORT = 25;
+        final int TOTAL_SYMBOL_LIMIT = 50;
+        long currentTotalCount = symbolRepository.count();
+        int remainingGlobalCapacity = Math.max(0, TOTAL_SYMBOL_LIMIT - (int) currentTotalCount);
+        return Math.min(MAX_SYMBOLS_PER_IMPORT, remainingGlobalCapacity);
+    }
+
+    private Set<String> getExistingSymbolsForUniverse(Set<String> allowedMics) {
+        return symbolRepository.findAll().stream()
+                .filter(entity -> allowedMics.isEmpty() || allowedMics.contains(entity.getMic()))
+                .map(SymbolEntity::getSymbol)
+                .collect(Collectors.toSet());
+    }
+
     private Set<String> allowedMicsFor(String universe) {
         if (universe == null)
             return Set.of("XNAS", "XNYS");
@@ -191,19 +265,6 @@ public class SymbolService {
                 return Set.of("XNAS", "XNYS");
             default:
                 return Set.of("XNAS", "XNYS");
-        }
-    }
-
-    private int capFor(String universe) {
-        if (universe == null)
-            return 50;
-        switch (universe.toUpperCase(Locale.ROOT)) {
-            case "NDX":
-                return 50;
-            case "GSPC":
-                return 50;
-            default:
-                return 50;
         }
     }
 

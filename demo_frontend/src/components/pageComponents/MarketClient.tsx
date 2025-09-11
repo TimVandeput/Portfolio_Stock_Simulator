@@ -152,7 +152,7 @@ export default function MarketClient() {
 
     const getStreamingSymbols = async () => {
       try {
-        const symbolsPage = await listSymbols({ size: 200 }); // Get first 200 symbols for streaming
+        const symbolsPage = await listSymbols({ size: 50 });
         return symbolsPage.content.map((s) => s.symbol);
       } catch (e) {
         console.error("Failed to get symbols for streaming:", e);
@@ -356,7 +356,7 @@ export default function MarketClient() {
                     onChange={(e) => setPageSize(parseInt(e.target.value))}
                     className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
                   >
-                    {[10, 25, 50, 100].map((n) => (
+                    {[10, 25, 50].map((n) => (
                       <option key={n} value={n}>
                         {n}
                       </option>

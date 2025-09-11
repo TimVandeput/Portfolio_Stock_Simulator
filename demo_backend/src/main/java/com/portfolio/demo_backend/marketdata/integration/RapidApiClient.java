@@ -63,8 +63,8 @@ public class RapidApiClient {
 
         List<Quote> allQuotes = new ArrayList<>();
 
-        for (int i = 0; i < symbols.size(); i += 10) {
-            int endIndex = Math.min(i + 10, symbols.size());
+        for (int i = 0; i < symbols.size(); i += 50) {
+            int endIndex = Math.min(i + 50, symbols.size());
             List<String> batch = symbols.subList(i, endIndex);
             String symbolsParam = String.join(",", batch);
 
