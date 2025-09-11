@@ -101,10 +101,49 @@ public class SymbolService {
     }
 
     private boolean isValidSymbolItem(SymbolItem item) {
-        return item.symbol != null && !item.symbol.isBlank() &&
-                item.description != null && !item.description.isBlank() &&
-                (item.type == null || "Common Stock".equalsIgnoreCase(item.type)) &&
-                (item.currency == null || "USD".equalsIgnoreCase(item.currency));
+        // Basic validation
+        if (item.symbol == null || item.symbol.isBlank() ||
+                item.description == null || item.description.isBlank()) {
+            return false;
+        }
+
+        // Only USD common stocks
+        if (item.type != null && !"Common Stock".equalsIgnoreCase(item.type)) {
+            return false;
+        }
+        if (item.currency != null && !"USD".equalsIgnoreCase(item.currency)) {
+            return false;
+        }
+
+        // Filter out SPACs and acquisition companies
+        String description = item.description.toUpperCase();
+        if (description.contains("ACQUISITION") ||
+                description.contains("SPAC") ||
+                description.contains("SPECIAL PURPOSE") ||
+                description.contains("-A") ||
+                description.contains("CORP-A") ||
+                description.contains("INC-A")) {
+            return false;
+        }
+
+        // Filter out symbols with numbers (often indicate different share classes or
+        // warrants)
+        String symbol = item.symbol.toUpperCase();
+        if (symbol.matches(".*[0-9].*")) {
+            return false;
+        }
+
+        // Filter out warrants and units (common SPAC indicators)
+        if (symbol.endsWith("W") || symbol.endsWith("U") || symbol.contains(".")) {
+            return false;
+        }
+
+        // Filter out very short symbols (often ETFs or unusual instruments)
+        if (symbol.length() < 2) {
+            return false;
+        }
+
+        return true;
     }
 
     private boolean isAllowedExchange(SymbolItem item, Set<String> allowedMics) {
