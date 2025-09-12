@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
 import { usePrices } from "@/contexts/PriceContext";
+import { getErrorMessage } from "@/lib/utils/errorHandling";
 import NoAccessModal from "@/components/ui/NoAccessModal";
 import StatusMessage from "@/components/status/StatusMessage";
 import MarketStatus from "@/components/status/MarketStatus";
@@ -65,7 +66,7 @@ export default function MarketClient() {
         setPageIdx(idx);
       } catch (e) {
         console.error("❌ Failed to load symbols:", e);
-        setError((e as any)?.message || "Failed to load markets.");
+        setError(getErrorMessage(e) || "Failed to load markets.");
       } finally {
         setLoading(false);
       }
