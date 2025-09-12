@@ -6,3 +6,7 @@ export * from "./symbol";
 export * from "./quote";
 export * from "./pagination";
 export * from "./stream";
+export * from "./prices";
+export * from "./theme";
+export * from "./hooks";
+export * from "./api";

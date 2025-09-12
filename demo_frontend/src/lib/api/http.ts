@@ -1,4 +1,5 @@
 import type { RefreshRequest, AuthResponse } from "@/types";
+import type { ErrorResponse, HttpClientOptions } from "@/types/api";
 import {
   getAccessToken,
   getRefreshToken,
@@ -6,19 +7,6 @@ import {
   clearTokens,
   loadTokensFromStorage,
 } from "@/lib/auth/tokenStorage";
-
-export interface ApiErrorShape {
-  status: number;
-  path?: string;
-  message: string;
-  error?: string;
-  timestamp?: string;
-}
-
-interface ErrorResponse {
-  message?: string;
-  error?: string;
-}
 
 export class ApiError extends Error {
   status: number;
@@ -28,10 +16,6 @@ export class ApiError extends Error {
     this.status = status;
     this.body = body;
   }
-}
-
-export interface HttpClientOptions {
-  baseUrl?: string;
 }
 
 export class HttpClient {
@@ -132,11 +116,11 @@ export class HttpClient {
           "[HttpClient] tryRefresh failed: response not ok",
           res.status
         );
-        console.log("🔄 Session expired. Redirecting to login...");
+        console.log("🔄 Session expired. Clearing tokens...");
         clearTokens();
 
         if (typeof window !== "undefined") {
-          window.location.href = "/";
+          window.dispatchEvent(new CustomEvent("authChanged"));
         }
         return false;
       }
@@ -153,11 +137,11 @@ export class HttpClient {
       return true;
     } catch (err) {
       console.error("[HttpClient] tryRefresh error:", err);
-      console.log("🔄 Session expired. Redirecting to login...");
+      console.log("🔄 Session refresh failed. Clearing tokens...");
       clearTokens();
 
       if (typeof window !== "undefined") {
-        window.location.href = "/";
+        window.dispatchEvent(new CustomEvent("authChanged"));
       }
       return false;
     }

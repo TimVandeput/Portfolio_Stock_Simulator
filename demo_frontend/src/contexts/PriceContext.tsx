@@ -10,26 +10,10 @@ import React, {
 } from "react";
 import { getAllCurrentPrices } from "@/lib/api/prices";
 import { listSymbols } from "@/lib/api/symbols";
-import { openPriceStream, type StreamController } from "@/lib/api/stream";
+import { openPriceStream } from "@/lib/api/stream";
 import { getAccessToken } from "@/lib/auth/tokenStorage";
-import type { PriceEvent } from "@/types";
-
-export type Price = {
-  last?: number;
-  percentChange?: number;
-  lastUpdate?: number;
-};
-
-export type Prices = Record<string, Price>;
-
-interface PriceContextType {
-  prices: Prices;
-  pulsatingSymbols: Set<string>;
-  isInitialLoading: boolean;
-  hasInitialPrices: boolean;
-  error: string | null;
-  refreshPrices: () => Promise<void>;
-}
+import type { PriceEvent, StreamController } from "@/types";
+import type { Price, Prices, PriceContextType } from "@/types/prices";
 
 const PriceContext = createContext<PriceContextType>({
   prices: {},

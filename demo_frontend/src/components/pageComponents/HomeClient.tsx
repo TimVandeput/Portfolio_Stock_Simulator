@@ -6,13 +6,11 @@ import { navItems } from "@/lib/constants/navItems";
 import type { NavItem } from "@/types";
 import { useEffect, useState, useRef } from "react";
 import { useAccessControl } from "@/hooks/useAuth";
-import NoAccessModal from "@/components/ui/NoAccessModal";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import Loader from "@/components/ui/Loader";
 
 export default function HomeClient() {
   const router = useRouter();
-  const [showModal, setShowModal] = useState(false);
 
   const { isLoading, hasAccess, accessError, role } = useAccessControl({
     requireAuth: true,
@@ -66,12 +64,6 @@ export default function HomeClient() {
   const columns = getResponsiveColumns();
 
   useEffect(() => {
-    if (!isLoading && !hasAccess && accessError) {
-      setShowModal(true);
-    }
-  }, [isLoading, hasAccess, accessError]);
-
-  useEffect(() => {
     if (hasAnimated.current) return;
 
     const fromLoginStorage = sessionStorage.getItem("fromLogin") === "true";
@@ -122,14 +114,7 @@ export default function HomeClient() {
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      {showModal ? (
-        <NoAccessModal
-          isOpen={showModal}
-          accessType={accessError?.reason}
-          message={accessError?.message || "Access denied"}
-          onClose={() => setShowModal(false)}
-        />
-      ) : isLoading || !role || dashboardItems.length === 0 ? (
+      {isLoading || !role || dashboardItems.length === 0 ? (
         <Loader />
       ) : (
         <div className="dashboard-container flex flex-col items-center justify-center w-full px-4 py-8 pt-12 sm:py-12 sm:pt-16 md:pt-20 pb-16 min-h-full">

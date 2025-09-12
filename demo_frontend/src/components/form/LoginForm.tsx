@@ -7,20 +7,7 @@ import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import RoleSelector from "@/components/button/RoleSelector";
 import type { Role } from "@/types";
-
-type Props = {
-  username: string;
-  setUsername: (v: string) => void;
-  password: string;
-  setPassword: (v: string) => void;
-  error: string;
-  success: string;
-  selectedRole: Role;
-  setSelectedRole: (r: Role) => void;
-  isLoggingIn: boolean;
-  onSubmit: () => void | Promise<void>;
-  onFlipToRegister: () => void;
-};
+import type { LoginFormProps } from "@/types/components";
 
 export default function LoginForm({
   username,
@@ -34,7 +21,7 @@ export default function LoginForm({
   isLoggingIn,
   onSubmit,
   onFlipToRegister,
-}: Props) {
+}: LoginFormProps) {
   return (
     <form
       onSubmit={(e) => {
@@ -87,10 +74,18 @@ export default function LoginForm({
           <div className="mb-2 h-[54px] overflow-hidden flex items-center">
             {error && <StatusMessage message={error} className="mb-1 w-full" />}
             {success && (
-              <StatusMessage message={success} type="success" className="mb-1 w-full" />
+              <StatusMessage
+                message={success}
+                type="success"
+                className="mb-1 w-full"
+              />
             )}
           </div>
-          <NeumorphicButton type="submit" onClick={onSubmit} disabled={isLoggingIn}>
+          <NeumorphicButton
+            type="submit"
+            onClick={onSubmit}
+            disabled={isLoggingIn}
+          >
             {isLoggingIn ? "Logging in..." : "Login"}
           </NeumorphicButton>
         </div>

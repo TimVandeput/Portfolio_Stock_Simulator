@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken, getAuthenticatedAs } from "@/lib/auth/tokenStorage";
 import type { Role } from "@/types";
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  role: Role | null;
-  isLoading: boolean;
-}
+import type { AuthState, AccessControlConfig } from "@/types/hooks";
 
 export function useAuth(): AuthState {
   const [authState, setAuthState] = useState<AuthState>({
@@ -50,12 +45,6 @@ export function useAuth(): AuthState {
   return authState;
 }
 
-export interface AccessControlConfig {
-  requireAuth: boolean;
-  allowedRoles?: Role[];
-  redirectTo?: string;
-}
-
 export function useAccessControl(config: AccessControlConfig) {
   const auth = useAuth();
   const router = useRouter();
@@ -69,8 +58,8 @@ export function useAccessControl(config: AccessControlConfig) {
       return {
         allowed: false,
         reason: "login",
-        message: "Please log in to access this page. Your session may have expired.",
-
+        message:
+          "Please log in to access this page. Your session may have expired.",
       };
     }
 
@@ -92,7 +81,16 @@ export function useAccessControl(config: AccessControlConfig) {
   const accessResult = hasAccess();
 
   useEffect(() => {
+    console.log("🔒 useAccessControl effect:", {
+      "auth.isLoading": auth.isLoading,
+      "accessResult.allowed": accessResult.allowed,
+      "config.redirectTo": config.redirectTo,
+      "will redirect":
+        !auth.isLoading && !accessResult.allowed && config.redirectTo,
+    });
+
     if (!auth.isLoading && !accessResult.allowed && config.redirectTo) {
+      console.log("🔄 Auto-redirecting to:", config.redirectTo);
       router.push(config.redirectTo);
     }
   }, [auth.isLoading, accessResult.allowed, config.redirectTo, router]);
