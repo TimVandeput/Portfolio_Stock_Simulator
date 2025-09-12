@@ -81,7 +81,16 @@ export function useAccessControl(config: AccessControlConfig) {
   const accessResult = hasAccess();
 
   useEffect(() => {
+    console.log("🔒 useAccessControl effect:", {
+      "auth.isLoading": auth.isLoading,
+      "accessResult.allowed": accessResult.allowed,
+      "config.redirectTo": config.redirectTo,
+      "will redirect":
+        !auth.isLoading && !accessResult.allowed && config.redirectTo,
+    });
+
     if (!auth.isLoading && !accessResult.allowed && config.redirectTo) {
+      console.log("🔄 Auto-redirecting to:", config.redirectTo);
       router.push(config.redirectTo);
     }
   }, [auth.isLoading, accessResult.allowed, config.redirectTo, router]);

@@ -116,11 +116,11 @@ export class HttpClient {
           "[HttpClient] tryRefresh failed: response not ok",
           res.status
         );
-        console.log("🔄 Session expired. Redirecting to login...");
+        console.log("🔄 Session expired. Clearing tokens...");
         clearTokens();
 
         if (typeof window !== "undefined") {
-          window.location.href = "/";
+          window.dispatchEvent(new CustomEvent("authChanged"));
         }
         return false;
       }
@@ -137,11 +137,11 @@ export class HttpClient {
       return true;
     } catch (err) {
       console.error("[HttpClient] tryRefresh error:", err);
-      console.log("🔄 Session expired. Redirecting to login...");
+      console.log("🔄 Session refresh failed. Clearing tokens...");
       clearTokens();
 
       if (typeof window !== "undefined") {
-        window.location.href = "/";
+        window.dispatchEvent(new CustomEvent("authChanged"));
       }
       return false;
     }

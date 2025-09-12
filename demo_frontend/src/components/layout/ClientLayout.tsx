@@ -7,6 +7,7 @@ import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
 import RotationPrompt from "@/components/ui/RotationPrompt";
+import NoAccessModal from "@/components/ui/NoAccessModal";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
@@ -15,6 +16,7 @@ import { logout } from "@/lib/api/auth";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
 import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
+import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
 
 export default function ClientLayout({
   children,
@@ -23,6 +25,12 @@ export default function ClientLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const {
+    showModal: showAccessModal,
+    setShowModal: setShowAccessModal,
+    accessError,
+  } = useLayoutAccessControl();
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -111,7 +119,14 @@ export default function ClientLayout({
 
         <main className="flex-1 w-full overflow-y-auto flex flex-col">
           <div className="relative w-full min-h-full flex flex-col items-center justify-center flex-1">
-            {showConfirmation ? (
+            {showAccessModal ? (
+              <NoAccessModal
+                isOpen={showAccessModal}
+                accessType={accessError?.reason}
+                message={accessError?.message || "Access denied"}
+                onClose={() => setShowAccessModal(false)}
+              />
+            ) : showConfirmation ? (
               <ConfirmationModal
                 isOpen={showConfirmation}
                 title="Confirm Logout"
