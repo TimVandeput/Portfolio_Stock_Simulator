@@ -63,5 +63,15 @@ export const PAGE_ACCESS_CONFIG: Record<string, PageAccessConfig> = {
 };
 
 export function getPageAccessConfig(pathname: string): PageAccessConfig | null {
-  return PAGE_ACCESS_CONFIG[pathname] || null;
+  const config = PAGE_ACCESS_CONFIG[pathname];
+
+  // If no config found, exclude from access control to allow 404 handling
+  if (!config) {
+    return {
+      requireAuth: false,
+      excludeFromAccessControl: true,
+    };
+  }
+
+  return config;
 }
