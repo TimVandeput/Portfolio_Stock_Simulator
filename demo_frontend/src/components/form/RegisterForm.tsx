@@ -5,26 +5,7 @@ import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
-
-type RegisterStatus = {
-  message: string;
-  type: "error" | "success";
-} | null;
-
-type Props = {
-  rUser: string;
-  setRUser: (v: string) => void;
-  rPass: string;
-  setRPass: (v: string) => void;
-  rPass2: string;
-  setRPass2: (v: string) => void;
-  rCode: string;
-  setRCode: (v: string) => void;
-  rStatus: RegisterStatus;
-  isRegistering: boolean;
-  onSubmit: () => void | Promise<void>;
-  onFlipToLogin: () => void;
-};
+import type { RegisterFormProps, RegisterStatus } from "@/types/components";
 
 export default function RegisterForm({
   rUser,
@@ -39,7 +20,7 @@ export default function RegisterForm({
   isRegistering,
   onSubmit,
   onFlipToLogin,
-}: Props) {
+}: RegisterFormProps) {
   return (
     <form
       onSubmit={(e) => {
@@ -58,7 +39,10 @@ export default function RegisterForm({
       }}
     >
       <div className="flex justify-between items-start">
-        <h1 className="login-title text-2xl font-bold" style={{ color: "var(--text-secondary)" }}>
+        <h1
+          className="login-title text-2xl font-bold"
+          style={{ color: "var(--text-secondary)" }}
+        >
           Register
         </h1>
         <div
@@ -76,18 +60,47 @@ export default function RegisterForm({
       </div>
 
       <div className="mt-3 sm:mt-5 flex flex-col flex-1">
-        <NeumorphicInput type="text" placeholder="Username" value={rUser} onChange={setRUser} className="my-2" />
-        <PasswordInput placeholder="Passcode" value={rCode} onChange={setRCode} className="my-2" />
-        <PasswordInput placeholder="Password" value={rPass} onChange={setRPass} className="my-2" />
-        <PasswordInput placeholder="Confirm password" value={rPass2} onChange={setRPass2} className="my-2" />
+        <NeumorphicInput
+          type="text"
+          placeholder="Username"
+          value={rUser}
+          onChange={setRUser}
+          className="my-2"
+        />
+        <PasswordInput
+          placeholder="Passcode"
+          value={rCode}
+          onChange={setRCode}
+          className="my-2"
+        />
+        <PasswordInput
+          placeholder="Password"
+          value={rPass}
+          onChange={setRPass}
+          className="my-2"
+        />
+        <PasswordInput
+          placeholder="Confirm password"
+          value={rPass2}
+          onChange={setRPass2}
+          className="my-2"
+        />
 
         <div className="mt-auto flex flex-col">
           <div className="mb-2 h-[54px] overflow-hidden flex items-center">
             {rStatus && (
-              <StatusMessage message={rStatus.message} type={rStatus.type} className="mb-1 w-full" />
+              <StatusMessage
+                message={rStatus.message}
+                type={rStatus.type}
+                className="mb-1 w-full"
+              />
             )}
           </div>
-          <NeumorphicButton type="submit" onClick={onSubmit} disabled={isRegistering}>
+          <NeumorphicButton
+            type="submit"
+            onClick={onSubmit}
+            disabled={isRegistering}
+          >
             {isRegistering ? "Registering..." : "Register"}
           </NeumorphicButton>
         </div>

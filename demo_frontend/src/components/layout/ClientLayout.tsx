@@ -13,6 +13,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { logout } from "@/lib/api/auth";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
+import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 
 export default function ClientLayout({
@@ -52,12 +53,6 @@ export default function ClientLayout({
   };
 
   useEffect(() => {
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-      return undefined;
-    };
     const cookieValue = getCookie("cursorTrailEnabled");
     if (cookieValue === "true") {
       setCursorTrailEnabled(true);
@@ -88,9 +83,9 @@ export default function ClientLayout({
 
   useEffect(() => {
     if (!isMobile) {
-      document.cookie = `cursorTrailEnabled=${String(
-        cursorTrailEnabled
-      )}; path=/; max-age=${60 * 60 * 24 * 365}`;
+      setCookie("cursorTrailEnabled", String(cursorTrailEnabled), {
+        days: 365,
+      });
     }
   }, [cursorTrailEnabled, isMobile]);
 

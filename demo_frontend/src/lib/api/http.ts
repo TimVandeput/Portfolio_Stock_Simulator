@@ -1,4 +1,5 @@
 import type { RefreshRequest, AuthResponse } from "@/types";
+import type { ErrorResponse, HttpClientOptions } from "@/types/api";
 import {
   getAccessToken,
   getRefreshToken,
@@ -6,19 +7,6 @@ import {
   clearTokens,
   loadTokensFromStorage,
 } from "@/lib/auth/tokenStorage";
-
-export interface ApiErrorShape {
-  status: number;
-  path?: string;
-  message: string;
-  error?: string;
-  timestamp?: string;
-}
-
-interface ErrorResponse {
-  message?: string;
-  error?: string;
-}
 
 export class ApiError extends Error {
   status: number;
@@ -28,10 +16,6 @@ export class ApiError extends Error {
     this.status = status;
     this.body = body;
   }
-}
-
-export interface HttpClientOptions {
-  baseUrl?: string;
 }
 
 export class HttpClient {

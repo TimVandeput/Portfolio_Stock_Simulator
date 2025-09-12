@@ -1,14 +1,6 @@
 "use client";
 
-type Props = {
-  pageIdx: number;
-  totalPages: number;
-  totalElements: number;
-  loading: boolean;
-  onPrev: () => void;
-  onNext: () => void;
-  onGoto: (idx: number) => void;
-};
+import type { SymbolsPaginationProps } from "@/types/components";
 
 export default function SymbolsPagination({
   pageIdx,
@@ -18,7 +10,7 @@ export default function SymbolsPagination({
   onPrev,
   onNext,
   onGoto,
-}: Props) {
+}: SymbolsPaginationProps) {
   const canPrev = pageIdx > 0;
   const canNext = pageIdx + 1 < totalPages;
 

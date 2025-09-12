@@ -2,18 +2,9 @@
 
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
-import type { Price } from "@/contexts/PriceContext";
+import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-type Mode = "admin" | "market";
-
-type Props = {
-  page: Page<SymbolDTO> | null;
-  mode: Mode;
-  onToggle?: (row: SymbolDTO, next: boolean) => void;
-  prices?: Record<string, Price>;
-  pulsatingSymbols?: Set<string>;
-  onBuy?: (row: SymbolDTO) => void;
-};
+import type { SymbolsTableDesktopProps, Mode } from "@/types/components";
 
 export default function SymbolsTableDesktop({
   page,
@@ -22,7 +13,7 @@ export default function SymbolsTableDesktop({
   prices,
   pulsatingSymbols = new Set(),
   onBuy,
-}: Props) {
+}: SymbolsTableDesktopProps) {
   const isAdmin = mode === "admin";
   const isMarket = mode === "market";
 
@@ -88,7 +79,7 @@ export default function SymbolsTableDesktop({
               </tr>
             )}
 
-            {page?.content?.map((row) => {
+            {page?.content?.map((row: SymbolDTO) => {
               const p = isMarket ? getPrice(row.symbol) : {};
               const pc = p.percentChange ?? 0;
               const roundedPc = parseFloat(pc.toFixed(2));

@@ -1,8 +1,4 @@
-interface StatusMessageProps {
-  message: string;
-  type?: "error" | "success";
-  className?: string;
-}
+import type { StatusMessageProps } from "@/types/components";
 
 export default function StatusMessage({
   message,
