@@ -68,13 +68,8 @@ public class PriceStreamController {
                 }
 
                 FinnhubStreamService.PriceListener l = (symbol, price, pctChange) -> {
-                    try {
-                        emitter.send(SseEmitter.event().name("price")
-                                .data(PriceEvent.price(symbol, price, pctChange)));
-                    } catch (Exception sendEx) {
-                        log.warn("Emitter send failed for {}: {}", symbol, sendEx.toString());
-                        safeComplete(emitter, cleanup);
-                    }
+                    safeSend(emitter, SseEmitter.event().name("price")
+                            .data(PriceEvent.price(symbol, price, pctChange)), cleanup);
                 };
                 finnhub.addListener(sym, l);
                 attached.put(sym, l);
@@ -119,9 +114,22 @@ public class PriceStreamController {
     private static void safeSend(SseEmitter emitter, SseEmitter.SseEventBuilder ev, Runnable cleanup) {
         try {
             emitter.send(ev);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            if (isClientDisconnectionError(ex)) {
+                log.debug("Client disconnected, cleaning up SSE connection");
+            } else {
+                log.warn("SSE send failed: {}", ex.getMessage());
+            }
             safeComplete(emitter, cleanup);
         }
+    }
+
+    private static boolean isClientDisconnectionError(Exception ex) {
+        String message = ex.getMessage();
+        return message != null && (message.contains("connection was aborted") ||
+                message.contains("Connection reset") ||
+                message.contains("Broken pipe") ||
+                ex instanceof java.io.IOException);
     }
 
     private static void safeComplete(SseEmitter emitter, Runnable cleanup) {
