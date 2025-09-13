@@ -11,7 +11,7 @@ import java.time.Instant;
         @Index(name = "ix_symbols_enabled", columnList = "enabled")
 })
 @Data
-public class SymbolEntity {
+public class Symbol {
 
     @Id
     @GeneratedValue
