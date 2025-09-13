@@ -6,7 +6,7 @@ import com.portfolio.demo_backend.dto.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
-import com.portfolio.demo_backend.model.SymbolEntity;
+import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,14 +51,14 @@ class SymbolServiceUnitTest {
         when(finnhubClient.listSymbolsByExchange("US")).thenReturn(mockSymbols);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.empty());
         when(symbolRepository.findBySymbol("MSFT")).thenReturn(Optional.empty());
-        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ImportSummaryDTO result = symbolService.importUniverse("NDX");
 
         assertThat(result).isNotNull();
         assertThat(result.imported).isEqualTo(2);
         assertThat(result.updated).isEqualTo(0);
-        verify(symbolRepository, times(2)).save(any(SymbolEntity.class));
+        verify(symbolRepository, times(2)).save(any(Symbol.class));
     }
 
     @Test
@@ -67,7 +67,7 @@ class SymbolServiceUnitTest {
                 .of(createSymbolItem("AAPL", "Apple Inc", "XNAS", "USD", "Common Stock"));
         when(finnhubClient.listSymbolsByExchange("US")).thenReturn(mockSymbols);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.empty());
-        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> {
+        when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -111,8 +111,8 @@ class SymbolServiceUnitTest {
 
     @Test
     void list_withQuery_returnsFilteredResults() {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
-        Page<SymbolEntity> mockPage = new PageImpl<>(List.of(symbol));
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
+        Page<Symbol> mockPage = new PageImpl<>(List.of(symbol));
         Pageable pageable = PageRequest.of(0, 10);
 
         when(symbolRepository.search(eq("AAPL"), eq(true), any(Pageable.class))).thenReturn(mockPage);
@@ -129,11 +129,11 @@ class SymbolServiceUnitTest {
 
     @Test
     void setEnabled_enableSymbol_success() {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", false);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", false);
         symbol.setId(1L);
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolInUseChecker.isInUse("AAPL")).thenReturn(false);
-        when(symbolRepository.save(any(SymbolEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         SymbolDTO result = symbolService.setEnabled(1L, true);
 
@@ -144,7 +144,7 @@ class SymbolServiceUnitTest {
 
     @Test
     void setEnabled_disableSymbolInUse_throwsSymbolInUseException() {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         symbol.setId(1L);
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolInUseChecker.isInUse("AAPL")).thenReturn(true);
@@ -152,7 +152,7 @@ class SymbolServiceUnitTest {
         assertThatThrownBy(() -> symbolService.setEnabled(1L, false))
                 .isInstanceOf(SymbolInUseException.class);
 
-        verify(symbolRepository, never()).save(any(SymbolEntity.class));
+        verify(symbolRepository, never()).save(any(Symbol.class));
     }
 
     @Test
@@ -182,8 +182,8 @@ class SymbolServiceUnitTest {
         assertThat(result).containsExactly("AAPL", "MSFT", "GOOGL");
     }
 
-    private SymbolEntity createSymbolEntity(String symbol, String name, boolean enabled) {
-        SymbolEntity entity = new SymbolEntity();
+    private Symbol createSymbol(String symbol, String name, boolean enabled) {
+        Symbol entity = new Symbol();
         entity.setSymbol(symbol);
         entity.setName(name);
         entity.setEnabled(enabled);
