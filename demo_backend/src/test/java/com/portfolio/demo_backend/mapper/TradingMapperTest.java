@@ -3,6 +3,7 @@ package com.portfolio.demo_backend.mapper;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.model.Wallet;
+import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.dto.PortfolioHoldingDTO;
 import com.portfolio.demo_backend.dto.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.TradeExecutionResponse;
@@ -69,8 +70,13 @@ class TradingMapperTest {
 
     @Test
     void toTradeExecutionResponse_buyOrder_generatesProperly() {
+        Symbol symbol = new Symbol();
+        symbol.setSymbol("AAPL");
+        symbol.setName("Apple Inc.");
+        symbol.setEnabled(true);
+
         Transaction transaction = new Transaction();
-        transaction.setSymbol("AAPL");
+        transaction.setSymbol(symbol);
         transaction.setQuantity(50);
         transaction.setPricePerShare(new BigDecimal("155.75"));
         transaction.setTotalAmount(new BigDecimal("7787.50"));
@@ -94,8 +100,13 @@ class TradingMapperTest {
 
     @Test
     void toTradeExecutionResponse_sellOrder_generatesProperly() {
+        Symbol symbol = new Symbol();
+        symbol.setSymbol("GOOGL");
+        symbol.setName("Alphabet Inc.");
+        symbol.setEnabled(true);
+
         Transaction transaction = new Transaction();
-        transaction.setSymbol("GOOGL");
+        transaction.setSymbol(symbol);
         transaction.setQuantity(25);
         transaction.setPricePerShare(new BigDecimal("135.00"));
         transaction.setTotalAmount(new BigDecimal("3375.00"));

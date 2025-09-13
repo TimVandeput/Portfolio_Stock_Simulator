@@ -11,6 +11,7 @@ import com.portfolio.demo_backend.exception.trading.*;
 import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
+import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +40,9 @@ class TradingServiceUnitTest {
     private TransactionRepository transactionRepository;
 
     @Mock
+    private SymbolRepository symbolRepository;
+
+    @Mock
     private PriceService priceService;
 
     @Mock
@@ -50,6 +54,7 @@ class TradingServiceUnitTest {
     private User testUser;
     private Wallet testWallet;
     private YahooQuoteDTO testQuote;
+    private Symbol testSymbol;
 
     @BeforeEach
     void setUp() {
@@ -64,6 +69,11 @@ class TradingServiceUnitTest {
         testQuote = new YahooQuoteDTO();
         testQuote.setSymbol("AAPL");
         testQuote.setPrice(150.0);
+
+        testSymbol = new Symbol();
+        testSymbol.setSymbol("AAPL");
+        testSymbol.setName("Apple Inc.");
+        testSymbol.setEnabled(true);
     }
 
     @Test
@@ -78,6 +88,7 @@ class TradingServiceUnitTest {
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(portfolioRepository.findByUserIdAndSymbol(1L, "AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
 
         TradeExecutionResponse response = tradingService.executeBuyOrder(request, username);
 
@@ -133,6 +144,7 @@ class TradingServiceUnitTest {
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
 
         TradeExecutionResponse response = tradingService.executeSellOrder(request, username);
 
