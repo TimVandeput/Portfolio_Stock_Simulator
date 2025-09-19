@@ -84,15 +84,16 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(10);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TradeExecutionResponse response = tradingService.executeBuyOrder(request, username);
+        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
 
         assertNotNull(response);
         assertTrue(response.getMessage().contains("Successfully bought 10 shares of AAPL"));
@@ -115,14 +116,14 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(100);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
 
         InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
-            tradingService.executeBuyOrder(request, username);
+            tradingService.executeBuyOrder(userId, request);
         });
 
         assertTrue(exception.getMessage().contains("Insufficient funds"));
@@ -134,7 +135,7 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(5);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
         Portfolio portfolio = new Portfolio();
         portfolio.setUserId(1L);
@@ -142,13 +143,14 @@ class TradingServiceUnitTest {
         portfolio.setSharesOwned(10);
         portfolio.setAverageCostBasis(new BigDecimal("140.00"));
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TradeExecutionResponse response = tradingService.executeSellOrder(request, username);
+        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
 
         assertNotNull(response);
         assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
@@ -171,7 +173,7 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(15);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
         Portfolio portfolio = new Portfolio();
         portfolio.setUserId(1L);
@@ -179,12 +181,12 @@ class TradingServiceUnitTest {
         portfolio.setSharesOwned(10);
         portfolio.setAverageCostBasis(new BigDecimal("140.00"));
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
 
         InsufficientSharesException exception = assertThrows(InsufficientSharesException.class, () -> {
-            tradingService.executeSellOrder(request, username);
+            tradingService.executeSellOrder(userId, request);
         });
 
         assertTrue(exception.getMessage().contains("Insufficient shares"));
@@ -192,13 +194,13 @@ class TradingServiceUnitTest {
 
     @Test
     void getPortfolioSummary_withEmptyPortfolio_returnsOnlyCash() {
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(portfolioRepository.findByUserId(1L)).thenReturn(List.of());
 
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(username);
+        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
 
         assertNotNull(summary);
         assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
@@ -210,7 +212,7 @@ class TradingServiceUnitTest {
 
     @Test
     void getPortfolioSummary_withHoldings_calculatesCorrectly() {
-        String username = "testuser";
+        Long userId = 1L;
 
         Portfolio portfolio = new Portfolio();
         portfolio.setUserId(1L);
@@ -218,12 +220,12 @@ class TradingServiceUnitTest {
         portfolio.setSharesOwned(10);
         portfolio.setAverageCostBasis(new BigDecimal("140.00"));
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(portfolioRepository.findByUserId(1L)).thenReturn(List.of(portfolio));
         when(priceService.getAllCurrentPrices()).thenReturn(java.util.Map.of("AAPL", testQuote));
 
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(username);
+        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
 
         assertNotNull(summary);
         assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
@@ -247,14 +249,14 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(10);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.executeBuyOrder(request, username);
+            tradingService.executeBuyOrder(userId, request);
         });
 
         assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
@@ -266,13 +268,13 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(10);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(null);
 
         PriceUnavailableException exception = assertThrows(PriceUnavailableException.class, () -> {
-            tradingService.executeBuyOrder(request, username);
+            tradingService.executeBuyOrder(userId, request);
         });
 
         assertEquals("Unable to get current price for symbol: AAPL", exception.getMessage());
@@ -284,7 +286,7 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(5);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
         Portfolio portfolio = new Portfolio();
         portfolio.setUserId(1L);
@@ -292,13 +294,13 @@ class TradingServiceUnitTest {
         portfolio.setSharesOwned(10);
         portfolio.setAverageCostBasis(new BigDecimal("140.00"));
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.executeSellOrder(request, username);
+            tradingService.executeSellOrder(userId, request);
         });
 
         assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
@@ -310,13 +312,13 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(5);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(null);
 
         PriceUnavailableException exception = assertThrows(PriceUnavailableException.class, () -> {
-            tradingService.executeSellOrder(request, username);
+            tradingService.executeSellOrder(userId, request);
         });
 
         assertEquals("Unable to get current price for symbol: AAPL", exception.getMessage());
@@ -328,14 +330,14 @@ class TradingServiceUnitTest {
         request.setSymbol("AAPL");
         request.setQuantity(5);
         request.setExpectedPrice(new BigDecimal("150.0"));
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
 
         PositionNotFoundException exception = assertThrows(PositionNotFoundException.class, () -> {
-            tradingService.executeSellOrder(request, username);
+            tradingService.executeSellOrder(userId, request);
         });
 
         assertEquals("No position found for symbol: AAPL", exception.getMessage());
@@ -343,15 +345,44 @@ class TradingServiceUnitTest {
 
     @Test
     void getPortfolioSummary_withMissingWallet_throws() {
-        String username = "testuser";
+        Long userId = 1L;
 
-        when(userService.findByUsername(username)).thenReturn(testUser);
+        when(userService.getUserById(userId)).thenReturn(testUser);
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.getPortfolioSummary(username);
+            tradingService.getPortfolioSummary(userId);
         });
 
         assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
+    }
+
+    @Test
+    void getTransactionHistory_returnsCorrectHistory() {
+        Long userId = 1L;
+
+        Transaction transaction1 = new Transaction();
+        transaction1.setUserId(userId);
+        transaction1.setSymbol(testSymbol);
+        transaction1.setType(TransactionType.BUY);
+        transaction1.setQuantity(10);
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setUserId(userId);
+        transaction2.setSymbol(testSymbol);
+        transaction2.setType(TransactionType.SELL);
+        transaction2.setQuantity(5);
+
+        List<Transaction> expectedHistory = List.of(transaction1, transaction2);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(transactionRepository.findByUserIdOrderByExecutedAtDesc(userId)).thenReturn(expectedHistory);
+
+        List<Transaction> actualHistory = tradingService.getTransactionHistory(userId);
+
+        assertNotNull(actualHistory);
+        assertEquals(2, actualHistory.size());
+        assertEquals(expectedHistory, actualHistory);
+        verify(transactionRepository).findByUserIdOrderByExecutedAtDesc(userId);
     }
 }

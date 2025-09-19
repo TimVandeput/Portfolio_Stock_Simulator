@@ -7,9 +7,7 @@ import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.service.TradingService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,60 +17,36 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trades")
 @RequiredArgsConstructor
-@Slf4j
 @Validated
 public class TradingController {
 
     private final TradingService tradingService;
 
-    @PostMapping("/buy")
+    @PostMapping("/{userId}/buy")
     public ResponseEntity<TradeExecutionResponse> executeBuyOrder(
-            @Valid @RequestBody BuyOrderRequest request,
-            Authentication authentication) {
-
-        log.info("Received buy order request: {}", request);
-
-        String username = authentication.getName();
-        TradeExecutionResponse response = tradingService.executeBuyOrder(request, username);
-
-        log.info("Buy order executed successfully for user: {}", username);
+            @PathVariable Long userId,
+            @Valid @RequestBody BuyOrderRequest request) {
+        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/sell")
+    @PostMapping("/{userId}/sell")
     public ResponseEntity<TradeExecutionResponse> executeSellOrder(
-            @Valid @RequestBody SellOrderRequest request,
-            Authentication authentication) {
-
-        log.info("Received sell order request: {}", request);
-
-        String username = authentication.getName();
-        TradeExecutionResponse response = tradingService.executeSellOrder(request, username);
-
-        log.info("Sell order executed successfully for user: {}", username);
+            @PathVariable Long userId,
+            @Valid @RequestBody SellOrderRequest request) {
+        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/portfolio")
-    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(Authentication authentication) {
-        log.info("Received portfolio summary request");
-
-        String username = authentication.getName();
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(username);
-
-        log.info("Portfolio summary retrieved successfully for user: {}", username);
+    @GetMapping("/{userId}/portfolio")
+    public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
+        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
         return ResponseEntity.ok(summary);
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<List<Transaction>> getTransactionHistory(Authentication authentication) {
-        log.info("Received transaction history request");
-
-        String username = authentication.getName();
-        List<Transaction> history = tradingService.getTransactionHistory(username);
-
-        log.info("Transaction history retrieved successfully for user: {}, {} transactions",
-                username, history.size());
+    @GetMapping("/{userId}/history")
+    public ResponseEntity<List<Transaction>> getTransactionHistory(@PathVariable Long userId) {
+        List<Transaction> history = tradingService.getTransactionHistory(userId);
         return ResponseEntity.ok(history);
     }
 }
