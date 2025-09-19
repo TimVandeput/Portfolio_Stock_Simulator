@@ -3,9 +3,13 @@ import type { AddCashRequest, WalletBalanceResponse } from "@/types/wallet";
 
 const client = new HttpClient();
 
-export async function getWalletBalance(): Promise<WalletBalanceResponse> {
+export async function getWalletBalance(
+  userId: number
+): Promise<WalletBalanceResponse> {
   try {
-    return await client.get<WalletBalanceResponse>("/api/wallet/balance");
+    return await client.get<WalletBalanceResponse>(
+      `/api/wallet/${userId}/balance`
+    );
   } catch (err) {
     if (err instanceof ApiError && err.body) {
       const b: any = err.body;
@@ -20,11 +24,12 @@ export async function getWalletBalance(): Promise<WalletBalanceResponse> {
 }
 
 export async function addCash(
+  userId: number,
   request: AddCashRequest
 ): Promise<WalletBalanceResponse> {
   try {
     return await client.post<WalletBalanceResponse>(
-      "/api/wallet/add-cash",
+      `/api/wallet/${userId}/add-cash`,
       request
     );
   } catch (err) {

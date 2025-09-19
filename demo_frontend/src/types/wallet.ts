@@ -5,5 +5,6 @@ export interface AddCashRequest {
 
 export interface WalletBalanceResponse {
   cashBalance: number;
+  totalMarketValue: number;
   totalPortfolioValue: number;
 }

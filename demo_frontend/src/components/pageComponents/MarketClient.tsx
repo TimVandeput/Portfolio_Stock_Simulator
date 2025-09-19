@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { usePrices } from "@/contexts/PriceContext";
 import { usePagedData } from "@/hooks/usePagedData";
 import StatusMessage from "@/components/status/StatusMessage";
@@ -16,6 +17,7 @@ import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 
 export default function MarketClient() {
+  const router = useRouter();
   const {
     prices,
     pulsatingSymbols,
@@ -57,10 +59,12 @@ export default function MarketClient() {
     errorPrefix: "Failed to load markets",
   });
 
-  const handleBuy = useCallback((row: SymbolDTO) => {
-    console.log("Buy clicked:", row.symbol);
-    alert(`Buy ${row.symbol} — hook up your order modal here.`);
-  }, []);
+  const handleBuy = useCallback(
+    (row: SymbolDTO) => {
+      router.push(`/market/${row.symbol.toLowerCase()}`);
+    },
+    [router]
+  );
 
   const marketSortOptions = [
     { value: "symbol", label: "Symbol" },

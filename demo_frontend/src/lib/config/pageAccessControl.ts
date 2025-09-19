@@ -63,9 +63,14 @@ export const PAGE_ACCESS_CONFIG: Record<string, PageAccessConfig> = {
 };
 
 export function getPageAccessConfig(pathname: string): PageAccessConfig | null {
-  const config = PAGE_ACCESS_CONFIG[pathname];
+  let config = PAGE_ACCESS_CONFIG[pathname];
 
-  // If no config found, exclude from access control to allow 404 handling
+  if (!config) {
+    if (pathname.startsWith("/market/") && pathname.length > 8) {
+      config = PAGE_ACCESS_CONFIG["/market"];
+    }
+  }
+
   if (!config) {
     return {
       requireAuth: false,

@@ -10,11 +10,12 @@ import type {
 const client = new HttpClient();
 
 export async function executeBuyOrder(
+  userId: number,
   request: BuyOrderRequest
 ): Promise<TradeExecutionResponse> {
   try {
     return await client.post<TradeExecutionResponse>(
-      "/api/trading/buy",
+      `/api/trades/${userId}/buy`,
       request
     );
   } catch (err) {
@@ -31,11 +32,12 @@ export async function executeBuyOrder(
 }
 
 export async function executeSellOrder(
+  userId: number,
   request: SellOrderRequest
 ): Promise<TradeExecutionResponse> {
   try {
     return await client.post<TradeExecutionResponse>(
-      "/api/trading/sell",
+      `/api/trades/${userId}/sell`,
       request
     );
   } catch (err) {
@@ -51,9 +53,11 @@ export async function executeSellOrder(
   }
 }
 
-export async function getTransactionHistory(): Promise<Transaction[]> {
+export async function getTransactionHistory(
+  userId: number
+): Promise<Transaction[]> {
   try {
-    return await client.get<Transaction[]>("/api/trading/transactions");
+    return await client.get<Transaction[]>(`/api/trades/${userId}/history`);
   } catch (err) {
     if (err instanceof ApiError && err.body) {
       const b: any = err.body;
@@ -67,9 +71,13 @@ export async function getTransactionHistory(): Promise<Transaction[]> {
   }
 }
 
-export async function getPortfolioSummary(): Promise<PortfolioSummaryDTO> {
+export async function getPortfolioSummary(
+  userId: number
+): Promise<PortfolioSummaryDTO> {
   try {
-    return await client.get<PortfolioSummaryDTO>("/api/trading/portfolio");
+    return await client.get<PortfolioSummaryDTO>(
+      `/api/trades/${userId}/portfolio`
+    );
   } catch (err) {
     if (err instanceof ApiError && err.body) {
       const b: any = err.body;
