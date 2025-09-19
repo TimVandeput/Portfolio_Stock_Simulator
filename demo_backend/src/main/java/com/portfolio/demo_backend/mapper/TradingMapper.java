@@ -7,6 +7,8 @@ import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.model.Wallet;
 
+import static com.portfolio.demo_backend.model.enums.TransactionType.BUY;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -95,14 +97,13 @@ public class TradingMapper {
         response.setQuantity(transaction.getQuantity());
         response.setExecutionPrice(transaction.getPricePerShare());
         response.setTotalAmount(transaction.getTotalAmount());
-        response.setTransactionType(transaction.getType().name());
+        response.setTransactionType(transaction.getType());
         response.setExecutedAt(transaction.getExecutedAt());
         response.setNewCashBalance(newCashBalance);
         response.setNewSharesOwned(newSharesOwned);
 
-        String action = transaction.getType().name().toLowerCase();
         response.setMessage(String.format("Successfully %s %d shares of %s at $%.2f per share",
-                action.equals("buy") ? "bought" : "sold",
+                transaction.getType() == BUY ? "bought" : "sold",
                 transaction.getQuantity(),
                 transaction.getSymbol().getSymbol(),
                 transaction.getPricePerShare()));

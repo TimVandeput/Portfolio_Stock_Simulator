@@ -3,6 +3,7 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.*;
+import com.portfolio.demo_backend.model.enums.TransactionType;
 import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
@@ -98,7 +99,7 @@ class TradingServiceUnitTest {
         assertEquals(10, response.getQuantity());
         assertEquals(new BigDecimal("150.0"), response.getExecutionPrice());
         assertEquals(new BigDecimal("1500.0"), response.getTotalAmount());
-        assertEquals("BUY", response.getTransactionType());
+        assertEquals(TransactionType.BUY, response.getTransactionType());
         assertEquals(new BigDecimal("3500.00"), response.getNewCashBalance());
         assertEquals(10, response.getNewSharesOwned());
 
@@ -154,7 +155,7 @@ class TradingServiceUnitTest {
         assertEquals(5, response.getQuantity());
         assertEquals(new BigDecimal("150.0"), response.getExecutionPrice());
         assertEquals(new BigDecimal("750.0"), response.getTotalAmount());
-        assertEquals("SELL", response.getTransactionType());
+        assertEquals(TransactionType.SELL, response.getTransactionType());
         assertEquals(new BigDecimal("5750.00"), response.getNewCashBalance());
         assertEquals(5, response.getNewSharesOwned());
 

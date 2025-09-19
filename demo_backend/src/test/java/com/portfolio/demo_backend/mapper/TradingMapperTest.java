@@ -103,7 +103,7 @@ class TradingMapperTest {
         assertEquals(50, response.getQuantity());
         assertEquals(new BigDecimal("155.75"), response.getExecutionPrice());
         assertEquals(new BigDecimal("7787.50"), response.getTotalAmount());
-        assertEquals("BUY", response.getTransactionType());
+        assertEquals(TransactionType.BUY, response.getTransactionType());
         assertEquals(new BigDecimal("1212.50"), response.getNewCashBalance());
         assertEquals(150, response.getNewSharesOwned());
         assertTrue(response.getMessage().contains("Successfully bought 50 shares of AAPL"));
@@ -129,7 +129,7 @@ class TradingMapperTest {
         TradeExecutionResponse response = TradingMapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
-        assertEquals("SELL", response.getTransactionType());
+        assertEquals(TransactionType.SELL, response.getTransactionType());
         assertTrue(response.getMessage().contains("Successfully sold 25 shares of GOOGL"));
     }
 }
