@@ -14,7 +14,6 @@ import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
-import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.exception.user.InvalidPasscodeException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
@@ -76,13 +75,6 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    }
-
-    @ExceptionHandler(SymbolInUseException.class)
-    public ResponseEntity<Map<String, String>> handleSymbolInUse(SymbolInUseException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(ImportInProgressException.class)
