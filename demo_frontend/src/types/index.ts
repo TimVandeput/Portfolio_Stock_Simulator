@@ -10,3 +10,5 @@ export * from "./prices";
 export * from "./theme";
 export * from "./hooks";
 export * from "./api";
+export * from "./trading";
+export * from "./wallet";
