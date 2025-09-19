@@ -14,6 +14,8 @@ import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
+import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
+import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
 import com.portfolio.demo_backend.exception.trading.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

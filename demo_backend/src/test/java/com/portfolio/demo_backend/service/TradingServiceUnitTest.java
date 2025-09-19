@@ -8,6 +8,7 @@ import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
+import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.trading.*;
 import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
