@@ -1,8 +1,8 @@
 package com.portfolio.demo_backend.controller;
 
-import com.portfolio.demo_backend.dto.SymbolDTO;
-import com.portfolio.demo_backend.dto.ImportStatusDTO;
-import com.portfolio.demo_backend.dto.ImportSummaryDTO;
+import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
+import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
+import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.service.SymbolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

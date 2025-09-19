@@ -1,6 +1,6 @@
 package com.portfolio.demo_backend.mapper;
 
-import com.portfolio.demo_backend.dto.CreateUserDTO;
+import com.portfolio.demo_backend.dto.user.CreateUserDTO;
 import com.portfolio.demo_backend.model.User;
 import org.junit.jupiter.api.Test;
 

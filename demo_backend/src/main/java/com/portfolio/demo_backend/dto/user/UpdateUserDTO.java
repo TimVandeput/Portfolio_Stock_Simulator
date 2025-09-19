@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.dto;
+package com.portfolio.demo_backend.dto.user;
 
 import jakarta.validation.constraints.Size;
 import lombok.Data;

@@ -1,9 +1,9 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.RegisterRequest;
-import com.portfolio.demo_backend.dto.RegistrationResponse;
+import com.portfolio.demo_backend.dto.auth.RegisterRequest;
+import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.model.User;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

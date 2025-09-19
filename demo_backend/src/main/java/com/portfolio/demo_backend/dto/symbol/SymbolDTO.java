@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.dto;
+package com.portfolio.demo_backend.dto.symbol;
 
 public class SymbolDTO {
     public Long id;

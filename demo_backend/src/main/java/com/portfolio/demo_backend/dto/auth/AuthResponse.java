@@ -1,8 +1,8 @@
-package com.portfolio.demo_backend.dto;
+package com.portfolio.demo_backend.dto.auth;
 
 import java.util.Set;
 
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

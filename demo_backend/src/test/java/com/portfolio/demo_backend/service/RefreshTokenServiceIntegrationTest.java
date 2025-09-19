@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.RefreshToken;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.RefreshTokenRepository;
 import com.portfolio.demo_backend.repository.UserRepository;

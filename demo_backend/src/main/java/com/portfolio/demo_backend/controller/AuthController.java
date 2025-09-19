@@ -1,6 +1,10 @@
 package com.portfolio.demo_backend.controller;
 
-import com.portfolio.demo_backend.dto.*;
+import com.portfolio.demo_backend.dto.auth.AuthResponse;
+import com.portfolio.demo_backend.dto.auth.LoginRequest;
+import com.portfolio.demo_backend.dto.auth.RefreshRequest;
+import com.portfolio.demo_backend.dto.auth.RegisterRequest;
+import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

@@ -3,7 +3,7 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 
 import com.portfolio.demo_backend.repository.UserRepository;
@@ -77,6 +77,11 @@ public class UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     private void validateAndEncodePassword(User user) {

@@ -1,8 +1,8 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.ImportStatusDTO;
-import com.portfolio.demo_backend.dto.ImportSummaryDTO;
-import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
+import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
+import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;

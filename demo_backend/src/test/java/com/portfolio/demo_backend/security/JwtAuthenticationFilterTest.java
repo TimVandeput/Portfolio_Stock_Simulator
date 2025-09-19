@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.security;
 
 import com.portfolio.demo_backend.config.JwtProperties;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

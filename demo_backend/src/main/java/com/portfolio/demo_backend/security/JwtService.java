@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.security;
 
 import com.portfolio.demo_backend.config.JwtProperties;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

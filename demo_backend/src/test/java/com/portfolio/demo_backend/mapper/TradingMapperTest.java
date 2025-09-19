@@ -1,12 +1,14 @@
 package com.portfolio.demo_backend.mapper;
 
+import com.portfolio.demo_backend.dto.trading.PortfolioHoldingDTO;
+import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
+import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.model.Wallet;
 import com.portfolio.demo_backend.model.Symbol;
-import com.portfolio.demo_backend.dto.PortfolioHoldingDTO;
-import com.portfolio.demo_backend.dto.PortfolioSummaryDTO;
-import com.portfolio.demo_backend.dto.TradeExecutionResponse;
+import com.portfolio.demo_backend.model.enums.TransactionType;
+
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -21,8 +23,11 @@ class TradingMapperTest {
 
     @Test
     void toPortfolioHoldingDTO_withProfitablePosition_calculatesCorrectly() {
+        Symbol symbol = new Symbol();
+        symbol.setSymbol("AAPL");
+
         Portfolio portfolio = new Portfolio();
-        portfolio.setSymbol("AAPL");
+        portfolio.setSymbol(symbol);
         portfolio.setSharesOwned(100);
         portfolio.setAverageCostBasis(new BigDecimal("150.00"));
         BigDecimal currentPrice = new BigDecimal("160.00");
@@ -44,13 +49,19 @@ class TradingMapperTest {
         Wallet wallet = new Wallet();
         wallet.setCashBalance(new BigDecimal("2000.00"));
 
+        Symbol symbol1 = new Symbol();
+        symbol1.setSymbol("AAPL");
+
+        Symbol symbol2 = new Symbol();
+        symbol2.setSymbol("GOOGL");
+
         Portfolio portfolio1 = new Portfolio();
-        portfolio1.setSymbol("AAPL");
+        portfolio1.setSymbol(symbol1);
         portfolio1.setSharesOwned(100);
         portfolio1.setAverageCostBasis(new BigDecimal("150.00"));
 
         Portfolio portfolio2 = new Portfolio();
-        portfolio2.setSymbol("GOOGL");
+        portfolio2.setSymbol(symbol2);
         portfolio2.setSharesOwned(50);
         portfolio2.setAverageCostBasis(new BigDecimal("120.00"));
 
@@ -80,7 +91,7 @@ class TradingMapperTest {
         transaction.setQuantity(50);
         transaction.setPricePerShare(new BigDecimal("155.75"));
         transaction.setTotalAmount(new BigDecimal("7787.50"));
-        transaction.setType(Transaction.TransactionType.BUY);
+        transaction.setType(TransactionType.BUY);
         transaction.setExecutedAt(Instant.now());
         BigDecimal newCashBalance = new BigDecimal("1212.50");
         Integer newSharesOwned = 150;
@@ -110,7 +121,7 @@ class TradingMapperTest {
         transaction.setQuantity(25);
         transaction.setPricePerShare(new BigDecimal("135.00"));
         transaction.setTotalAmount(new BigDecimal("3375.00"));
-        transaction.setType(Transaction.TransactionType.SELL);
+        transaction.setType(TransactionType.SELL);
         transaction.setExecutedAt(Instant.now());
         BigDecimal newCashBalance = new BigDecimal("8375.00");
         Integer newSharesOwned = 25;

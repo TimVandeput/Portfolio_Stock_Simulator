@@ -1,11 +1,15 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.*;
+import com.portfolio.demo_backend.dto.auth.AuthResponse;
+import com.portfolio.demo_backend.dto.auth.LoginRequest;
+import com.portfolio.demo_backend.dto.auth.RefreshRequest;
+import com.portfolio.demo_backend.dto.auth.RegisterRequest;
+import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.model.RefreshToken;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
 import com.portfolio.demo_backend.security.JwtService;

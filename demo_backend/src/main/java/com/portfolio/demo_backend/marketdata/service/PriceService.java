@@ -5,7 +5,7 @@ import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
 import com.portfolio.demo_backend.marketdata.mapper.MarketDataMapper;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
-import com.portfolio.demo_backend.model.SymbolEntity;
+import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +28,11 @@ public class PriceService {
     public Map<String, YahooQuoteDTO> getAllCurrentPrices() {
         log.info("Fetching all enabled symbols from database");
 
-        List<SymbolEntity> enabledSymbols = symbolRepository.findAll().stream()
-                .filter(SymbolEntity::isEnabled)
+        List<Symbol> enabledSymbols = symbolRepository.findAll().stream()
+                .filter(Symbol::isEnabled)
                 .collect(Collectors.toList());
         List<String> symbolNames = enabledSymbols.stream()
-                .map(SymbolEntity::getSymbol)
+                .map(Symbol::getSymbol)
                 .collect(Collectors.toList());
 
         log.info("Found {} enabled symbols, fetching quotes from RapidAPI", symbolNames.size());
@@ -74,7 +74,7 @@ public class PriceService {
     public YahooQuoteDTO getCurrentPrice(String symbol) {
         log.info("Fetching current price for symbol: {}", symbol);
 
-        SymbolEntity symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
+        Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
         if (symbolEntity == null) {
             log.warn("Symbol {} not found in database", symbol);
             return null;

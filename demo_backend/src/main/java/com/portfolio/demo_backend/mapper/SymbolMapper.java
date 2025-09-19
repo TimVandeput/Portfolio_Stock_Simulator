@@ -1,10 +1,10 @@
 package com.portfolio.demo_backend.mapper;
 
-import com.portfolio.demo_backend.model.SymbolEntity;
-import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
+import com.portfolio.demo_backend.model.Symbol;
 
 public class SymbolMapper {
-    public static SymbolDTO toSymbol(SymbolEntity e, boolean inUse) {
+    public static SymbolDTO toSymbol(Symbol e, boolean inUse) {
         SymbolDTO dto = new SymbolDTO();
         dto.id = e.getId();
         dto.symbol = e.getSymbol();

@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.dto;
+package com.portfolio.demo_backend.dto.auth;
 
 import lombok.Data;
 

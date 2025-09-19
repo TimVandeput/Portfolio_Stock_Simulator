@@ -1,11 +1,11 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.model.SymbolEntity;
-import com.portfolio.demo_backend.dto.SymbolDTO;
+import com.portfolio.demo_backend.model.Symbol;
+import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
+import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
+import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
-import com.portfolio.demo_backend.dto.ImportStatusDTO;
-import com.portfolio.demo_backend.dto.ImportSummaryDTO;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient.SymbolItem;
@@ -160,7 +160,7 @@ public class SymbolService {
             SymbolItem item = ni.raw;
             String symbol = ni.sym;
 
-            SymbolEntity entity = symbolRepository.findBySymbol(symbol).orElseGet(SymbolEntity::new);
+            Symbol entity = symbolRepository.findBySymbol(symbol).orElseGet(Symbol::new);
             boolean isNew = (entity.getId() == null);
 
             if (isNew) {
@@ -178,7 +178,7 @@ public class SymbolService {
         return new ImportCounts(imported, updated);
     }
 
-    private void updateSymbolEntity(SymbolEntity entity, SymbolItem item) {
+    private void updateSymbolEntity(Symbol entity, SymbolItem item) {
         entity.setName(item.description);
         entity.setExchange(item.mic != null ? item.mic : "US");
         entity.setCurrency(item.currency);
@@ -196,12 +196,12 @@ public class SymbolService {
     }
 
     public Page<SymbolDTO> list(String q, Boolean enabled, Pageable pageable) {
-        Page<SymbolEntity> page = symbolRepository.search(emptyToNull(q), enabled, ensureSort(pageable));
+        Page<Symbol> page = symbolRepository.search(emptyToNull(q), enabled, ensureSort(pageable));
         return page.map(e -> SymbolMapper.toSymbol(e, inUseChecker.isInUse(e.getSymbol())));
     }
 
     public SymbolDTO setEnabled(Long id, boolean enabled) {
-        SymbolEntity e = symbolRepository.findById(id)
+        Symbol e = symbolRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Symbol not found"));
 
         boolean inUse = inUseChecker.isInUse(e.getSymbol());
@@ -251,7 +251,7 @@ public class SymbolService {
     private Set<String> getExistingSymbolsForUniverse(Set<String> allowedMics) {
         return symbolRepository.findAll().stream()
                 .filter(entity -> allowedMics.isEmpty() || allowedMics.contains(entity.getMic()))
-                .map(SymbolEntity::getSymbol)
+                .map(Symbol::getSymbol)
                 .collect(Collectors.toSet());
     }
 
