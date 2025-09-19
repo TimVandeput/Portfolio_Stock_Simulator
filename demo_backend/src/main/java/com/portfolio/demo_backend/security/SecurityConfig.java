@@ -54,6 +54,12 @@ public class SecurityConfig {
 
                     auth.requestMatchers("/api/users/**").permitAll();
 
+                    auth.requestMatchers("/api/wallet/**").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/trades/*/buy").hasAuthority("ROLE_USER");
+                    auth.requestMatchers(HttpMethod.POST, "/api/trades/*/sell").hasAuthority("ROLE_USER");
+                    auth.requestMatchers(HttpMethod.GET, "/api/trades/*/portfolio").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/trades/*/history").authenticated();
+
                     auth.anyRequest().authenticated();
                 });
 
