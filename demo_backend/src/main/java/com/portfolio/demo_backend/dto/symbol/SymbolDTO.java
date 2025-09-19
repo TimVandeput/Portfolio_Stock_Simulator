@@ -7,5 +7,4 @@ public class SymbolDTO {
     public String exchange;
     public String currency;
     public boolean enabled;
-    public boolean inUse;
 }

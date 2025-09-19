@@ -4,7 +4,6 @@ import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
-import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -36,9 +35,6 @@ class SymbolServiceUnitTest {
 
     @Mock
     private FinnhubClient finnhubClient;
-
-    @Mock
-    private SymbolInUseChecker symbolInUseChecker;
 
     @InjectMocks
     private SymbolService symbolService;
@@ -116,7 +112,6 @@ class SymbolServiceUnitTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         when(symbolRepository.search(eq("AAPL"), eq(true), any(Pageable.class))).thenReturn(mockPage);
-        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(false);
 
         Page<SymbolDTO> result = symbolService.list("AAPL", true, pageable);
 
@@ -124,7 +119,6 @@ class SymbolServiceUnitTest {
         assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
         assertThat(result.getContent().get(0).name).isEqualTo("Apple Inc");
         assertThat(result.getContent().get(0).enabled).isTrue();
-        assertThat(result.getContent().get(0).inUse).isFalse();
     }
 
     @Test
@@ -132,7 +126,6 @@ class SymbolServiceUnitTest {
         Symbol symbol = createSymbol("AAPL", "Apple Inc", false);
         symbol.setId(1L);
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
-        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(false);
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         SymbolDTO result = symbolService.setEnabled(1L, true);
@@ -143,16 +136,17 @@ class SymbolServiceUnitTest {
     }
 
     @Test
-    void setEnabled_disableSymbolInUse_throwsSymbolInUseException() {
+    void setEnabled_disableSymbol_success() {
         Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         symbol.setId(1L);
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
-        when(symbolInUseChecker.isInUse("AAPL")).thenReturn(true);
+        when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertThatThrownBy(() -> symbolService.setEnabled(1L, false))
-                .isInstanceOf(SymbolInUseException.class);
+        SymbolDTO result = symbolService.setEnabled(1L, false);
 
-        verify(symbolRepository, never()).save(any(Symbol.class));
+        assertThat(result.enabled).isFalse();
+        verify(symbolRepository).save(symbol);
+        assertThat(symbol.isEnabled()).isFalse();
     }
 
     @Test

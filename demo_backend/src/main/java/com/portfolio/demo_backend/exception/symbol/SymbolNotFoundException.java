@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.exception.trading;
+package com.portfolio.demo_backend.exception.symbol;
 
 public class SymbolNotFoundException extends RuntimeException {
     public SymbolNotFoundException(String symbol) {

@@ -1,4 +1,4 @@
-package com.portfolio.demo_backend.exception.trading;
+package com.portfolio.demo_backend.exception.price;
 
 public class PriceUnavailableException extends RuntimeException {
     public PriceUnavailableException(String symbol) {

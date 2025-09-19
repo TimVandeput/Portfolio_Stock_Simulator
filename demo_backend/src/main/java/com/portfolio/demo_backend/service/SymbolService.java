@@ -5,7 +5,6 @@ import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
-import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
 import com.portfolio.demo_backend.mapper.SymbolMapper;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient.SymbolItem;
@@ -29,7 +28,6 @@ public class SymbolService {
 
     private final SymbolRepository symbolRepository;
     private final FinnhubClient finnhub;
-    private final SymbolInUseChecker inUseChecker;
 
     private final AtomicBoolean importRunning = new AtomicBoolean(false);
     private volatile Instant lastImportedAt;
@@ -197,21 +195,16 @@ public class SymbolService {
 
     public Page<SymbolDTO> list(String q, Boolean enabled, Pageable pageable) {
         Page<Symbol> page = symbolRepository.search(emptyToNull(q), enabled, ensureSort(pageable));
-        return page.map(e -> SymbolMapper.toSymbol(e, inUseChecker.isInUse(e.getSymbol())));
+        return page.map(e -> SymbolMapper.toSymbol(e));
     }
 
     public SymbolDTO setEnabled(Long id, boolean enabled) {
         Symbol e = symbolRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Symbol not found"));
 
-        boolean inUse = inUseChecker.isInUse(e.getSymbol());
-        if (!enabled && inUse) {
-            throw new SymbolInUseException(e.getSymbol());
-        }
-
         e.setEnabled(enabled);
         symbolRepository.save(e);
-        return SymbolMapper.toSymbol(e, inUse);
+        return SymbolMapper.toSymbol(e);
     }
 
     private String emptyToNull(String s) {

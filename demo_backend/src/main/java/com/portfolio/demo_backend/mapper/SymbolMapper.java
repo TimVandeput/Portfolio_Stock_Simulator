@@ -4,7 +4,7 @@ import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.model.Symbol;
 
 public class SymbolMapper {
-    public static SymbolDTO toSymbol(Symbol e, boolean inUse) {
+    public static SymbolDTO toSymbol(Symbol e) {
         SymbolDTO dto = new SymbolDTO();
         dto.id = e.getId();
         dto.symbol = e.getSymbol();
@@ -12,7 +12,6 @@ public class SymbolMapper {
         dto.exchange = e.getExchange();
         dto.currency = e.getCurrency();
         dto.enabled = e.isEnabled();
-        dto.inUse = inUse;
         return dto;
     }
 }
