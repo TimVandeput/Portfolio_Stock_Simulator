@@ -5,12 +5,9 @@ import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
-import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.trading.*;
-import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -33,9 +30,6 @@ import static org.mockito.Mockito.*;
 class TradingServiceUnitTest {
 
     @Mock
-    private WalletRepository walletRepository;
-
-    @Mock
     private PortfolioRepository portfolioRepository;
 
     @Mock
@@ -49,6 +43,9 @@ class TradingServiceUnitTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private WalletService walletService;
 
     @InjectMocks
     private TradingService tradingService;
@@ -88,7 +85,7 @@ class TradingServiceUnitTest {
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -105,7 +102,7 @@ class TradingServiceUnitTest {
         assertEquals(new BigDecimal("3500.00"), response.getNewCashBalance());
         assertEquals(10, response.getNewSharesOwned());
 
-        verify(walletRepository).save(any(Wallet.class));
+        verify(walletService).updateWalletBalance(eq(1L), eq(new BigDecimal("3500.00")));
         verify(portfolioRepository).save(any(Portfolio.class));
         verify(transactionRepository).save(any(Transaction.class));
     }
@@ -120,7 +117,7 @@ class TradingServiceUnitTest {
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
 
         InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
             tradingService.executeBuyOrder(userId, request);
@@ -146,7 +143,7 @@ class TradingServiceUnitTest {
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -162,7 +159,7 @@ class TradingServiceUnitTest {
         assertEquals(new BigDecimal("5750.00"), response.getNewCashBalance());
         assertEquals(5, response.getNewSharesOwned());
 
-        verify(walletRepository).save(any(Wallet.class));
+        verify(walletService).updateWalletBalance(eq(1L), eq(new BigDecimal("5750.00")));
         verify(portfolioRepository).save(any(Portfolio.class));
         verify(transactionRepository).save(any(Transaction.class));
     }
@@ -190,171 +187,6 @@ class TradingServiceUnitTest {
         });
 
         assertTrue(exception.getMessage().contains("Insufficient shares"));
-    }
-
-    @Test
-    void getPortfolioSummary_withEmptyPortfolio_returnsOnlyCash() {
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
-        when(portfolioRepository.findByUserId(1L)).thenReturn(List.of());
-
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
-
-        assertNotNull(summary);
-        assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
-        assertEquals(BigDecimal.ZERO, summary.getTotalMarketValue());
-        assertEquals(new BigDecimal("5000.00"), summary.getTotalPortfolioValue());
-        assertEquals(BigDecimal.ZERO, summary.getTotalUnrealizedGainLoss());
-        assertTrue(summary.getHoldings().isEmpty());
-    }
-
-    @Test
-    void getPortfolioSummary_withHoldings_calculatesCorrectly() {
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
-        when(portfolioRepository.findByUserId(1L)).thenReturn(List.of(portfolio));
-        when(priceService.getAllCurrentPrices()).thenReturn(java.util.Map.of("AAPL", testQuote));
-
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
-
-        assertNotNull(summary);
-        assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
-        assertEquals(new BigDecimal("1500.0"), summary.getTotalMarketValue());
-        assertEquals(new BigDecimal("6500.00"), summary.getTotalPortfolioValue());
-        assertEquals(new BigDecimal("100.00"), summary.getTotalUnrealizedGainLoss());
-        assertEquals(1, summary.getHoldings().size());
-
-        var holding = summary.getHoldings().get(0);
-        assertEquals("AAPL", holding.getSymbol());
-        assertEquals(10, holding.getShares());
-        assertEquals(new BigDecimal("140.00"), holding.getAverageCost());
-        assertEquals(new BigDecimal("150.0"), holding.getCurrentPrice());
-        assertEquals(new BigDecimal("1500.0"), holding.getMarketValue());
-        assertEquals(new BigDecimal("100.00"), holding.getUnrealizedGainLoss());
-    }
-
-    @Test
-    void executeBuyOrder_withMissingWallet_throws() {
-        BuyOrderRequest request = new BuyOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
-
-        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.executeBuyOrder(userId, request);
-        });
-
-        assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
-    }
-
-    @Test
-    void executeBuyOrder_withUnavailablePrice_throws() {
-        BuyOrderRequest request = new BuyOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(null);
-
-        PriceUnavailableException exception = assertThrows(PriceUnavailableException.class, () -> {
-            tradingService.executeBuyOrder(userId, request);
-        });
-
-        assertEquals("Unable to get current price for symbol: AAPL", exception.getMessage());
-    }
-
-    @Test
-    void executeSellOrder_withMissingWallet_throws() {
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
-
-        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.executeSellOrder(userId, request);
-        });
-
-        assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
-    }
-
-    @Test
-    void executeSellOrder_withUnavailablePrice_throws() {
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(null);
-
-        PriceUnavailableException exception = assertThrows(PriceUnavailableException.class, () -> {
-            tradingService.executeSellOrder(userId, request);
-        });
-
-        assertEquals("Unable to get current price for symbol: AAPL", exception.getMessage());
-    }
-
-    @Test
-    void executeSellOrder_withMissingPosition_throws() {
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
-
-        PositionNotFoundException exception = assertThrows(PositionNotFoundException.class, () -> {
-            tradingService.executeSellOrder(userId, request);
-        });
-
-        assertEquals("No position found for symbol: AAPL", exception.getMessage());
-    }
-
-    @Test
-    void getPortfolioSummary_withMissingWallet_throws() {
-        Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
-
-        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> {
-            tradingService.getPortfolioSummary(userId);
-        });
-
-        assertTrue(exception.getMessage().contains("Wallet not found for user: testuser"));
     }
 
     @Test

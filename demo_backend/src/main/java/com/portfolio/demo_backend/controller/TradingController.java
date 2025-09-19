@@ -6,6 +6,8 @@ import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.service.TradingService;
+import com.portfolio.demo_backend.service.WalletService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +23,7 @@ import java.util.List;
 public class TradingController {
 
     private final TradingService tradingService;
+    private final WalletService walletService;
 
     @PostMapping("/{userId}/buy")
     public ResponseEntity<TradeExecutionResponse> executeBuyOrder(
@@ -40,7 +43,7 @@ public class TradingController {
 
     @GetMapping("/{userId}/portfolio")
     public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
-        PortfolioSummaryDTO summary = tradingService.getPortfolioSummary(userId);
+        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(userId);
         return ResponseEntity.ok(summary);
     }
 

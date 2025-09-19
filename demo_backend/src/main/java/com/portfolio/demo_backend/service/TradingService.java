@@ -1,7 +1,6 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.mapper.TradingMapper;
@@ -9,7 +8,6 @@ import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
-import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -25,20 +23,18 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TradingService {
 
-    private final WalletRepository walletRepository;
     private final PortfolioRepository portfolioRepository;
     private final TransactionRepository transactionRepository;
     private final SymbolRepository symbolRepository;
     private final PriceService priceService;
     private final UserService userService;
+    private final WalletService walletService;
 
     @Transactional
     public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
@@ -51,13 +47,13 @@ public class TradingService {
         BigDecimal currentPrice = getCurrentPrice(request.getSymbol());
         BigDecimal totalAmount = currentPrice.multiply(BigDecimal.valueOf(request.getQuantity()));
 
-        Wallet wallet = getUserWallet(userId, username);
+        Wallet wallet = walletService.getUserWallet(userId, username);
         if (wallet.getCashBalance().compareTo(totalAmount) < 0) {
             throw new InsufficientFundsException(username, "$" + totalAmount, "$" + wallet.getCashBalance());
         }
 
-        wallet.setCashBalance(wallet.getCashBalance().subtract(totalAmount));
-        walletRepository.save(wallet);
+        BigDecimal newBalance = wallet.getCashBalance().subtract(totalAmount);
+        walletService.updateWalletBalance(userId, newBalance);
 
         Symbol symbol = getSymbolEntity(request.getSymbol());
         Portfolio portfolio = getOrCreatePortfolio(userId, request.getSymbol(), symbol);
@@ -69,7 +65,7 @@ public class TradingService {
         log.info("Buy order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, wallet.getCashBalance(),
+        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
                 portfolio.getSharesOwned());
     }
 
@@ -92,9 +88,9 @@ public class TradingService {
 
         BigDecimal totalProceeds = currentPrice.multiply(BigDecimal.valueOf(request.getQuantity()));
 
-        Wallet wallet = getUserWallet(userId, username);
-        wallet.setCashBalance(wallet.getCashBalance().add(totalProceeds));
-        walletRepository.save(wallet);
+        Wallet wallet = walletService.getUserWallet(userId, username);
+        BigDecimal newBalance = wallet.getCashBalance().add(totalProceeds);
+        walletService.updateWalletBalance(userId, newBalance);
 
         updatePortfolioForSell(portfolio, request.getQuantity());
 
@@ -105,28 +101,8 @@ public class TradingService {
         log.info("Sell order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, wallet.getCashBalance(),
+        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
                 portfolio.getSharesOwned());
-    }
-
-    public PortfolioSummaryDTO getPortfolioSummary(Long userId) {
-        User user = userService.getUserById(userId);
-        String username = user.getUsername();
-
-        log.info("Getting portfolio summary for user: {}", username);
-
-        Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new WalletNotFoundException(username));
-
-        List<Portfolio> positions = portfolioRepository.findByUserId(userId);
-
-        List<String> symbols = positions.stream()
-                .map(portfolio -> portfolio.getSymbol().getSymbol())
-                .collect(Collectors.toList());
-
-        Map<String, BigDecimal> currentPrices = getCurrentPrices(symbols);
-
-        return TradingMapper.toPortfolioSummaryDTO(wallet, positions, currentPrices);
     }
 
     public List<Transaction> getTransactionHistory(Long userId) {
@@ -149,25 +125,6 @@ public class TradingService {
             log.error("Failed to get current price for symbol: {}", symbol, e);
             throw new PriceUnavailableException(symbol, e);
         }
-    }
-
-    private Map<String, BigDecimal> getCurrentPrices(List<String> symbols) {
-        try {
-            Map<String, YahooQuoteDTO> quotes = priceService.getAllCurrentPrices();
-            return symbols.stream()
-                    .filter(quotes::containsKey)
-                    .collect(Collectors.toMap(
-                            symbol -> symbol,
-                            symbol -> BigDecimal.valueOf(quotes.get(symbol).getPrice())));
-        } catch (Exception e) {
-            log.error("Failed to get current prices for symbols: {}", symbols, e);
-            throw new PriceUnavailableException("multiple symbols", e);
-        }
-    }
-
-    private Wallet getUserWallet(Long userId, String username) {
-        return walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new WalletNotFoundException(username));
     }
 
     private Symbol getSymbolEntity(String symbolStr) {
