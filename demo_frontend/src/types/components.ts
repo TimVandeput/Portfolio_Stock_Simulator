@@ -203,6 +203,8 @@ export interface ValidationMessagesProps extends BaseComponentProps {
   totalCost: number;
   walletLoading: boolean;
   lastPrice: number;
+  success?: string;
+  loading?: boolean;
 }
 
 export interface QuantityInputProps extends BaseComponentProps {
@@ -212,6 +214,7 @@ export interface QuantityInputProps extends BaseComponentProps {
   walletLoading: boolean;
   walletBalance: WalletBalanceResponse | null;
   lastPrice: number;
+  mode?: "buy" | "sell";
 }
 
 export interface WalletBalanceCardProps extends BaseComponentProps {

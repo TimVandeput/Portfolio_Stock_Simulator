@@ -8,17 +8,23 @@ export default function ValidationMessages({
   totalCost,
   walletLoading,
   lastPrice,
+  success,
+  loading,
 }: ValidationMessagesProps) {
   return (
     <>
-      {!canAfford && totalCost > 0 && !walletLoading && (
-        <div className="flex items-center gap-2 text-sm text-rose-500">
-          <DynamicIcon iconName="alertcircle" size={16} />
-          Insufficient funds
-        </div>
-      )}
+      {!canAfford &&
+        totalCost > 0 &&
+        !walletLoading &&
+        !success &&
+        !loading && (
+          <div className="flex items-center gap-2 text-sm text-rose-500">
+            <DynamicIcon iconName="alertcircle" size={16} />
+            Insufficient funds
+          </div>
+        )}
 
-      {lastPrice <= 0 && (
+      {lastPrice <= 0 && !success && !loading && (
         <div className="flex items-center gap-2 text-sm text-amber-500">
           <DynamicIcon iconName="alertcircle" size={16} />
           Price data unavailable
