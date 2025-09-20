@@ -30,18 +30,12 @@ export const navItems: NavItem[] = [
     name: "WALLET",
     href: "/wallet",
     icon: "wallet",
-    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
+    allowedRoles: ["ROLE_USER"],
   },
   {
     name: "LIVE",
     href: "/live",
     icon: "activity",
-    allowedRoles: ["ROLE_USER"],
-  },
-  {
-    name: "NOTIFICATIONS",
-    href: "/notifications",
-    icon: "bell",
     allowedRoles: ["ROLE_USER"],
   },
   {
@@ -55,6 +49,12 @@ export const navItems: NavItem[] = [
     href: "/symbols",
     icon: "receipt",
     allowedRoles: ["ROLE_ADMIN"],
+  },
+  {
+    name: "NOTIFICATIONS",
+    href: "/notifications",
+    icon: "bell",
+    allowedRoles: ["ROLE_USER", "ROLE_ADMIN"],
   },
   {
     name: "ABOUT",

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, DollarSign, Wallet, AlertCircle } from "lucide-react";
 import { usePrices } from "@/contexts/PriceContext";
 import { getWalletBalance } from "@/lib/api/wallet";
 import { executeBuyOrder } from "@/lib/api/trading";
@@ -10,7 +9,12 @@ import { getErrorMessage } from "@/lib/utils/errorHandling";
 import { getUserId } from "@/lib/auth/tokenStorage";
 import StatusMessage from "@/components/status/StatusMessage";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-import NeumorphicInput from "@/components/input/NeumorphicInput";
+import DynamicIcon from "@/components/ui/DynamicIcon";
+import PriceCard from "@/components/trading/PriceCard";
+import WalletBalanceCard from "@/components/trading/WalletBalanceCard";
+import QuantityInput from "@/components/trading/QuantityInput";
+import OrderSummary from "@/components/trading/OrderSummary";
+import ValidationMessages from "@/components/trading/ValidationMessages";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";
 
@@ -31,8 +35,6 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
 
   const currentPrice = prices[symbol];
   const lastPrice = currentPrice?.last ?? 0;
-  const percentChange = currentPrice?.percentChange ?? 0;
-  const isPositiveChange = percentChange > 0;
 
   const quantityNum = useMemo(() => {
     const num = parseFloat(quantity);
@@ -138,127 +140,43 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
             onClick={() => router.back()}
             className="p-2 rounded-xl neu-button hover:scale-105 transition-transform"
           >
-            <ArrowLeft size={20} />
+            <DynamicIcon iconName="arrowleft" size={20} />
           </button>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
             Buy {symbol}
           </h1>
         </div>
 
-        <div className="neu-card p-6 rounded-2xl mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-[var(--text-primary)]">
-                {symbol}
-              </h2>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Current Price
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-[var(--text-primary)]">
-                ${lastPrice.toFixed(2)}
-              </div>
-              {percentChange !== 0 && (
-                <div
-                  className={`text-sm font-medium ${
-                    isPositiveChange ? "text-emerald-500" : "text-rose-500"
-                  }`}
-                >
-                  {isPositiveChange ? "+" : ""}
-                  {percentChange.toFixed(2)}%
-                </div>
-              )}
-            </div>
-          </div>
+        <PriceCard symbol={symbol} currentPrice={currentPrice} />
 
-          {currentPrice?.lastUpdate &&
-            Date.now() - currentPrice.lastUpdate < 5000 && (
-              <div className="flex items-center gap-2 text-xs text-[var(--accent)]">
-                <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></div>
-                Live Price
-              </div>
-            )}
-        </div>
-
-        <div className="neu-card p-4 rounded-xl mb-6">
-          <div className="flex items-center gap-3">
-            <Wallet size={20} className="text-[var(--accent)]" />
-            <div className="flex-1">
-              <p className="text-sm text-[var(--text-secondary)]">
-                Available Cash
-              </p>
-              {walletLoading ? (
-                <div className="h-6 bg-[var(--surface)] rounded animate-pulse"></div>
-              ) : (
-                <p className="text-lg font-semibold text-[var(--text-primary)]">
-                  ${walletBalance?.cashBalance.toFixed(2) ?? "0.00"}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <WalletBalanceCard
+          walletBalance={walletBalance}
+          walletLoading={walletLoading}
+        />
 
         <div className="neu-card p-6 rounded-2xl mb-6">
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                Quantity (Shares)
-              </label>
-              <div className="flex gap-2">
-                <NeumorphicInput
-                  type="text"
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  placeholder="Enter quantity"
-                  className="flex-1"
-                />
-                <button
-                  onClick={setMaxAffordable}
-                  className="px-3 py-2 text-sm neu-button rounded-xl hover:scale-105 transition-transform"
-                  disabled={walletLoading || !walletBalance || lastPrice <= 0}
-                >
-                  Max
-                </button>
-              </div>
-            </div>
+            <QuantityInput
+              quantity={quantity}
+              onQuantityChange={handleQuantityChange}
+              onSetMaxAffordable={setMaxAffordable}
+              walletLoading={walletLoading}
+              walletBalance={walletBalance}
+              lastPrice={lastPrice}
+            />
 
-            <div className="bg-[var(--surface)] p-4 rounded-xl space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">Shares:</span>
-                <span className="font-medium">{quantityNum.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">
-                  Price per share:
-                </span>
-                <span className="font-medium">${lastPrice.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-[var(--border)] pt-2">
-                <div className="flex justify-between">
-                  <span className="font-medium text-[var(--text-primary)]">
-                    Total Cost:
-                  </span>
-                  <span className="font-bold text-lg text-[var(--text-primary)]">
-                    ${totalCost.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <OrderSummary
+              quantityNum={quantityNum}
+              lastPrice={lastPrice}
+              totalCost={totalCost}
+            />
 
-            {!canAfford && totalCost > 0 && (
-              <div className="flex items-center gap-2 text-sm text-rose-500">
-                <AlertCircle size={16} />
-                Insufficient funds
-              </div>
-            )}
-
-            {lastPrice <= 0 && (
-              <div className="flex items-center gap-2 text-sm text-amber-500">
-                <AlertCircle size={16} />
-                Price data unavailable
-              </div>
-            )}
+            <ValidationMessages
+              canAfford={canAfford}
+              totalCost={totalCost}
+              walletLoading={walletLoading}
+              lastPrice={lastPrice}
+            />
           </div>
         </div>
 
@@ -279,7 +197,7 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
-              <DollarSign size={20} />
+              <DynamicIcon iconName="dollarsign" size={20} />
               Buy {quantityNum > 0 ? `${quantityNum} shares` : "Shares"}
             </div>
           )}
