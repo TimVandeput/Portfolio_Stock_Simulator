@@ -1,13 +1,13 @@
 package com.portfolio.demo_backend.controller;
 
-import com.portfolio.demo_backend.dto.CreateUserDTO;
-import com.portfolio.demo_backend.dto.UpdateUserDTO;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.service.PasscodeService;
 import com.portfolio.demo_backend.service.UserService;
 
 import jakarta.validation.Valid;
 
+import com.portfolio.demo_backend.dto.user.CreateUserDTO;
+import com.portfolio.demo_backend.dto.user.UpdateUserDTO;
 import com.portfolio.demo_backend.mapper.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

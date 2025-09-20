@@ -3,8 +3,10 @@ package com.portfolio.demo_backend.exception;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationException;
+import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
+import com.portfolio.demo_backend.exception.trading.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -13,7 +15,7 @@ import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
-import com.portfolio.demo_backend.exception.symbol.SymbolInUseException;
+import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
 import com.portfolio.demo_backend.exception.user.InvalidPasscodeException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
@@ -77,13 +79,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
-    @ExceptionHandler(SymbolInUseException.class)
-    public ResponseEntity<Map<String, String>> handleSymbolInUse(SymbolInUseException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
     @ExceptionHandler(ImportInProgressException.class)
     public ResponseEntity<Map<String, String>> handleImportBusy(ImportInProgressException ex) {
         Map<String, String> error = new HashMap<>();
@@ -110,6 +105,48 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientFunds(InsufficientFundsException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(InsufficientSharesException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientShares(InsufficientSharesException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleWalletNotFound(WalletNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(PositionNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handlePositionNotFound(PositionNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(PriceUnavailableException.class)
+    public ResponseEntity<Map<String, String>> handlePriceUnavailable(PriceUnavailableException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    @ExceptionHandler(SymbolNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleSymbolNotFound(SymbolNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(Exception.class)

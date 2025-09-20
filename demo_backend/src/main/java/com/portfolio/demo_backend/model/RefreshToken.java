@@ -1,5 +1,6 @@
 package com.portfolio.demo_backend.model;
 
+import com.portfolio.demo_backend.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;

@@ -1,6 +1,6 @@
 package com.portfolio.demo_backend.repository;
 
-import com.portfolio.demo_backend.model.SymbolEntity;
+import com.portfolio.demo_backend.model.Symbol;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface SymbolRepository extends JpaRepository<SymbolEntity, Long> {
+public interface SymbolRepository extends JpaRepository<Symbol, Long> {
 
-  Optional<SymbolEntity> findBySymbol(String symbol);
+  Optional<Symbol> findBySymbol(String symbol);
 
   @Query(value = """
       select s.*
@@ -29,8 +29,8 @@ public interface SymbolRepository extends JpaRepository<SymbolEntity, Long> {
              or s.name   ilike concat('%', :q, '%'))
         and (:enabled is null or s.enabled = :enabled)
       """, nativeQuery = true)
-  Page<SymbolEntity> search(String q, Boolean enabled, Pageable pageable);
+  Page<Symbol> search(String q, Boolean enabled, Pageable pageable);
 
-  @Query("SELECT s.symbol FROM SymbolEntity s WHERE s.enabled = true ORDER BY s.symbol")
+  @Query("SELECT s.symbol FROM Symbol s WHERE s.enabled = true ORDER BY s.symbol")
   List<String> findEnabledSymbols();
 }

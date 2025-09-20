@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.mapper;
 
-import com.portfolio.demo_backend.dto.CreateUserDTO;
-import com.portfolio.demo_backend.dto.UpdateUserDTO;
+import com.portfolio.demo_backend.dto.user.CreateUserDTO;
+import com.portfolio.demo_backend.dto.user.UpdateUserDTO;
 import com.portfolio.demo_backend.model.User;
 
 public class UserMapper {

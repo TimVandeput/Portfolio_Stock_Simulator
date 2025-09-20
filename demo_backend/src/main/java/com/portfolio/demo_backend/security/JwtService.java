@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.security;
 
 import com.portfolio.demo_backend.config.JwtProperties;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -26,6 +26,18 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role.name())
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + props.getExpiration()))
+                .signWith(Keys.hmacShaKeyFor(keyBytes), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateAccessToken(String username, Long userId, Role role) {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("role", role.name())
+                .claim("userId", userId)
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + props.getExpiration()))
                 .signWith(Keys.hmacShaKeyFor(keyBytes), SignatureAlgorithm.HS256)

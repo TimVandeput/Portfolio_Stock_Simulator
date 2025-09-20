@@ -4,7 +4,9 @@ import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
 import com.portfolio.demo_backend.model.User;
+import com.portfolio.demo_backend.model.Wallet;
 import com.portfolio.demo_backend.repository.UserRepository;
+import com.portfolio.demo_backend.repository.WalletRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,8 @@ class UserServiceUnitTest {
     UserRepository userRepository;
     @Mock
     PasswordEncoder passwordEncoder;
+    @Mock
+    WalletRepository walletRepository;
 
     @InjectMocks
     UserService userService;
@@ -39,15 +43,18 @@ class UserServiceUnitTest {
                 .build();
     }
 
-    // ----- createUser -----
-
     @Test
     void createUser_happyPath_encodesPassword_andSaves() {
         when(userRepository.findByUsername("tim")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("Pass1234")).thenReturn("ENCODED");
 
+        User savedUser = User.builder()
+                .id(1L)
+                .username("tim")
+                .password("ENCODED")
+                .build();
         when(userRepository.save(any(User.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+                .thenReturn(savedUser);
 
         User saved = userService.createUser(user);
 
@@ -55,6 +62,12 @@ class UserServiceUnitTest {
         verify(userRepository).findByUsername("tim");
         verify(passwordEncoder).encode("Pass1234");
         verify(userRepository).save(any(User.class));
+
+        ArgumentCaptor<Wallet> walletCaptor = ArgumentCaptor.forClass(Wallet.class);
+        verify(walletRepository).save(walletCaptor.capture());
+
+        Wallet createdWallet = walletCaptor.getValue();
+        assertThat(createdWallet.getUser()).isEqualTo(savedUser);
     }
 
     @Test
@@ -79,8 +92,6 @@ class UserServiceUnitTest {
         verify(passwordEncoder, never()).encode(anyString());
     }
 
-    // ----- getUserById -----
-
     @Test
     void getUserById_found_returnsUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -98,8 +109,6 @@ class UserServiceUnitTest {
                 .isInstanceOf(UserNotFoundException.class);
     }
 
-    // ----- getAllUsers -----
-
     @Test
     void getAllUsers_returnsList() {
         when(userRepository.findAll()).thenReturn(List.of(user));
@@ -108,8 +117,6 @@ class UserServiceUnitTest {
 
         assertThat(all).containsExactly(user);
     }
-
-    // ----- updateUser -----
 
     @Test
     void updateUser_changeUsername_onlyWhenUnique() {
@@ -191,8 +198,6 @@ class UserServiceUnitTest {
         assertThat(updated.getUsername()).isEqualTo("tim");
         assertThat(updated.getPassword()).isEqualTo("HASH");
     }
-
-    // ----- deleteUser -----
 
     @Test
     void deleteUser_exists_deletes() {

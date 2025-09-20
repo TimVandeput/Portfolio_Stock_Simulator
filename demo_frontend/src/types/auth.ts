@@ -26,6 +26,7 @@ export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   tokenType: "Bearer";
+  userId: number;
   username: string;
   roles: Role[];
   authenticatedAs: Role;
