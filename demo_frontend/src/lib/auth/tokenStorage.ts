@@ -36,12 +36,14 @@ export function setTokens(tokens: {
   _accessToken = tokens.accessToken;
   _refreshToken = tokens.refreshToken;
   if (tokens.authenticatedAs) _authenticatedAs = tokens.authenticatedAs;
-  if (tokens.userId) _userId = tokens.userId;
+  if (tokens.userId !== undefined) _userId = tokens.userId;
   if (isBrowser()) {
     setCookie(ACCESS_KEY, _accessToken ?? "");
     setCookie(REFRESH_KEY, _refreshToken ?? "");
     if (_authenticatedAs) setCookie(AS_KEY, _authenticatedAs);
-    if (_userId) setCookie(USER_ID_KEY, _userId.toString());
+    if (_userId !== null && _userId !== undefined) {
+      setCookie(USER_ID_KEY, _userId.toString());
+    }
   }
   emitAuthChange();
 }
@@ -50,10 +52,12 @@ export function clearTokens() {
   _accessToken = null;
   _refreshToken = null;
   _authenticatedAs = null;
+  _userId = null;
   if (isBrowser()) {
     removeCookie(ACCESS_KEY);
     removeCookie(REFRESH_KEY);
     removeCookie(AS_KEY);
+    removeCookie(USER_ID_KEY);
   }
   emitAuthChange();
 }
