@@ -124,7 +124,7 @@ export default function OrdersClient() {
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
           <div>
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
               TRANSACTION HISTORY
@@ -135,7 +135,7 @@ export default function OrdersClient() {
           </div>
 
           {!loading && !error && transactions.length > 0 && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3 lg:flex-shrink-0">
               <NeumorphicInput
                 type="text"
                 placeholder="Search transactions..."
@@ -144,7 +144,7 @@ export default function OrdersClient() {
                 className="min-w-[260px]"
               />
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:ml-auto">
                 <span className="text-sm opacity-80">Rows:</span>
                 <select
                   value={pageSize}
