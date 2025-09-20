@@ -32,6 +32,18 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateAccessToken(String username, Long userId, Role role) {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("role", role.name())
+                .claim("userId", userId)
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + props.getExpiration()))
+                .signWith(Keys.hmacShaKeyFor(keyBytes), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(keyBytes))

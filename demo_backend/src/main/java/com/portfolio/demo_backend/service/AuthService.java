@@ -58,7 +58,7 @@ public class AuthService {
             throw new RoleNotAssignedException(chosen.name());
         }
 
-        String access = jwtService.generateAccessToken(user.getUsername(), chosen);
+        String access = jwtService.generateAccessToken(user.getUsername(), user.getId(), chosen);
         RefreshToken refresh = refreshTokenService.create(user);
         refreshTokenService.setAuthenticatedAs(refresh.getToken(), chosen);
 
@@ -75,7 +75,7 @@ public class AuthService {
         }
         RefreshToken fresh = refreshTokenService.rotate(old);
         Role authenticatedAs = fresh.getAuthenticatedAs() != null ? fresh.getAuthenticatedAs() : Role.ROLE_USER;
-        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), authenticatedAs);
+        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(), authenticatedAs);
         return new AuthResponse(access, fresh.getToken(), "Bearer",
                 fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
     }
