@@ -112,7 +112,7 @@ export default function SymbolsTableDesktop({
     <div className="space-y-4">
       <TableHeader columns={getColumns()} />
 
-      <div className="hidden md:block rounded-2xl overflow-hidden border shadow-sm">
+      <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm table-fixed">
             <colgroup>{colEls}</colgroup>
