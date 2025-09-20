@@ -134,10 +134,14 @@ export default function SymbolsClient() {
   );
 
   const sortOptions = [
-    { value: "symbol", label: "Symbol" },
-    { value: "name", label: "Name" },
-    { value: "exchange", label: "Exchange" },
-    { value: "currency", label: "Currency" },
+    { value: "symbol-asc", label: "Symbol A-Z" },
+    { value: "symbol-desc", label: "Symbol Z-A" },
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "exchange-asc", label: "Exchange A-Z" },
+    { value: "exchange-desc", label: "Exchange Z-A" },
+    { value: "currency-asc", label: "Currency A-Z" },
+    { value: "currency-desc", label: "Currency Z-A" },
   ];
 
   const sortedPage = useMemo(() => {
@@ -145,16 +149,28 @@ export default function SymbolsClient() {
 
     const sorted = [...page.content].sort((a, b) => {
       switch (sortBy) {
+        case "symbol-asc":
         case "symbol":
           return a.symbol.localeCompare(b.symbol);
+        case "symbol-desc":
+          return b.symbol.localeCompare(a.symbol);
+        case "name-asc":
         case "name":
           return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "exchange-asc":
         case "exchange":
           return a.exchange.localeCompare(b.exchange);
+        case "exchange-desc":
+          return b.exchange.localeCompare(a.exchange);
+        case "currency-asc":
         case "currency":
           return a.currency.localeCompare(b.currency);
+        case "currency-desc":
+          return b.currency.localeCompare(a.currency);
         default:
-          return 0;
+          return a.symbol.localeCompare(b.symbol);
       }
     });
 

@@ -67,8 +67,12 @@ export default function MarketClient() {
   );
 
   const marketSortOptions = [
-    { value: "symbol", label: "Symbol" },
-    { value: "exchange", label: "Exchange" },
+    { value: "symbol-asc", label: "Symbol A-Z" },
+    { value: "symbol-desc", label: "Symbol Z-A" },
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "exchange-asc", label: "Exchange A-Z" },
+    { value: "exchange-desc", label: "Exchange Z-A" },
     { value: "price-high", label: "Price ↓" },
     { value: "price-low", label: "Price ↑" },
     { value: "change-high", label: "% Chg ↓" },
@@ -83,10 +87,21 @@ export default function MarketClient() {
       const priceB = prices[b.symbol];
 
       switch (sortBy) {
+        case "symbol-asc":
         case "symbol":
           return a.symbol.localeCompare(b.symbol);
+        case "symbol-desc":
+          return b.symbol.localeCompare(a.symbol);
+        case "name-asc":
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "exchange-asc":
         case "exchange":
           return a.exchange.localeCompare(b.exchange);
+        case "exchange-desc":
+          return b.exchange.localeCompare(a.exchange);
         case "price-high":
           return (priceB?.last ?? 0) - (priceA?.last ?? 0);
         case "price-low":
@@ -96,7 +111,7 @@ export default function MarketClient() {
         case "change-low":
           return (priceA?.percentChange ?? 0) - (priceB?.percentChange ?? 0);
         default:
-          return 0;
+          return a.symbol.localeCompare(b.symbol);
       }
     });
 
@@ -115,7 +130,7 @@ export default function MarketClient() {
           </div>
 
           {/* Search + page size + sort */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
             <NeumorphicInput
               type="text"
               placeholder="Search symbol or name…"
@@ -123,25 +138,28 @@ export default function MarketClient() {
               onChange={setQ}
               className="min-w-[260px]"
             />
+
             <div className="flex items-center gap-2">
               <span className="text-sm opacity-80">Rows:</span>
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(parseInt(e.target.value))}
                 className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                aria-label="Rows per page"
               >
-                {[10, 25, 50].map((n) => (
+                {[10, 25, 50, 100].map((n) => (
                   <option key={n} value={n}>
                     {n}
                   </option>
                 ))}
               </select>
+
+              <SortDropdown
+                value={sortBy}
+                onChange={setSortBy}
+                options={marketSortOptions}
+              />
             </div>
-            <SortDropdown
-              value={sortBy}
-              onChange={setSortBy}
-              options={marketSortOptions}
-            />
           </div>
         </div>
 
