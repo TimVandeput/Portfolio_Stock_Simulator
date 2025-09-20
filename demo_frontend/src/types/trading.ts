@@ -44,6 +44,7 @@ export interface PortfolioSummaryDTO {
 
 export interface Transaction {
   id: number;
+  userId?: number;
   symbol: string;
   symbolName: string;
   quantity: number;

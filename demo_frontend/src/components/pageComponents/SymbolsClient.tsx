@@ -12,7 +12,6 @@ import {
   setSymbolEnabled,
 } from "@/lib/api/symbols";
 import type { Universe, SymbolDTO, ImportSummaryDTO } from "@/types/symbol";
-import type { Page } from "@/types/pagination";
 
 import UniverseImportBar from "@/components/button/UniverseImportBar";
 import FiltersBar from "@/components/ui/FiltersBar";

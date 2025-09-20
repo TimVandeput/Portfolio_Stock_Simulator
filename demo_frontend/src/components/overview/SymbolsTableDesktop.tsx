@@ -4,7 +4,6 @@ import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-import TableHeader from "@/components/ui/TableHeader";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import type {
   SymbolsTableDesktopProps,
@@ -110,12 +109,54 @@ export default function SymbolsTableDesktop({
 
   return (
     <div className="space-y-4">
-      <TableHeader columns={getColumns()} />
-
       <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-fixed">
-            <colgroup>{colEls}</colgroup>
+          <table className="w-full text-sm min-w-[700px]">
+            <thead className="border-b border-[var(--accent)]/20">
+              <tr>
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[80px]">
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap">Symbol</span>
+                  </div>
+                </th>
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] min-w-[150px]">
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap">Name</span>
+                  </div>
+                </th>
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[100px]">
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap">Exchange</span>
+                  </div>
+                </th>
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[70px]">
+                  <div className="flex items-center gap-2">
+                    <span className="whitespace-nowrap">Currency</span>
+                  </div>
+                </th>
+                {isMarket && (
+                  <>
+                    <th className="px-3 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[90px]">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="whitespace-nowrap">Last</span>
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[90px]">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="whitespace-nowrap">% Chg</span>
+                      </div>
+                    </th>
+                  </>
+                )}
+                <th className="px-3 py-3 text-center text-sm font-medium text-[var(--text-primary)] w-[120px]">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="whitespace-nowrap">
+                      {isAdmin ? "Enabled" : "Actions"}
+                    </span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
 
             <tbody>
               {page?.content?.length === 0 && (
@@ -151,33 +192,33 @@ export default function SymbolsTableDesktop({
                     }`}
                   >
                     <td
-                      className="px-4 py-3 font-semibold whitespace-nowrap"
+                      className="px-3 py-3 font-semibold whitespace-nowrap w-[80px]"
                       title={row.symbol}
                     >
                       {row.symbol}
                     </td>
 
-                    <td className="px-4 py-3 max-w-0">
+                    <td className="px-3 py-3 min-w-[150px]">
                       <span className="block truncate" title={row.name}>
                         {row.name}
                       </span>
                     </td>
 
                     <td
-                      className="px-4 py-3 whitespace-nowrap"
+                      className="px-3 py-3 whitespace-nowrap w-[100px]"
                       title={row.exchange}
                     >
                       {row.exchange}
                     </td>
 
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-3 py-3 whitespace-nowrap w-[70px]">
                       {row.currency}
                     </td>
 
                     {isMarket && (
                       <>
                         <td
-                          className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
+                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 w-[90px] ${
                             isPulsing
                               ? "text-amber-600 dark:text-amber-400"
                               : "text-amber-500"
@@ -186,7 +227,7 @@ export default function SymbolsTableDesktop({
                           {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                         </td>
                         <td
-                          className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
+                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 w-[90px] ${pcClass}`}
                           title={pc !== 0 ? `${pc}%` : undefined}
                         >
                           {p.percentChange !== undefined
@@ -201,7 +242,7 @@ export default function SymbolsTableDesktop({
                       </>
                     )}
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 w-[120px]">
                       <div className="flex items-center justify-center gap-2">
                         {isAdmin && row.inUse && (
                           <span className="px-2 py-0.5 text-[11px] rounded-full border flex items-center gap-1">
