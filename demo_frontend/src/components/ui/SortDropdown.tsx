@@ -1,23 +1,13 @@
 "use client";
 
-type SortOption = {
-  value: string;
-  label: string;
-};
-
-type Props = {
-  value: string;
-  onChange: (value: string) => void;
-  options: SortOption[];
-  className?: string;
-};
+import type { SortDropdownProps, SortOption } from "@/types/components";
 
 export default function SortDropdown({
   value,
   onChange,
   options,
   className = "",
-}: Props) {
+}: SortDropdownProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <span className="text-sm opacity-80">Sort:</span>

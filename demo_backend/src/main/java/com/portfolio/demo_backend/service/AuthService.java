@@ -1,15 +1,15 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.AuthResponse;
-import com.portfolio.demo_backend.dto.LoginRequest;
-import com.portfolio.demo_backend.dto.RefreshRequest;
-import com.portfolio.demo_backend.dto.RegisterRequest;
-import com.portfolio.demo_backend.dto.RegistrationResponse;
+import com.portfolio.demo_backend.dto.auth.AuthResponse;
+import com.portfolio.demo_backend.dto.auth.LoginRequest;
+import com.portfolio.demo_backend.dto.auth.RefreshRequest;
+import com.portfolio.demo_backend.dto.auth.RegisterRequest;
+import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.model.RefreshToken;
-import com.portfolio.demo_backend.model.Role;
+import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
 import com.portfolio.demo_backend.security.JwtService;
@@ -58,7 +58,7 @@ public class AuthService {
             throw new RoleNotAssignedException(chosen.name());
         }
 
-        String access = jwtService.generateAccessToken(user.getUsername(), chosen);
+        String access = jwtService.generateAccessToken(user.getUsername(), user.getId(), chosen);
         RefreshToken refresh = refreshTokenService.create(user);
         refreshTokenService.setAuthenticatedAs(refresh.getToken(), chosen);
 
@@ -75,7 +75,8 @@ public class AuthService {
         }
         RefreshToken fresh = refreshTokenService.rotate(old);
         Role authenticatedAs = fresh.getAuthenticatedAs() != null ? fresh.getAuthenticatedAs() : Role.ROLE_USER;
-        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), authenticatedAs);
+        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(),
+                authenticatedAs);
         return new AuthResponse(access, fresh.getToken(), "Bearer",
                 fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
     }

@@ -2,6 +2,7 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.RefreshToken;
 import com.portfolio.demo_backend.model.User;
+import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class RefreshTokenService {
 
     private final long refreshTtlMs = 7L * 24 * 60 * 60 * 1000;
 
-    public RefreshToken create(User user, com.portfolio.demo_backend.model.Role authenticatedAs) {
+    public RefreshToken create(User user, Role authenticatedAs) {
         String token = randomToken();
         Instant expires = Instant.now().plusMillis(refreshTtlMs);
         RefreshToken rt = RefreshToken.builder()
@@ -32,17 +33,17 @@ public class RefreshTokenService {
     }
 
     public RefreshToken create(User user) {
-        return create(user, com.portfolio.demo_backend.model.Role.ROLE_USER);
+        return create(user, Role.ROLE_USER);
     }
 
     public RefreshToken rotate(RefreshToken old) {
         old.setRevoked(true);
         refreshTokenRepository.save(old);
-        com.portfolio.demo_backend.model.Role auth = old.getAuthenticatedAs();
-        return create(old.getUser(), auth != null ? auth : com.portfolio.demo_backend.model.Role.ROLE_USER);
+        Role auth = old.getAuthenticatedAs();
+        return create(old.getUser(), auth != null ? auth : Role.ROLE_USER);
     }
 
-    public void setAuthenticatedAs(String token, com.portfolio.demo_backend.model.Role role) {
+    public void setAuthenticatedAs(String token, Role role) {
         refreshTokenRepository.findByToken(token).ifPresent(rt -> {
             rt.setAuthenticatedAs(role);
             refreshTokenRepository.save(rt);

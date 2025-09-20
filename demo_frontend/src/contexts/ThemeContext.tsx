@@ -1,11 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-
-interface ThemeContextType {
-  isDark: boolean;
-  toggleTheme: () => void;
-}
+import type { ThemeContextType } from "@/types/theme";
+import { getCookie, setCookie } from "@/lib/utils/cookies";
 
 const ThemeContext = createContext<ThemeContextType>({
   isDark: false,
@@ -16,8 +13,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    const match = document.cookie.match(/theme=(dark|light)/);
-    const savedTheme = match ? match[1] : "light";
+    const savedTheme = getCookie("theme") || "light";
     if (savedTheme === "dark") {
       setIsDark(true);
       document.documentElement.classList.add("dark");
@@ -43,10 +39,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     if (newIsDark) {
       document.documentElement.classList.add("dark");
-      document.cookie = "theme=dark; path=/";
+      setCookie("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      document.cookie = "theme=light; path=/";
+      setCookie("theme", "light");
     }
 
     setTimeout(() => {

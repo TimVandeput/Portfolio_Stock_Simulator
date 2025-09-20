@@ -2,14 +2,7 @@
 
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import type { Universe } from "@/types/symbol";
-
-type Props = {
-  universe: Universe;
-  setUniverse: (u: Universe) => void;
-  onImport: () => void;
-  importBusy: boolean;
-  importRunning: boolean;
-};
+import type { UniverseImportBarProps } from "@/types/components";
 
 export default function UniverseImportBar({
   universe,
@@ -17,7 +10,7 @@ export default function UniverseImportBar({
   onImport,
   importBusy,
   importRunning,
-}: Props) {
+}: UniverseImportBarProps) {
   const disabled = importBusy || importRunning;
 
   return (

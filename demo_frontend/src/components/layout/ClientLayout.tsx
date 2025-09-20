@@ -7,13 +7,16 @@ import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
 import CursorTrail from "@/components/effects/CursorTrail";
 import RotationPrompt from "@/components/ui/RotationPrompt";
+import NoAccessModal from "@/components/ui/NoAccessModal";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { logout } from "@/lib/api/auth";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
+import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
+import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
 
 export default function ClientLayout({
   children,
@@ -22,6 +25,12 @@ export default function ClientLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const {
+    showModal: showAccessModal,
+    setShowModal: setShowAccessModal,
+    accessError,
+  } = useLayoutAccessControl();
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -52,12 +61,6 @@ export default function ClientLayout({
   };
 
   useEffect(() => {
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-      return undefined;
-    };
     const cookieValue = getCookie("cursorTrailEnabled");
     if (cookieValue === "true") {
       setCursorTrailEnabled(true);
@@ -88,9 +91,9 @@ export default function ClientLayout({
 
   useEffect(() => {
     if (!isMobile) {
-      document.cookie = `cursorTrailEnabled=${String(
-        cursorTrailEnabled
-      )}; path=/; max-age=${60 * 60 * 24 * 365}`;
+      setCookie("cursorTrailEnabled", String(cursorTrailEnabled), {
+        days: 365,
+      });
     }
   }, [cursorTrailEnabled, isMobile]);
 
@@ -116,7 +119,14 @@ export default function ClientLayout({
 
         <main className="flex-1 w-full overflow-y-auto flex flex-col">
           <div className="relative w-full min-h-full flex flex-col items-center justify-center flex-1">
-            {showConfirmation ? (
+            {showAccessModal ? (
+              <NoAccessModal
+                isOpen={showAccessModal}
+                accessType={accessError?.reason}
+                message={accessError?.message || "Access denied"}
+                onClose={() => setShowAccessModal(false)}
+              />
+            ) : showConfirmation ? (
               <ConfirmationModal
                 isOpen={showConfirmation}
                 title="Confirm Logout"

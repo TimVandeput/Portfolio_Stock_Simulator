@@ -1,12 +1,6 @@
 "use client";
 
-import type { Role } from "@/types";
-
-interface RoleSelectorProps {
-  selectedRole: Role;
-  onRoleChange: (role: Role) => void;
-  className?: string;
-}
+import type { Role, RoleSelectorProps } from "@/types";
 
 export default function RoleSelector({
   selectedRole,

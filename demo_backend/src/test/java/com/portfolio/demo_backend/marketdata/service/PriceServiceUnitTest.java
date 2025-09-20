@@ -4,7 +4,7 @@ import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
-import com.portfolio.demo_backend.model.SymbolEntity;
+import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +34,9 @@ class PriceServiceUnitTest {
 
     @Test
     void getAllCurrentPrices_success_returnsQuoteMap() throws IOException {
-        SymbolEntity symbol1 = createSymbolEntity("AAPL", "Apple Inc", true);
-        SymbolEntity symbol2 = createSymbolEntity("MSFT", "Microsoft", true);
-        SymbolEntity symbol3 = createSymbolEntity("GOOGL", "Google", false); // disabled
+        Symbol symbol1 = createSymbol("AAPL", "Apple Inc", true);
+        Symbol symbol2 = createSymbol("MSFT", "Microsoft", true);
+        Symbol symbol3 = createSymbol("GOOGL", "Google", false); // disabled
 
         when(symbolRepository.findAll()).thenReturn(List.of(symbol1, symbol2, symbol3));
 
@@ -58,7 +58,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getAllCurrentPrices_noEnabledSymbols_returnsEmptyMap() {
-        SymbolEntity disabledSymbol = createSymbolEntity("AAPL", "Apple Inc", false);
+        Symbol disabledSymbol = createSymbol("AAPL", "Apple Inc", false);
         when(symbolRepository.findAll()).thenReturn(List.of(disabledSymbol));
 
         Map<String, YahooQuoteDTO> result = priceService.getAllCurrentPrices();
@@ -79,7 +79,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getAllCurrentPrices_rapidApiRateLimitException_propagatesException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findAll()).thenReturn(List.of(symbol));
         when(rapidApiClient.getQuotes(List.of("AAPL"))).thenThrow(new ApiRateLimitException("RapidAPI Yahoo Finance"));
 
@@ -90,7 +90,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getAllCurrentPrices_rapidApiMarketDataException_propagatesException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findAll()).thenReturn(List.of(symbol));
         when(rapidApiClient.getQuotes(List.of("AAPL")))
                 .thenThrow(new MarketDataUnavailableException("RapidAPI Yahoo Finance", "Server error"));
@@ -102,7 +102,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getAllCurrentPrices_rapidApiIOException_wrapsInMarketDataException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findAll()).thenReturn(List.of(symbol));
         when(rapidApiClient.getQuotes(List.of("AAPL"))).thenThrow(new IOException("Connection timeout"));
 
@@ -114,7 +114,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_success_returnsQuoteDTO() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(symbol));
 
         RapidApiClient.Quote quote = createQuote("AAPL", 150.0, 2.5, 1.69);
@@ -142,7 +142,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_symbolDisabled_returnsNull() {
-        SymbolEntity disabledSymbol = createSymbolEntity("AAPL", "Apple Inc", false);
+        Symbol disabledSymbol = createSymbol("AAPL", "Apple Inc", false);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(disabledSymbol));
 
         YahooQuoteDTO result = priceService.getCurrentPrice("AAPL");
@@ -153,7 +153,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_rapidApiReturnsNull_returnsNull() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(symbol));
         when(rapidApiClient.getQuote("AAPL")).thenReturn(null);
 
@@ -164,7 +164,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_rapidApiRateLimitException_propagatesException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(symbol));
         when(rapidApiClient.getQuote("AAPL")).thenThrow(new ApiRateLimitException("RapidAPI Yahoo Finance"));
 
@@ -175,7 +175,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_rapidApiMarketDataException_propagatesException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(symbol));
         when(rapidApiClient.getQuote("AAPL"))
                 .thenThrow(new MarketDataUnavailableException("RapidAPI Yahoo Finance", "Server error"));
@@ -187,7 +187,7 @@ class PriceServiceUnitTest {
 
     @Test
     void getCurrentPrice_rapidApiIOException_wrapsInMarketDataException() throws IOException {
-        SymbolEntity symbol = createSymbolEntity("AAPL", "Apple Inc", true);
+        Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(symbol));
         when(rapidApiClient.getQuote("AAPL")).thenThrow(new IOException("Connection timeout"));
 
@@ -197,8 +197,8 @@ class PriceServiceUnitTest {
                 .hasMessageContaining("Connection timeout");
     }
 
-    private SymbolEntity createSymbolEntity(String symbol, String name, boolean enabled) {
-        SymbolEntity entity = new SymbolEntity();
+    private Symbol createSymbol(String symbol, String name, boolean enabled) {
+        Symbol entity = new Symbol();
         entity.setId(1L);
         entity.setSymbol(symbol);
         entity.setName(name);

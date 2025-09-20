@@ -11,17 +11,25 @@ import {
   HelpCircle,
   Users,
   Receipt,
+  ArrowLeft,
+  DollarSign,
+  AlertCircle,
 } from "lucide-react";
 
 interface DynamicIconProps {
   iconName: string;
   className?: string;
   style?: React.CSSProperties;
+  size?: number;
 }
 
 const iconMap: Record<
   string,
-  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+  React.ComponentType<{
+    className?: string;
+    style?: React.CSSProperties;
+    size?: number;
+  }>
 > = {
   home: Home,
   activity: Activity,
@@ -34,17 +42,22 @@ const iconMap: Record<
   help: HelpCircle,
   users: Users,
   receipt: Receipt,
+  arrowleft: ArrowLeft,
+  dollarsign: DollarSign,
+  alertcircle: AlertCircle,
 };
 
-const DynamicIcon = memo(({ iconName, className, style }: DynamicIconProps) => {
-  const IconComponent = iconMap[iconName.toLowerCase()];
+const DynamicIcon = memo(
+  ({ iconName, className, style, size }: DynamicIconProps) => {
+    const IconComponent = iconMap[iconName.toLowerCase()];
 
-  if (!IconComponent) {
-    return null;
+    if (!IconComponent) {
+      return null;
+    }
+
+    return <IconComponent className={className} style={style} size={size} />;
   }
-
-  return <IconComponent className={className} style={style} />;
-});
+);
 
 DynamicIcon.displayName = "DynamicIcon";
 

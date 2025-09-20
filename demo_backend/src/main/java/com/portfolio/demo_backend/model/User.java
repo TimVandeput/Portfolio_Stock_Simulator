@@ -2,7 +2,9 @@ package com.portfolio.demo_backend.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
+import com.portfolio.demo_backend.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -37,5 +39,14 @@ public class User {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Wallet wallet;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Portfolio> portfolios;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> transactions;
 
 }

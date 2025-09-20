@@ -1,22 +1,13 @@
-import type { PriceEvent } from "@/types";
+import type {
+  PriceEvent,
+  StreamHandlers,
+  StreamController,
+} from "@/types/stream";
 import { getCookie } from "@/lib/utils/cookies";
-
-type Handlers = {
-  onPrice?: (event: PriceEvent) => void;
-  onHeartbeat?: (event: PriceEvent) => void;
-  onOpen?: (ev: Event) => void;
-  onError?: (ev: Event) => void;
-  onClose?: () => void;
-};
-
-export type StreamController = {
-  close: () => void;
-  readyState: () => number;
-};
 
 export function openPriceStream(
   symbols: string[],
-  handlers: Handlers = {}
+  handlers: StreamHandlers = {}
 ): StreamController {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
   const mkUrl = () => {

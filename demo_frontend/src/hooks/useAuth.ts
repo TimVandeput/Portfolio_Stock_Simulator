@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken, getAuthenticatedAs } from "@/lib/auth/tokenStorage";
 import type { Role } from "@/types";
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  role: Role | null;
-  isLoading: boolean;
-}
+import type { AuthState, AccessControlConfig } from "@/types/hooks";
 
 export function useAuth(): AuthState {
   const [authState, setAuthState] = useState<AuthState>({
@@ -30,18 +25,24 @@ export function useAuth(): AuthState {
 
     checkAuth();
 
-    const interval = setInterval(checkAuth, 1000);
+    const handleStorageChange = () => {
+      checkAuth();
+    };
 
-    return () => clearInterval(interval);
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChanged", handleAuthChange);
+    };
   }, []);
 
   return authState;
-}
-
-export interface AccessControlConfig {
-  requireAuth: boolean;
-  allowedRoles?: Role[];
-  redirectTo?: string;
 }
 
 export function useAccessControl(config: AccessControlConfig) {
@@ -57,7 +58,8 @@ export function useAccessControl(config: AccessControlConfig) {
       return {
         allowed: false,
         reason: "login",
-        message: "You need to log in to access this page.",
+        message:
+          "Please log in to access this page. Your session may have expired.",
       };
     }
 
@@ -79,7 +81,16 @@ export function useAccessControl(config: AccessControlConfig) {
   const accessResult = hasAccess();
 
   useEffect(() => {
+    console.log("🔒 useAccessControl effect:", {
+      "auth.isLoading": auth.isLoading,
+      "accessResult.allowed": accessResult.allowed,
+      "config.redirectTo": config.redirectTo,
+      "will redirect":
+        !auth.isLoading && !accessResult.allowed && config.redirectTo,
+    });
+
     if (!auth.isLoading && !accessResult.allowed && config.redirectTo) {
+      console.log("🔄 Auto-redirecting to:", config.redirectTo);
       router.push(config.redirectTo);
     }
   }, [auth.isLoading, accessResult.allowed, config.redirectTo, router]);

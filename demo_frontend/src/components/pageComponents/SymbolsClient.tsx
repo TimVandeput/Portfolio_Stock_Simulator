@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useAccessControl } from "@/hooks/useAuth";
-import NoAccessModal from "@/components/ui/NoAccessModal";
+import { useMemo, useCallback, useState } from "react";
+import { useImportStatus } from "@/hooks/useImportStatus";
+import { usePagedData } from "@/hooks/usePagedData";
+import { useAuth } from "@/hooks/useAuth";
 import StatusMessage from "@/components/status/StatusMessage";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
-import { getCookie } from "@/lib/utils/cookies";
 import {
-  getImportStatus,
   importSymbols,
   listSymbols,
   setSymbolEnabled,
@@ -23,118 +22,64 @@ import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
 
 export default function SymbolsClient() {
-  const [showModal, setShowModal] = useState(false);
-  const { isLoading, hasAccess, accessError } = useAccessControl({
-    requireAuth: true,
-    allowedRoles: ["ROLE_ADMIN"],
-  });
-
-  useEffect(() => {
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
-  }, []);
-
-  useEffect(() => {
-    setShowModal(!isLoading && !hasAccess && !!accessError);
-  }, [isLoading, hasAccess, accessError]);
-
+  const { isAuthenticated, role, isLoading } = useAuth();
   const [universe, setUniverse] = useState<Universe>("NDX");
-  const [q, setQ] = useState("");
   const [enabledFilter, setEnabledFilter] = useState<
     "all" | "enabled" | "disabled"
   >("all");
-  const [pageIdx, setPageIdx] = useState(0);
-  const [pageSize, setPageSize] = useState(25);
-  const [sortBy, setSortBy] = useState<string>("symbol");
 
-  const [page, setPage] = useState<Page<SymbolDTO> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const hasAdminAccess = isAuthenticated && role === "ROLE_ADMIN";
+  const shouldDisableDataFetching = isLoading || !hasAdminAccess;
 
-  const [importRunning, setImportRunning] = useState(false);
-  const [lastImportedAt, setLastImportedAt] = useState<string | null>(null);
-  const [lastSummary, setLastSummary] = useState<ImportSummaryDTO | null>(null);
-
-  const [importBusy, setImportBusy] = useState(false);
-
-  useEffect(() => {
-    if (isLoading || !hasAccess) return;
-    const as = getCookie("auth.as");
-    if (as !== "ROLE_ADMIN") return;
-
-    let timer: any;
-    let stop = false;
-
-    async function poll() {
-      try {
-        const s = await getImportStatus();
-        if (stop) return;
-        setImportRunning(!!s.running);
-        setLastImportedAt(s.lastImportedAt ?? null);
-        setLastSummary(s.lastSummary ?? null);
-      } catch {
-        // ignore
-      } finally {
-        // polling: 10s if import is running, 60s if not running
-        const nextPoll = importRunning ? 10000 : 60000;
-        if (!stop) timer = setTimeout(poll, nextPoll);
-      }
-    }
-
-    poll();
-    return () => {
-      stop = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [isLoading, hasAccess, importRunning]);
-
-  const qRef = useRef(q);
-  useEffect(() => {
-    qRef.current = q;
-  }, [q]);
-
-  const fetchPage = useCallback(
-    async (idx: number) => {
-      setError("");
-      setLoading(true);
-      try {
-        const res = await listSymbols({
-          q: qRef.current.trim() || undefined,
-          enabled:
-            enabledFilter === "all" ? undefined : enabledFilter === "enabled",
-          page: idx,
-          size: pageSize,
-        });
-        setPage(res);
-        setPageIdx(idx);
-      } catch (e) {
-        setError(getErrorMessage(e) || "Failed to load symbols.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchFn = useCallback(
+    async ({ q, page, size }: { q?: string; page: number; size: number }) => {
+      const res = await listSymbols({
+        q: q || undefined,
+        enabled:
+          enabledFilter === "all" ? undefined : enabledFilter === "enabled",
+        page,
+        size,
+      });
+      return res;
     },
-    [enabledFilter, pageSize]
+    [enabledFilter]
   );
 
-  useEffect(() => {
-    if (hasAccess) fetchPage(0);
-  }, [hasAccess, fetchPage]);
+  const additionalParams = useMemo(() => ({ enabledFilter }), [enabledFilter]);
 
-  useEffect(() => {
-    if (!hasAccess) return;
-    fetchPage(0);
-  }, [enabledFilter, pageSize, hasAccess, fetchPage]);
+  const {
+    page,
+    loading,
+    error,
+    q,
+    setQ,
+    pageIdx,
+    pageSize,
+    setPageSize,
+    sortBy,
+    setSortBy,
+    totalPages,
+    totalElements,
+    fetchPage,
+    setPage,
+    setError,
+  } = usePagedData<SymbolDTO>({
+    fetchFn,
+    additionalParams,
+    errorPrefix: "Failed to load symbols",
+    disabled: shouldDisableDataFetching,
+  });
 
-  useEffect(() => {
-    if (!hasAccess) return;
-    const t = setTimeout(() => fetchPage(0), 350);
-    return () => clearTimeout(t);
-  }, [q, hasAccess, fetchPage]);
+  const importStatus = useImportStatus();
+  const importRunning = importStatus?.running || false;
+  const lastImportedAt = importStatus?.lastImportedAt || null;
+  const lastSummary = importStatus?.lastSummary || null;
+
+  const [importBusy, setImportBusy] = useState(false);
 
   const onImport = useCallback(async () => {
     setError("");
     setImportBusy(true);
-    setImportRunning(true);
     try {
       await importSymbols(universe);
       await fetchPage(0);
@@ -143,7 +88,7 @@ export default function SymbolsClient() {
     } finally {
       setImportBusy(false);
     }
-  }, [universe, fetchPage]);
+  }, [universe, fetchPage, setError]);
 
   const onToggle = useCallback(
     async (row: SymbolDTO, next: boolean) => {
@@ -186,11 +131,8 @@ export default function SymbolsClient() {
         setError(getErrorMessage(e) || "Failed to update symbol.");
       }
     },
-    [enabledFilter, pageIdx, page, fetchPage]
+    [enabledFilter, pageIdx, page, fetchPage, setError, setPage]
   );
-
-  const totalPages = page?.totalPages ?? 0;
-  const totalElements = page?.totalElements ?? 0;
 
   const sortOptions = [
     { value: "symbol", label: "Symbol" },
@@ -221,74 +163,57 @@ export default function SymbolsClient() {
   }, [page, sortBy]);
 
   return (
-    <>
-      {showModal ? (
-        <NoAccessModal
-          isOpen={showModal}
-          accessType={accessError?.reason}
-          message={accessError?.message || "Access denied"}
-          onClose={() => setShowModal(false)}
-        />
-      ) : (
-        <div className="symbols-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
-          <div className="symbols-card page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-              <h1 className="page-title text-2xl sm:text-3xl font-bold">
-                SYMBOLS
-              </h1>
-              <UniverseImportBar
-                universe={universe}
-                setUniverse={setUniverse}
-                onImport={onImport}
-                importBusy={importBusy}
-                importRunning={importRunning}
-              />
-            </div>
-
-            <SymbolsMeta
-              lastImportedAt={lastImportedAt}
-              lastSummary={lastSummary}
-            />
-
-            <FiltersBar
-              q={q}
-              setQ={setQ}
-              enabledFilter={enabledFilter}
-              setEnabledFilter={setEnabledFilter}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortOptions={sortOptions}
-            />
-
-            <div className="min-h-[28px] mb-1">
-              {error && <StatusMessage message={error} />}
-            </div>
-
-            <SymbolsTableDesktop
-              page={sortedPage}
-              mode="admin"
-              onToggle={onToggle}
-            />
-            <SymbolsListMobile
-              page={sortedPage}
-              mode="admin"
-              onToggle={onToggle}
-            />
-
-            <SymbolsPagination
-              pageIdx={pageIdx}
-              totalPages={totalPages}
-              totalElements={totalElements}
-              loading={loading}
-              onPrev={() => fetchPage(pageIdx - 1)}
-              onNext={() => fetchPage(pageIdx + 1)}
-              onGoto={(idx) => fetchPage(idx)}
-            />
-          </div>
+    <div className="symbols-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
+      <div className="symbols-card page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <h1 className="page-title text-2xl sm:text-3xl font-bold">SYMBOLS</h1>
+          <UniverseImportBar
+            universe={universe}
+            setUniverse={setUniverse}
+            onImport={onImport}
+            importBusy={importBusy}
+            importRunning={importRunning}
+          />
         </div>
-      )}
-    </>
+
+        <SymbolsMeta
+          lastImportedAt={lastImportedAt}
+          lastSummary={lastSummary}
+        />
+
+        <FiltersBar
+          q={q}
+          setQ={setQ}
+          enabledFilter={enabledFilter}
+          setEnabledFilter={setEnabledFilter}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortOptions={sortOptions}
+        />
+
+        <div className="min-h-[28px] mb-1">
+          {error && <StatusMessage message={error} />}
+        </div>
+
+        <SymbolsTableDesktop
+          page={sortedPage}
+          mode="admin"
+          onToggle={onToggle}
+        />
+        <SymbolsListMobile page={sortedPage} mode="admin" onToggle={onToggle} />
+
+        <SymbolsPagination
+          pageIdx={pageIdx}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          loading={loading}
+          onPrev={() => fetchPage(pageIdx - 1)}
+          onNext={() => fetchPage(pageIdx + 1)}
+          onGoto={(idx) => fetchPage(idx)}
+        />
+      </div>
+    </div>
   );
 }

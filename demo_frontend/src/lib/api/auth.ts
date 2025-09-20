@@ -5,7 +5,11 @@ import type {
   AuthResponse,
 } from "@/types";
 import { HttpClient } from "@/lib/api/http";
-import { setTokens, clearTokens } from "@/lib/auth/tokenStorage";
+import {
+  setTokens,
+  clearTokens,
+  getUserIdFromToken,
+} from "@/lib/auth/tokenStorage";
 import { getCookie, removeCookie } from "../utils/cookies";
 
 const client = new HttpClient();
@@ -18,11 +22,22 @@ export async function register(
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
   const res = await client.post<AuthResponse>("/api/auth/login", data);
+
+  let extractedUserId = null;
+  try {
+    const payload = JSON.parse(atob(res.accessToken.split(".")[1]));
+    extractedUserId = payload.userId || null;
+  } catch (tokenError) {
+    console.error("Failed to extract userId:", tokenError);
+  }
+
   setTokens({
     accessToken: res.accessToken,
     refreshToken: res.refreshToken,
     authenticatedAs: res.authenticatedAs,
+    userId: extractedUserId ?? undefined,
   });
+
   return res;
 }
 
