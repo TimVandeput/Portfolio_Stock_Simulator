@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/lib/utils/errorHandling";
 import TransactionsTableDesktop from "@/components/overview/TransactionsTableDesktop";
 import TransactionsListMobile from "@/components/overview/TransactionsListMobile";
 import StatusMessage from "@/components/status/StatusMessage";
-import DynamicIcon from "@/components/ui/DynamicIcon";
+import TransactionStats from "@/components/status/TransactionStats";
 import type { Transaction } from "@/types/trading";
 
 export default function OrdersClient() {
@@ -57,38 +57,7 @@ export default function OrdersClient() {
         </div>
 
         {!loading && !error && transactions.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="neu-card p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-[var(--text-secondary)]">
-                  Total Transactions
-                </span>
-              </div>
-              <span className="text-2xl font-bold">{transactions.length}</span>
-            </div>
-
-            <div className="neu-card p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-[var(--text-secondary)]">
-                  Buy Orders
-                </span>
-              </div>
-              <span className="text-2xl font-bold text-emerald-600">
-                {transactions.filter((t) => t.type === "BUY").length}
-              </span>
-            </div>
-
-            <div className="neu-card p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-[var(--text-secondary)]">
-                  Sell Orders
-                </span>
-              </div>
-              <span className="text-2xl font-bold text-rose-600">
-                {transactions.filter((t) => t.type === "SELL").length}
-              </span>
-            </div>
-          </div>
+          <TransactionStats transactions={transactions} />
         )}
 
         <TransactionsTableDesktop

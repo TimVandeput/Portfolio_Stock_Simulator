@@ -85,45 +85,45 @@ export default function TransactionsTableDesktop({
   return (
     <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full text-sm min-w-[800px]">
           <thead className="border-b border-[var(--accent)]/20">
             <tr>
-              <th className="px-2 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[60px]">
+              <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[100px]">
                 <div className="flex items-center gap-1">
                   <span className="whitespace-nowrap">Date</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[45px]">
+              <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[80px]">
                 <div className="flex items-center gap-1">
                   <span className="whitespace-nowrap">Symbol</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-left text-sm font-medium text-[var(--text-primary)]">
+              <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)]">
                 <div className="flex items-center gap-1">
                   <span className="whitespace-nowrap">Name</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[45px]">
+              <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[80px]">
                 <div className="flex items-center gap-1">
                   <span className="whitespace-nowrap">Type</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[40px]">
+              <th className="px-4 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[80px]">
                 <div className="flex items-center justify-end gap-1">
                   <span className="whitespace-nowrap">Qty</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[50px]">
+              <th className="px-4 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[90px]">
                 <div className="flex items-center justify-end gap-1">
                   <span className="whitespace-nowrap">Price</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[60px]">
+              <th className="px-4 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[100px]">
                 <div className="flex items-center justify-end gap-1">
                   <span className="whitespace-nowrap">Total</span>
                 </div>
               </th>
-              <th className="px-2 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[45px]">
+              <th className="px-4 py-3 text-right text-sm font-medium text-[var(--text-primary)] w-[90px]">
                 <div className="flex items-center justify-end gap-1">
                   <span className="whitespace-nowrap">P&L</span>
                 </div>
@@ -156,7 +156,7 @@ export default function TransactionsTableDesktop({
                   key={transaction.id}
                   className="border-t hover:bg-[var(--accent)]/5 transition-colors"
                 >
-                  <td className="px-2 py-3 whitespace-nowrap w-[60px]">
+                  <td className="px-4 py-3 whitespace-nowrap w-[100px]">
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
                         {formatDate(transaction.executedAt)}
@@ -168,13 +168,13 @@ export default function TransactionsTableDesktop({
                   </td>
 
                   <td
-                    className="px-2 py-3 font-semibold whitespace-nowrap w-[45px]"
+                    className="px-4 py-3 font-semibold whitespace-nowrap w-[80px]"
                     title={transaction.symbol}
                   >
                     {transaction.symbol}
                   </td>
 
-                  <td className="px-2 py-3 max-w-0">
+                  <td className="px-4 py-3 max-w-0">
                     <span
                       className="block truncate"
                       title={transaction.symbolName}
@@ -183,7 +183,7 @@ export default function TransactionsTableDesktop({
                     </span>
                   </td>
 
-                  <td className="px-2 py-3 w-[45px]">
+                  <td className="px-4 py-3 w-[80px]">
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${
                         transaction.type === "BUY"
@@ -208,19 +208,19 @@ export default function TransactionsTableDesktop({
                     </span>
                   </td>
 
-                  <td className="px-2 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[40px]">
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[80px]">
                     {transaction.quantity.toLocaleString()}
                   </td>
 
-                  <td className="px-2 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[50px]">
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[90px]">
                     ${transaction.pricePerShare.toFixed(2)}
                   </td>
 
-                  <td className="px-2 py-3 text-right font-mono font-medium tabular-nums text-sm whitespace-nowrap w-[60px]">
+                  <td className="px-4 py-3 text-right font-mono font-medium tabular-nums text-sm whitespace-nowrap w-[100px]">
                     ${transaction.totalAmount.toFixed(2)}
                   </td>
 
-                  <td className="px-2 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[45px]">
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-sm whitespace-nowrap w-[90px]">
                     {profitLoss !== null ? (
                       <span
                         className={`font-medium ${
