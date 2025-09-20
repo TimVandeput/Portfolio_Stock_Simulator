@@ -94,7 +94,7 @@ class AuthServiceUnitTest {
         User u = user("alice", EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN), "$2aHash");
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(u));
         when(passwordEncoder.matches("Plain123", "$2aHash")).thenReturn(true);
-        when(jwtService.generateAccessToken("alice", Role.ROLE_USER)).thenReturn("jwt-access");
+        when(jwtService.generateAccessToken("alice", 42L, Role.ROLE_USER)).thenReturn("jwt-access");
         when(refreshTokenService.create(u)).thenReturn(
                 RefreshToken.builder().token("refresh-1").user(u).build());
 
@@ -163,7 +163,7 @@ class AuthServiceUnitTest {
 
         when(refreshTokenService.validateUsable("old")).thenReturn(old);
         when(refreshTokenService.rotate(old)).thenReturn(fresh);
-        when(jwtService.generateAccessToken("dave", Role.ROLE_USER)).thenReturn("access-new");
+        when(jwtService.generateAccessToken("dave", 42L, Role.ROLE_USER)).thenReturn("access-new");
 
         AuthResponse out = authService.refresh(req);
 
