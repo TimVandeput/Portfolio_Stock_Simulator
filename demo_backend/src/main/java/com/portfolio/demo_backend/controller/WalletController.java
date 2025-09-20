@@ -17,12 +17,8 @@ public class WalletController {
 
     @GetMapping("/{userId}/balance")
     public ResponseEntity<WalletBalanceResponse> getWalletBalance(@PathVariable Long userId) {
-        var summary = walletService.getPortfolioSummary(userId);
-
-        return ResponseEntity.ok(new WalletBalanceResponse(
-                summary.getCashBalance(),
-                summary.getTotalMarketValue(),
-                summary.getTotalPortfolioValue()));
+        WalletBalanceResponse balance = walletService.getWalletBalance(userId);
+        return ResponseEntity.ok(balance);
     }
 
     @PostMapping("/{userId}/add-cash")

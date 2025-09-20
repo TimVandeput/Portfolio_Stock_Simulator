@@ -1,6 +1,7 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
+import com.portfolio.demo_backend.dto.wallet.WalletBalanceResponse;
 import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.repository.WalletRepository;
@@ -76,6 +77,16 @@ public class WalletService {
     public Wallet getUserWallet(Long userId, String username) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new WalletNotFoundException(username));
+    }
+
+    public WalletBalanceResponse getWalletBalance(Long userId) {
+        User user = userService.getUserById(userId);
+        Wallet wallet = getUserWallet(userId, user.getUsername());
+
+        return new WalletBalanceResponse(
+                wallet.getCashBalance(),
+                BigDecimal.ZERO,
+                wallet.getCashBalance());
     }
 
     private Map<String, BigDecimal> getCurrentPrices(List<String> symbols) {
