@@ -75,7 +75,8 @@ public class AuthService {
         }
         RefreshToken fresh = refreshTokenService.rotate(old);
         Role authenticatedAs = fresh.getAuthenticatedAs() != null ? fresh.getAuthenticatedAs() : Role.ROLE_USER;
-        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(), authenticatedAs);
+        String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(),
+                authenticatedAs);
         return new AuthResponse(access, fresh.getToken(), "Bearer",
                 fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
     }
