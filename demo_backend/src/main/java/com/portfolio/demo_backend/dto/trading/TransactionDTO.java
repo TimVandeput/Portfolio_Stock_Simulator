@@ -16,6 +16,7 @@ public class TransactionDTO {
     private Long userId;
     private TransactionType type;
     private String symbol;
+    private String symbolName;
     private Integer quantity;
     private BigDecimal pricePerShare;
     private BigDecimal totalAmount;

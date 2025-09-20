@@ -18,6 +18,7 @@ public class TransactionMapper {
                 transaction.getUserId(),
                 transaction.getType(),
                 transaction.getSymbol() != null ? transaction.getSymbol().getSymbol() : null,
+                transaction.getSymbol() != null ? transaction.getSymbol().getName() : null,
                 transaction.getQuantity(),
                 transaction.getPricePerShare(),
                 transaction.getTotalAmount(),
