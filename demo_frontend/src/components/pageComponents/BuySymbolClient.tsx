@@ -10,11 +10,11 @@ import { getUserId } from "@/lib/auth/tokenStorage";
 import StatusMessage from "@/components/status/StatusMessage";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import PriceCard from "@/components/trading/PriceCard";
-import WalletBalanceCard from "@/components/trading/WalletBalanceCard";
-import QuantityInput from "@/components/trading/QuantityInput";
+import PriceCard from "@/components/cards/PriceCard";
+import WalletBalanceCard from "@/components/cards/WalletBalanceCard";
+import QuantityInput from "@/components/input/QuantityInput";
 import OrderSummary from "@/components/trading/OrderSummary";
-import ValidationMessages from "@/components/trading/ValidationMessages";
+import ValidationMessages from "@/components/status/ValidationMessages";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";
 

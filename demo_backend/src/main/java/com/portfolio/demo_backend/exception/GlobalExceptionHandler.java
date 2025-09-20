@@ -6,6 +6,9 @@ import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationExcep
 import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
+import com.portfolio.demo_backend.exception.portfolio.PortfolioNotFoundException;
+import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
+import com.portfolio.demo_backend.exception.portfolio.PortfolioAccessException;
 import com.portfolio.demo_backend.exception.trading.*;
 
 import lombok.extern.slf4j.Slf4j;
@@ -147,6 +150,27 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(PortfolioNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handlePortfolioNotFound(PortfolioNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(PortfolioDataException.class)
+    public ResponseEntity<Map<String, String>> handlePortfolioData(PortfolioDataException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(PortfolioAccessException.class)
+    public ResponseEntity<Map<String, String>> handlePortfolioAccess(PortfolioAccessException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(Exception.class)

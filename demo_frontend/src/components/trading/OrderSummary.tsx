@@ -1,10 +1,6 @@
 "use client";
 
-interface OrderSummaryProps {
-  quantityNum: number;
-  lastPrice: number;
-  totalCost: number;
-}
+import type { OrderSummaryProps } from "@/types/components";
 
 export default function OrderSummary({
   quantityNum,

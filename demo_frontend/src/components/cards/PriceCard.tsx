@@ -1,11 +1,6 @@
 "use client";
 
-import type { Price } from "@/types/prices";
-
-interface PriceCardProps {
-  symbol: string;
-  currentPrice?: Price;
-}
+import type { PriceCardProps } from "@/types/components";
 
 export default function PriceCard({ symbol, currentPrice }: PriceCardProps) {
   const lastPrice = currentPrice?.last ?? 0;

@@ -1,16 +1,7 @@
 "use client";
 
 import NeumorphicInput from "@/components/input/NeumorphicInput";
-import type { WalletBalanceResponse } from "@/types/wallet";
-
-interface QuantityInputProps {
-  quantity: string;
-  onQuantityChange: (value: string) => void;
-  onSetMaxAffordable: () => void;
-  walletLoading: boolean;
-  walletBalance: WalletBalanceResponse | null;
-  lastPrice: number;
-}
+import type { QuantityInputProps } from "@/types/components";
 
 export default function QuantityInput({
   quantity,
