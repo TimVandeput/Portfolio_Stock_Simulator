@@ -18,20 +18,13 @@ export default function EmptyPortfolio({ onViewMarkets }: EmptyPortfolioProps) {
         Start investing by purchasing stocks. Your bought stocks will appear
         here with their current values, gains/losses, and performance.
       </p>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex justify-center">
         <button
           onClick={onViewMarkets}
           className="neu-button px-6 py-3 rounded-xl hover:scale-105 transition-transform flex items-center gap-2 bg-[var(--accent)] text-white"
         >
           <DynamicIcon iconName="plus" size={16} />
-          Browse Markets
-        </button>
-        <button
-          onClick={onViewMarkets}
-          className="neu-button px-6 py-3 rounded-xl hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <DynamicIcon iconName="search" size={16} />
-          Browse Stocks
+          Start Investing
         </button>
       </div>
     </div>

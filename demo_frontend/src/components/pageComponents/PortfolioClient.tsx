@@ -86,7 +86,7 @@ export default function PortfolioClient() {
   }, []);
 
   const handleSellClick = (symbol: string) => {
-    router.push(`/sell/${symbol}`);
+    router.push(`/portfolio/${symbol}`);
   };
 
   if (loading) {
@@ -176,7 +176,7 @@ export default function PortfolioClient() {
         )}
 
         {holdings.length === 0 ? (
-          <EmptyPortfolio onViewMarkets={() => router.push("/markets")} />
+          <EmptyPortfolio onViewMarkets={() => router.push("/market")} />
         ) : (
           <div className="space-y-4">
             <TableHeader
