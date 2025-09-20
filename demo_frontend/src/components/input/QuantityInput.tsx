@@ -1,16 +1,7 @@
 "use client";
 
 import NeumorphicInput from "@/components/input/NeumorphicInput";
-import type { WalletBalanceResponse } from "@/types/wallet";
-
-interface QuantityInputProps {
-  quantity: string;
-  onQuantityChange: (value: string) => void;
-  onSetMaxAffordable: () => void;
-  walletLoading: boolean;
-  walletBalance: WalletBalanceResponse | null;
-  lastPrice: number;
-}
+import type { QuantityInputProps } from "@/types/components";
 
 export default function QuantityInput({
   quantity,
@@ -19,7 +10,13 @@ export default function QuantityInput({
   walletLoading,
   walletBalance,
   lastPrice,
+  mode = "buy",
 }: QuantityInputProps) {
+  const isMaxDisabled =
+    mode === "buy"
+      ? walletLoading || !walletBalance || lastPrice <= 0
+      : walletLoading || lastPrice <= 0;
+
   return (
     <div>
       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
@@ -36,7 +33,7 @@ export default function QuantityInput({
         <button
           onClick={onSetMaxAffordable}
           className="px-3 py-2 text-sm neu-button rounded-xl hover:scale-105 transition-transform"
-          disabled={walletLoading || !walletBalance || lastPrice <= 0}
+          disabled={isMaxDisabled}
         >
           Max
         </button>

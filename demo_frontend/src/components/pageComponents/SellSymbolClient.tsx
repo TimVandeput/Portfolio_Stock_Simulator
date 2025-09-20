@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePrices } from "@/contexts/PriceContext";
 import { getWalletBalance } from "@/lib/api/wallet";
-import { executeBuyOrder } from "@/lib/api/trading";
+import { executeSellOrder } from "@/lib/api/trading";
+import { getUserHolding } from "@/lib/api/portfolio";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import { getUserId } from "@/lib/auth/tokenStorage";
 import StatusMessage from "@/components/status/StatusMessage";
@@ -18,25 +19,27 @@ import OrderSummary from "@/components/trading/OrderSummary";
 import ValidationMessages from "@/components/status/ValidationMessages";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";
+import type { PortfolioHolding } from "@/types";
 
-interface BuySymbolClientProps {
+interface SellSymbolClientProps {
   symbol: string;
 }
 
-export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
+export default function SellSymbolClient({ symbol }: SellSymbolClientProps) {
   const router = useRouter();
   const { prices } = usePrices();
   const [quantity, setQuantity] = useState<string>("1");
   const [walletBalance, setWalletBalance] =
     useState<WalletBalanceResponse | null>(null);
+  const [holding, setHolding] = useState<PortfolioHolding | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [walletLoading, setWalletLoading] = useState(true);
+  const [holdingLoading, setHoldingLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const scrollPosition = useRef<number>(0);
 
-  // Restore scroll position when modal closes
   useEffect(() => {
     if (!showConfirmation && scrollPosition.current > 0) {
       setTimeout(() => {
@@ -56,43 +59,50 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
     return isNaN(num) || num <= 0 ? 0 : num;
   }, [quantity]);
 
-  const totalCost = useMemo(() => {
+  const totalValue = useMemo(() => {
     return quantityNum * lastPrice;
   }, [quantityNum, lastPrice]);
 
-  const canAfford = useMemo(() => {
-    return walletBalance ? totalCost <= walletBalance.cashBalance : false;
-  }, [totalCost, walletBalance]);
+  const canSell = useMemo(() => {
+    return holding ? quantityNum <= holding.quantity : false;
+  }, [quantityNum, holding]);
 
   const isValidOrder = useMemo(() => {
-    return quantityNum > 0 && lastPrice > 0 && canAfford;
-  }, [quantityNum, lastPrice, canAfford]);
+    return quantityNum > 0 && lastPrice > 0 && canSell;
+  }, [quantityNum, lastPrice, canSell]);
 
   useEffect(() => {
-    const loadWalletBalance = async () => {
+    const loadData = async () => {
       const userId = getUserId();
       if (!userId) {
         setError("User authentication failed");
         setWalletLoading(false);
+        setHoldingLoading(false);
         return;
       }
 
       try {
-        setWalletLoading(true);
         setError("");
-        const balance = await getWalletBalance(userId);
-        setWalletBalance(balance);
+
+        const [walletData, holdingData] = await Promise.all([
+          getWalletBalance(userId),
+          getUserHolding(userId, symbol),
+        ]);
+
+        setWalletBalance(walletData);
+        setHolding(holdingData);
       } catch (err) {
-        setError(getErrorMessage(err) || "Failed to load wallet balance");
+        setError(getErrorMessage(err) || "Failed to load data");
       } finally {
         setWalletLoading(false);
+        setHoldingLoading(false);
       }
     };
 
-    loadWalletBalance();
-  }, []);
+    loadData();
+  }, [symbol]);
 
-  const handleBuy = async () => {
+  const handleSell = async () => {
     const userId = getUserId();
     if (!isValidOrder || !userId) return;
 
@@ -102,14 +112,14 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
       setSuccess("");
       setShowConfirmation(false);
 
-      const response: TradeExecutionResponse = await executeBuyOrder(userId, {
+      const response: TradeExecutionResponse = await executeSellOrder(userId, {
         symbol,
         quantity: quantityNum,
         expectedPrice: lastPrice,
       });
 
       setSuccess(
-        `Successfully purchased ${response.quantity} shares of ${
+        `Successfully sold ${response.quantity} shares of ${
           response.symbol
         } for $${response.totalAmount.toFixed(2)}`
       );
@@ -123,13 +133,22 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
           : null
       );
 
+      setHolding((prev) =>
+        prev
+          ? {
+              ...prev,
+              quantity: prev.quantity - quantityNum,
+            }
+          : null
+      );
+
       setQuantity("1");
 
       setTimeout(() => {
         router.push("/portfolio");
       }, 2000);
     } catch (err) {
-      setError(getErrorMessage(err) || "Failed to execute buy order");
+      setError(getErrorMessage(err) || "Failed to execute sell order");
     } finally {
       setLoading(false);
     }
@@ -141,12 +160,29 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
     }
   };
 
-  const setMaxAffordable = () => {
-    if (walletBalance && lastPrice > 0) {
-      const maxShares = Math.floor(walletBalance.cashBalance / lastPrice);
-      setQuantity(maxShares.toString());
+  const setMaxAvailable = () => {
+    if (holding) {
+      setQuantity(holding.quantity.toString());
     }
   };
+
+  if (holdingLoading) {
+    return (
+      <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
+        <div className="w-full max-w-sm mx-auto">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-[var(--surface)] rounded w-1/3"></div>
+            <div className="h-32 bg-[var(--surface)] rounded"></div>
+            <div className="h-20 bg-[var(--surface)] rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!holding) {
+    return null;
+  }
 
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
@@ -154,19 +190,20 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
         {showConfirmation ? (
           <ConfirmationModal
             isOpen={showConfirmation}
-            title="Confirm Buy Order"
-            message={`Are you sure you want to buy ${quantityNum} shares of ${symbol} for $${totalCost.toFixed(
+            title="Confirm Sell Order"
+            message={`Are you sure you want to sell ${quantityNum} shares of ${symbol} for $${totalValue.toFixed(
               2
             )}?
 
 Current price: $${lastPrice.toFixed(2)} per share
 
-This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
-            confirmText="Confirm Buy"
+This action cannot be undone.`}
+            confirmText="Confirm Sell"
             cancelText="Cancel"
-            onConfirm={handleBuy}
+            onConfirm={handleSell}
             onCancel={() => {
               setShowConfirmation(false);
+              setTimeout(() => window.scrollTo(0, scrollPosition.current), 50);
             }}
             confirmDisabled={loading}
             cancelDisabled={loading}
@@ -181,11 +218,34 @@ This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
                 <DynamicIcon iconName="arrowleft" size={20} />
               </button>
               <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-                Buy {symbol}
+                Sell {symbol}
               </h1>
             </div>
 
             <PriceCard symbol={symbol} currentPrice={currentPrice} />
+
+            <div className="neu-card p-4 rounded-xl mb-6">
+              <div className="flex items-center gap-3">
+                <DynamicIcon
+                  iconName="briefcase"
+                  size={20}
+                  className="text-[var(--accent)]"
+                />
+                <div className="flex-1">
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Your Holdings
+                  </p>
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">
+                    {holding.quantity} shares @ $
+                    {holding.avgCostBasis.toFixed(2)} avg
+                  </p>
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Total Cost: $
+                    {(holding.quantity * holding.avgCostBasis).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <WalletBalanceCard
               walletBalance={walletBalance}
@@ -197,24 +257,38 @@ This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
                 <QuantityInput
                   quantity={quantity}
                   onQuantityChange={handleQuantityChange}
-                  onSetMaxAffordable={setMaxAffordable}
-                  walletLoading={walletLoading}
+                  onSetMaxAffordable={setMaxAvailable}
+                  walletLoading={holdingLoading}
                   walletBalance={walletBalance}
                   lastPrice={lastPrice}
+                  mode="sell"
                 />
 
                 <OrderSummary
                   quantityNum={quantityNum}
                   lastPrice={lastPrice}
-                  totalCost={totalCost}
+                  totalCost={totalValue}
                 />
 
                 <ValidationMessages
-                  canAfford={canAfford}
-                  totalCost={totalCost}
-                  walletLoading={walletLoading}
+                  canAfford={canSell}
+                  totalCost={totalValue}
+                  walletLoading={false}
                   lastPrice={lastPrice}
+                  success={success}
+                  loading={loading}
                 />
+
+                {!canSell &&
+                  quantityNum > 0 &&
+                  holding &&
+                  !success &&
+                  !loading && (
+                    <div className="flex items-center gap-2 text-sm text-rose-500">
+                      <DynamicIcon iconName="alertcircle" size={16} />
+                      Cannot sell more than {holding.quantity} shares
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -240,7 +314,7 @@ This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <DynamicIcon iconName="dollarsign" size={20} />
-                  Buy {quantityNum > 0 ? `${quantityNum} shares` : "Shares"}
+                  Sell {quantityNum > 0 ? `${quantityNum} shares` : "Shares"}
                 </div>
               )}
             </NeumorphicButton>

@@ -4,6 +4,7 @@ import type { SymbolDTO } from "@/types/symbol";
 import type { Universe } from "@/types/symbol";
 import type { Role } from "@/types";
 import type { Price } from "@/types/prices";
+import type { WalletBalanceResponse } from "@/types/wallet";
 
 export interface BaseComponentProps {
   className?: string;
@@ -176,6 +177,68 @@ export interface RoleSelectorProps extends BaseComponentProps {
 
 export interface PasswordInputProps extends InputProps {
   showToggle?: boolean;
+}
+
+export interface TableColumn {
+  id: string;
+  label: string;
+  description?: string;
+  icon?: string;
+  alignment?: "left" | "center" | "right";
+  width?: string;
+}
+
+export interface TableHeaderProps extends BaseComponentProps {
+  columns: TableColumn[];
+}
+
+export interface OrderSummaryProps extends BaseComponentProps {
+  quantityNum: number;
+  lastPrice: number;
+  totalCost: number;
+}
+
+export interface ValidationMessagesProps extends BaseComponentProps {
+  canAfford: boolean;
+  totalCost: number;
+  walletLoading: boolean;
+  lastPrice: number;
+  success?: string;
+  loading?: boolean;
+}
+
+export interface QuantityInputProps extends BaseComponentProps {
+  quantity: string;
+  onQuantityChange: (value: string) => void;
+  onSetMaxAffordable: () => void;
+  walletLoading: boolean;
+  walletBalance: WalletBalanceResponse | null;
+  lastPrice: number;
+  mode?: "buy" | "sell";
+}
+
+export interface WalletBalanceCardProps extends BaseComponentProps {
+  walletBalance: WalletBalanceResponse | null;
+  walletLoading: boolean;
+}
+
+export interface PriceCardProps extends BaseComponentProps {
+  symbol: string;
+  currentPrice?: Price;
+}
+
+export interface PortfolioStatsCardProps extends BaseComponentProps {
+  title: string;
+  value: string;
+  subValue?: string;
+  iconName: string;
+  valueColor?: string;
+  ariaLabel?: string;
+  tooltip?: string;
+}
+
+export interface EmptyPortfolioProps extends BaseComponentProps {
+  onViewMarkets: () => void;
 }
 
 export type ClickHandler = () => void;
