@@ -121,12 +121,12 @@ export default function MarketClient() {
   return (
     <div className="market-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-2 mb-4">
+        <div className="flex flex-col gap-2">
           <h1 className="page-title text-2xl sm:text-3xl font-bold">MARKETS</h1>
           <MarketStatus />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3 mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
           <NeumorphicInput
             type="text"
             placeholder="Search symbol or name…"
@@ -158,7 +158,7 @@ export default function MarketClient() {
           </div>
         </div>
 
-        <div className="min-h-[28px] mb-1">
+        <div className="min-h-[28px]">
           {error && <StatusMessage message={error} />}
           {priceError && <StatusMessage message={priceError} />}
           {isInitialLoading && (

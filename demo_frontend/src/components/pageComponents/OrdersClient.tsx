@@ -124,7 +124,7 @@ export default function OrdersClient() {
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
               TRANSACTION HISTORY
@@ -169,7 +169,7 @@ export default function OrdersClient() {
           )}
         </div>
 
-        <div className="min-h-[28px] mb-4">
+        <div className="min-h-[28px]">
           {error && <StatusMessage message={error} />}
         </div>
 

@@ -180,7 +180,7 @@ export default function SymbolsClient() {
   return (
     <div className="symbols-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="symbols-card page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="page-title text-2xl sm:text-3xl font-bold">SYMBOLS</h1>
           <UniverseImportBar
             universe={universe}
@@ -208,7 +208,7 @@ export default function SymbolsClient() {
           sortOptions={sortOptions}
         />
 
-        <div className="min-h-[28px] mb-1">
+        <div className="min-h-[28px]">
           {error && <StatusMessage message={error} />}
         </div>
 
