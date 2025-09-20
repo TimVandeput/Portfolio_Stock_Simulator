@@ -4,7 +4,13 @@ import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-import type { SymbolsTableDesktopProps, Mode } from "@/types/components";
+import TableHeader from "@/components/ui/TableHeader";
+import DynamicIcon from "@/components/ui/DynamicIcon";
+import type {
+  SymbolsTableDesktopProps,
+  Mode,
+  TableColumn,
+} from "@/types/components";
 
 export default function SymbolsTableDesktop({
   page,
@@ -25,6 +31,69 @@ export default function SymbolsTableDesktop({
     return Date.now() - price.lastUpdate < 2000;
   };
 
+  const getColumns = (): TableColumn[] => {
+    const baseColumns: TableColumn[] = [
+      {
+        id: "symbol",
+        label: "Symbol",
+        description: "Stock ticker symbol",
+        width: "w-[10ch]",
+      },
+      {
+        id: "name",
+        label: "Name",
+        description: "Company name",
+        alignment: "left",
+      },
+      {
+        id: "exchange",
+        label: "Exchange",
+        description: "Stock exchange",
+        icon: "arrow-left-right",
+        width: "w-[14ch]",
+      },
+      {
+        id: "currency",
+        label: "Currency",
+        description: "Trading currency",
+        icon: "coins",
+        width: "w-[9ch]",
+      },
+    ];
+
+    if (isMarket) {
+      baseColumns.push(
+        {
+          id: "last",
+          label: "Last",
+          description: "Current price",
+          alignment: "right",
+          icon: "dollar-sign",
+          width: "w-[12ch]",
+        },
+        {
+          id: "change",
+          label: "% Chg",
+          description: "Percentage change",
+          alignment: "right",
+          icon: "percent",
+          width: "w-[12ch]",
+        }
+      );
+    }
+
+    baseColumns.push({
+      id: "actions",
+      label: isAdmin ? "Enabled" : "Actions",
+      description: isAdmin ? "Toggle availability" : "Trading actions",
+      alignment: "center",
+      icon: isAdmin ? undefined : "play",
+      width: "w-[18ch]",
+    });
+
+    return baseColumns;
+  };
+
   const colEls = [
     <col key="sym" className="w-[10ch]" />,
     <col key="name" />,
@@ -40,153 +109,138 @@ export default function SymbolsTableDesktop({
   ];
 
   return (
-    <div className="hidden md:block rounded-2xl overflow-hidden border shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm table-fixed">
-          <colgroup>{colEls}</colgroup>
+    <div className="space-y-4">
+      <TableHeader columns={getColumns()} />
 
-          <thead className="bg-[var(--surface)]">
-            <tr className="text-left">
-              <th className="px-4 py-3 whitespace-nowrap">Symbol</th>
-              <th className="px-4 py-3 whitespace-nowrap">Name</th>
-              <th className="px-4 py-3 whitespace-nowrap">Exchange</th>
-              <th className="px-4 py-3 whitespace-nowrap">Currency</th>
-              {isMarket && (
-                <>
-                  <th className="px-4 py-3 whitespace-nowrap text-right">
-                    Last
-                  </th>
-                  <th className="px-4 py-3 whitespace-nowrap text-right">
-                    % Chg
-                  </th>
-                </>
-              )}
-              <th className="px-4 py-3 text-center whitespace-nowrap">
-                {isAdmin ? "Enabled" : "Actions"}
-              </th>
-            </tr>
-          </thead>
+      <div className="hidden md:block rounded-2xl overflow-hidden border shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>{colEls}</colgroup>
 
-          <tbody>
-            {page?.content?.length === 0 && (
-              <tr>
-                <td
-                  colSpan={colCount}
-                  className="px-4 py-6 text-center opacity-70 border-t"
-                >
-                  No symbols found.
-                </td>
-              </tr>
-            )}
-
-            {page?.content?.map((row: SymbolDTO) => {
-              const p = isMarket ? getPrice(row.symbol) : {};
-              const pc = p.percentChange ?? 0;
-              const roundedPc = parseFloat(pc.toFixed(2));
-              const pcClass =
-                roundedPc > 0
-                  ? "text-emerald-500"
-                  : roundedPc < 0
-                  ? "text-rose-500"
-                  : "opacity-80";
-
-              const isRecent = isRecentUpdate(p);
-              const isPulsing = pulsatingSymbols.has(row.symbol);
-
-              return (
-                <tr
-                  key={row.id}
-                  className={`border-t transition-all duration-500 ${
-                    isPulsing ? "bg-amber-100 dark:bg-amber-900/30" : ""
-                  }`}
-                >
+            <tbody>
+              {page?.content?.length === 0 && (
+                <tr>
                   <td
-                    className="px-4 py-3 font-semibold whitespace-nowrap"
-                    title={row.symbol}
+                    colSpan={colCount}
+                    className="px-4 py-6 text-center opacity-70 border-t"
                   >
-                    {row.symbol}
-                  </td>
-
-                  <td className="px-4 py-3 max-w-0">
-                    <span className="block truncate" title={row.name}>
-                      {row.name}
-                    </span>
-                  </td>
-
-                  <td
-                    className="px-4 py-3 whitespace-nowrap"
-                    title={row.exchange}
-                  >
-                    {row.exchange}
-                  </td>
-
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {row.currency}
-                  </td>
-
-                  {isMarket && (
-                    <>
-                      <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
-                          isPulsing
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-amber-500"
-                        }`}
-                      >
-                        {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
-                      </td>
-                      <td
-                        className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
-                        title={pc !== 0 ? `${pc}%` : undefined}
-                      >
-                        {p.percentChange !== undefined
-                          ? (() => {
-                              if (roundedPc === 0) return "0.00%";
-                              return `${
-                                roundedPc > 0 ? "+" : ""
-                              }${roundedPc.toFixed(2)}%`;
-                            })()
-                          : "—"}
-                      </td>
-                    </>
-                  )}
-
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      {isAdmin && row.inUse && (
-                        <span className="px-2 py-0.5 text-[11px] rounded-full border">
-                          In use
-                        </span>
-                      )}
-
-                      {isAdmin ? (
-                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={row.enabled}
-                            onChange={(e) => onToggle?.(row, e.target.checked)}
-                            className="h-4 w-4 accent-[var(--primary)]"
-                            aria-label={`Toggle ${row.symbol}`}
-                          />
-                          <span className="opacity-80">
-                            {row.enabled ? "On" : "Off"}
-                          </span>
-                        </label>
-                      ) : (
-                        <NeumorphicButton
-                          onClick={() => onBuy?.(row)}
-                          disabled={!row.enabled}
-                        >
-                          Buy
-                        </NeumorphicButton>
-                      )}
-                    </div>
+                    No symbols found.
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              )}
+
+              {page?.content?.map((row: SymbolDTO) => {
+                const p = isMarket ? getPrice(row.symbol) : {};
+                const pc = p.percentChange ?? 0;
+                const roundedPc = parseFloat(pc.toFixed(2));
+                const pcClass =
+                  roundedPc > 0
+                    ? "text-emerald-500"
+                    : roundedPc < 0
+                    ? "text-rose-500"
+                    : "opacity-80";
+
+                const isRecent = isRecentUpdate(p);
+                const isPulsing = pulsatingSymbols.has(row.symbol);
+
+                return (
+                  <tr
+                    key={row.id}
+                    className={`border-t transition-all duration-500 ${
+                      isPulsing ? "bg-amber-100 dark:bg-amber-900/30" : ""
+                    }`}
+                  >
+                    <td
+                      className="px-4 py-3 font-semibold whitespace-nowrap"
+                      title={row.symbol}
+                    >
+                      {row.symbol}
+                    </td>
+
+                    <td className="px-4 py-3 max-w-0">
+                      <span className="block truncate" title={row.name}>
+                        {row.name}
+                      </span>
+                    </td>
+
+                    <td
+                      className="px-4 py-3 whitespace-nowrap"
+                      title={row.exchange}
+                    >
+                      {row.exchange}
+                    </td>
+
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {row.currency}
+                    </td>
+
+                    {isMarket && (
+                      <>
+                        <td
+                          className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${
+                            isPulsing
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-amber-500"
+                          }`}
+                        >
+                          {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
+                        </td>
+                        <td
+                          className={`px-4 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 ${pcClass}`}
+                          title={pc !== 0 ? `${pc}%` : undefined}
+                        >
+                          {p.percentChange !== undefined
+                            ? (() => {
+                                if (roundedPc === 0) return "0.00%";
+                                return `${
+                                  roundedPc > 0 ? "+" : ""
+                                }${roundedPc.toFixed(2)}%`;
+                              })()
+                            : "—"}
+                        </td>
+                      </>
+                    )}
+
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-2">
+                        {isAdmin && row.inUse && (
+                          <span className="px-2 py-0.5 text-[11px] rounded-full border flex items-center gap-1">
+                            <DynamicIcon iconName="user-check" size={12} />
+                            In use
+                          </span>
+                        )}
+
+                        {isAdmin ? (
+                          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={row.enabled}
+                              onChange={(e) =>
+                                onToggle?.(row, e.target.checked)
+                              }
+                              className="h-4 w-4 accent-[var(--primary)]"
+                              aria-label={`Toggle ${row.symbol}`}
+                            />
+                            <span className="opacity-80">
+                              {row.enabled ? "On" : "Off"}
+                            </span>
+                          </label>
+                        ) : (
+                          <NeumorphicButton
+                            onClick={() => onBuy?.(row)}
+                            disabled={!row.enabled}
+                          >
+                            Buy
+                          </NeumorphicButton>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

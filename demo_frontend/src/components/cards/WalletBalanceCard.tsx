@@ -1,12 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type { WalletBalanceResponse } from "@/types/wallet";
-
-interface WalletBalanceCardProps {
-  walletBalance: WalletBalanceResponse | null;
-  walletLoading: boolean;
-}
+import type { WalletBalanceCardProps } from "@/types/components";
 
 export default function WalletBalanceCard({
   walletBalance,
