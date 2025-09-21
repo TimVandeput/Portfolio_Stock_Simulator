@@ -33,8 +33,8 @@ export const navItems: NavItem[] = [
     allowedRoles: ["ROLE_USER"],
   },
   {
-    name: "LIVE",
-    href: "/live",
+    name: "GRAPHS",
+    href: "/graphs",
     icon: "activity",
     allowedRoles: ["ROLE_USER"],
   },
