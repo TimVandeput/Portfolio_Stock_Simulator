@@ -29,8 +29,8 @@ public class GraphService {
             .build();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public List<Map<String, Object>> getCharts(Long userId) {
-        log.info("Getting chart data for user portfolio: userId={}", userId);
+    public List<Map<String, Object>> getCharts(Long userId, String range) {
+        log.info("Getting chart data for user portfolio: userId={}, range={}", userId, range);
 
         List<Portfolio> portfolios = portfolioRepository.findActivePositionsByUserId(userId);
 
@@ -44,35 +44,39 @@ public class GraphService {
                 .distinct()
                 .toList();
 
-        log.info("Found {} unique symbols for user {}: {}", symbols.size(), userId, symbols);
+        log.info("Found {} unique symbols for user {} with range {}: {}", symbols.size(), userId, range, symbols);
 
         List<Map<String, Object>> allCharts = new ArrayList<>();
 
         for (String symbol : symbols) {
             try {
-                Map<String, Object> chartData = getChartForSymbol(symbol);
+                Map<String, Object> chartData = getChartForSymbol(symbol, range);
                 if (chartData != null) {
                     allCharts.add(chartData);
-                    log.debug("Successfully fetched chart data for symbol: {}", symbol);
+                    log.debug("Successfully fetched chart data for symbol: {} with range: {}", symbol, range);
                 } else {
-                    log.warn("No chart data returned for symbol: {}", symbol);
+                    log.warn("No chart data returned for symbol: {} with range: {}", symbol, range);
                 }
             } catch (Exception e) {
-                log.error("Failed to fetch chart data for symbol {}: {}", symbol, e.getMessage(), e);
+                log.error("Failed to fetch chart data for symbol {} with range {}: {}", symbol, range, e.getMessage(),
+                        e);
             }
         }
 
-        log.info("Successfully retrieved chart data for {} out of {} symbols for user {}",
-                allCharts.size(), symbols.size(), userId);
+        log.info("Successfully retrieved chart data for {} out of {} symbols for user {} with range {}",
+                allCharts.size(), symbols.size(), userId, range);
 
         return allCharts;
     }
 
-    private Map<String, Object> getChartForSymbol(String symbol) throws IOException {
-        log.debug("Fetching chart data for symbol: {}", symbol);
+    private Map<String, Object> getChartForSymbol(String symbol, String range) throws IOException {
+        log.debug("Fetching chart data for symbol: {} with range: {}", symbol, range);
 
-        String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=5m&symbol=" + symbol
-                + "&range=1d&region=US&includePrePost=false&useYfid=true&includeAdjustedClose=true&events=capitalGain%2Cdiv%2Csplit";
+        String interval = getIntervalForRange(range);
+
+        String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=" + interval + "&symbol=" + symbol
+                + "&range=" + range
+                + "&region=US&includePrePost=false&useYfid=true&includeAdjustedClose=true&events=capitalGain%2Cdiv%2Csplit";
 
         Request request = new Request.Builder()
                 .url(url)
@@ -84,7 +88,8 @@ public class GraphService {
         try (Response response = http.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String responseBody = response.body() != null ? response.body().string() : "No response body";
-                log.error("RapidAPI chart request failed for symbol {}: {} - {}", symbol, response.code(),
+                log.error("RapidAPI chart request failed for symbol {} with range {}: {} - {}", symbol, range,
+                        response.code(),
                         responseBody);
 
                 if (response.code() == 403) {
@@ -105,7 +110,7 @@ public class GraphService {
             }
 
             String responseBody = response.body().string();
-            log.debug("RapidAPI chart response for symbol {}: {}", symbol,
+            log.debug("RapidAPI chart response for symbol {} with range {}: {}", symbol, range,
                     responseBody.substring(0, Math.min(200, responseBody.length())) + "...");
 
             @SuppressWarnings("unchecked")
@@ -115,5 +120,16 @@ public class GraphService {
 
             return chartData;
         }
+    }
+
+    private String getIntervalForRange(String range) {
+
+        return switch (range) {
+            case "1d", "5d" -> "5m";
+            case "1mo", "3mo" -> "1h";
+            case "6mo", "1y" -> "1d";
+            case "2y", "5y" -> "1wk";
+            default -> "1d";
+        };
     }
 }

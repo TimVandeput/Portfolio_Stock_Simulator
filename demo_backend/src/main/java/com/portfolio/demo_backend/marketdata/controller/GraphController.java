@@ -18,16 +18,19 @@ public class GraphController {
     private final GraphService graphService;
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Map<String, Object>>> getChartsForUserPortfolio(@PathVariable Long userId) {
+    public ResponseEntity<List<Map<String, Object>>> getChartsForUserPortfolio(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1d") String range) {
 
-        log.info("Getting chart data for user portfolio: userId={}", userId);
+        log.info("Getting chart data for user portfolio: userId={}, range={}", userId, range);
 
         try {
-            List<Map<String, Object>> charts = graphService.getCharts(userId);
-            log.info("Successfully retrieved chart data for {} symbols for user {}", charts.size(), userId);
+            List<Map<String, Object>> charts = graphService.getCharts(userId, range);
+            log.info("Successfully retrieved chart data for {} symbols for user {} with range {}", charts.size(),
+                    userId, range);
             return ResponseEntity.ok(charts);
         } catch (Exception e) {
-            log.error("Error retrieving chart data for user {}: {}", userId, e.getMessage(), e);
+            log.error("Error retrieving chart data for user {} with range {}: {}", userId, range, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

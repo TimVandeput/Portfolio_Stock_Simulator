@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.reset;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -97,7 +98,7 @@ class GraphServiceIntegrationTest {
 
     @Test
     void getCharts_withEmptyPortfolio_returnsEmptyList() {
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).isEmpty();
         verifyNoInteractions(mockHttpClient);
@@ -116,7 +117,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(1);
         Map<String, Object> chart = charts.get(0);
@@ -143,7 +144,7 @@ class GraphServiceIntegrationTest {
                 .thenReturn(appleChartResponse)
                 .thenReturn(googleChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(2);
         assertThat(charts.stream().map(chart -> chart.get("symbol")))
@@ -173,7 +174,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("AAPL");
@@ -200,7 +201,7 @@ class GraphServiceIntegrationTest {
                 .thenReturn("Server Error")
                 .thenReturn(googleChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("GOOGL");
@@ -227,7 +228,7 @@ class GraphServiceIntegrationTest {
                 .thenReturn("Rate limit exceeded")
                 .thenReturn(microsoftChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("MSFT");
@@ -251,7 +252,7 @@ class GraphServiceIntegrationTest {
                 .thenReturn("invalid json")
                 .thenReturn(googleChartResponse);
 
-        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId());
+        List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("GOOGL");
@@ -272,7 +273,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
-        graphService.getCharts(testUser.getId());
+        graphService.getCharts(testUser.getId(), "1d");
 
         verify(mockHttpClient).newCall(argThat(request -> {
             String url = request.url().toString();
@@ -300,7 +301,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
-        graphService.getCharts(testUser.getId());
+        graphService.getCharts(testUser.getId(), "1d");
 
         verify(mockHttpClient).newCall(argThat(request -> {
             Headers headers = request.headers();
@@ -309,6 +310,48 @@ class GraphServiceIntegrationTest {
                     headers.get("User-Agent") != null &&
                     headers.get("User-Agent").equals("Portfolio-Backend/1.0");
         }));
+    }
+
+    @Test
+    void getCharts_withDifferentRanges_usesCorrectIntervals() throws IOException {
+        Portfolio portfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
+        portfolioRepository.save(portfolio);
+
+        String appleChartResponse = createMockChartResponse("AAPL");
+        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+        lenient().when(mockResponse.isSuccessful()).thenReturn(true);
+        lenient().when(mockResponse.code()).thenReturn(200);
+        lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
+        lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
+
+        graphService.getCharts(testUser.getId(), "1d");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=5m") &&
+                request.url().toString().contains("range=1d")));
+
+        reset(mockHttpClient);
+        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+
+        graphService.getCharts(testUser.getId(), "1mo");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1h") &&
+                request.url().toString().contains("range=1mo")));
+
+        reset(mockHttpClient);
+        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+
+        graphService.getCharts(testUser.getId(), "1y");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
+                request.url().toString().contains("range=1y")));
+
+        reset(mockHttpClient);
+        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+
+        graphService.getCharts(testUser.getId(), "5y");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1wk") &&
+                request.url().toString().contains("range=5y")));
     }
 
     private Portfolio createPortfolio(Symbol symbol, int shares, BigDecimal avgCost) {

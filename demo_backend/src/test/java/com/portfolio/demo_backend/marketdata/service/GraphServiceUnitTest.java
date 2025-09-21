@@ -66,9 +66,10 @@ class GraphServiceUnitTest {
     @Test
     void getCharts_withNoActivePositions_returnsEmptyList() {
         Long userId = 1L;
+        String range = "1d";
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(List.of());
 
-        List<Map<String, Object>> result = graphService.getCharts(userId);
+        List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
@@ -77,10 +78,11 @@ class GraphServiceUnitTest {
     @Test
     void getCharts_withActivePositions_returnsExpectedSymbols() {
         Long userId = 1L;
+        String range = "1d";
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio);
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(portfolios);
 
-        List<Map<String, Object>> result = graphService.getCharts(userId);
+        List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
         assertThat(result).isNotNull();
     }
@@ -88,6 +90,7 @@ class GraphServiceUnitTest {
     @Test
     void getCharts_withDuplicateSymbols_returnsUniqueSymbols() {
         Long userId = 1L;
+        String range = "1d";
 
         Portfolio anotherApplePortfolio = new Portfolio();
         anotherApplePortfolio.setId(3L);
@@ -99,8 +102,22 @@ class GraphServiceUnitTest {
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio, anotherApplePortfolio);
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(portfolios);
 
-        List<Map<String, Object>> result = graphService.getCharts(userId);
+        List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    void getCharts_withDifferentRanges_usesCorrectInterval() {
+        Long userId = 1L;
+        when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(List.of());
+
+        List<String> ranges = Arrays.asList("1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y");
+
+        for (String range : ranges) {
+            List<Map<String, Object>> result = graphService.getCharts(userId, range);
+            assertThat(result).isNotNull();
+            assertThat(result).isEmpty();
+        }
     }
 }
