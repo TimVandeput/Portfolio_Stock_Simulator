@@ -15,53 +15,16 @@ import TableHeader from "@/components/ui/TableHeader";
 import PortfolioStatsCard from "@/components/cards/PortfolioStatsCard";
 import EmptyPortfolio from "@/components/ui/EmptyPortfolio";
 import type { WalletBalanceResponse } from "@/types/wallet";
-import type { PortfolioHolding } from "@/types";
 import type { Transaction } from "@/types/trading";
 
 export default function PortfolioClient() {
   const router = useRouter();
   const { prices } = usePrices();
-  const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [walletBalance, setWalletBalance] =
     useState<WalletBalanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Helper function to check if markets have opened since a given date
-  const hasMarketOpenedSince = (dateString: string): boolean => {
-    const purchaseDate = new Date(dateString);
-    const now = new Date();
-
-    // Convert to ET (market timezone)
-    const purchaseET = new Date(
-      purchaseDate.toLocaleString("en-US", { timeZone: "America/New_York" })
-    );
-    const nowET = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/New_York" })
-    );
-
-    // If purchase was today, check if market has opened today
-    if (purchaseET.toDateString() === nowET.toDateString()) {
-      const currentTimeMinutes = nowET.getHours() * 60 + nowET.getMinutes();
-      const marketOpenTime = 9 * 60 + 30; // 9:30 AM
-      const isWeekday = nowET.getDay() >= 1 && nowET.getDay() <= 5;
-
-      return isWeekday && currentTimeMinutes >= marketOpenTime;
-    }
-
-    // If purchase was before today, find the next market day after purchase
-    let nextMarketDay = new Date(purchaseET);
-    nextMarketDay.setDate(nextMarketDay.getDate() + 1);
-
-    // Skip to next weekday if needed
-    while (nextMarketDay.getDay() === 0 || nextMarketDay.getDay() === 6) {
-      nextMarketDay.setDate(nextMarketDay.getDate() + 1);
-    }
-
-    // Check if that next market day has passed
-    return nowET >= nextMarketDay;
-  };
 
   // Process transactions to create detailed holdings with individual purchase tracking
   const processedHoldings = useMemo(() => {
@@ -77,55 +40,77 @@ export default function PortfolioClient() {
           quantity: number;
           pricePerShare: number;
           purchaseDate: string;
-          marketHasOpened: boolean;
         }>;
       }
     >();
 
-    // Process only BUY transactions to build current holdings
-    const buyTransactions = transactions.filter((t) => t.type === "BUY");
+    // Process all transactions in chronological order
+    const sortedTransactions = [...transactions].sort(
+      (a, b) =>
+        new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+    );
 
-    buyTransactions.forEach((transaction) => {
+    sortedTransactions.forEach((transaction) => {
       const key = transaction.symbol;
       const existing = holdingsMap.get(key);
-      const marketHasOpened = hasMarketOpenedSince(transaction.executedAt);
 
-      if (existing) {
-        existing.totalQuantity += transaction.quantity;
-        existing.totalCost += transaction.totalAmount;
-        existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
-        existing.purchases.push({
-          quantity: transaction.quantity,
-          pricePerShare: transaction.pricePerShare,
-          purchaseDate: transaction.executedAt,
-          marketHasOpened,
-        });
-      } else {
-        holdingsMap.set(key, {
-          symbol: transaction.symbol,
-          symbolName: transaction.symbolName,
-          totalQuantity: transaction.quantity,
-          totalCost: transaction.totalAmount,
-          avgCostBasis: transaction.pricePerShare,
-          purchases: [
-            {
-              quantity: transaction.quantity,
-              pricePerShare: transaction.pricePerShare,
-              purchaseDate: transaction.executedAt,
-              marketHasOpened,
-            },
-          ],
-        });
+      if (transaction.type === "BUY") {
+        if (existing) {
+          existing.totalQuantity += transaction.quantity;
+          existing.totalCost += transaction.totalAmount;
+          existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
+          existing.purchases.push({
+            quantity: transaction.quantity,
+            pricePerShare: transaction.pricePerShare,
+            purchaseDate: transaction.executedAt,
+          });
+        } else {
+          holdingsMap.set(key, {
+            symbol: transaction.symbol,
+            symbolName: transaction.symbolName,
+            totalQuantity: transaction.quantity,
+            totalCost: transaction.totalAmount,
+            avgCostBasis: transaction.pricePerShare,
+            purchases: [
+              {
+                quantity: transaction.quantity,
+                pricePerShare: transaction.pricePerShare,
+                purchaseDate: transaction.executedAt,
+              },
+            ],
+          });
+        }
+      } else if (transaction.type === "SELL" && existing) {
+        // Reduce quantity and adjust cost basis proportionally
+        const soldQuantity = Math.min(
+          transaction.quantity,
+          existing.totalQuantity
+        );
+        const costBasisToRemove = existing.avgCostBasis * soldQuantity;
+
+        existing.totalQuantity -= soldQuantity;
+        existing.totalCost -= costBasisToRemove;
+
+        // Recalculate average cost basis if shares remain
+        if (existing.totalQuantity > 0) {
+          existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
+        } else {
+          // Position completely closed
+          existing.avgCostBasis = 0;
+          existing.totalCost = 0;
+        }
       }
     });
 
-    return Array.from(holdingsMap.values());
+    // Filter out positions that have been completely sold
+    return Array.from(holdingsMap.values()).filter(
+      (holding) => holding.totalQuantity > 0
+    );
   }, [transactions]);
 
   const portfolioStats = useMemo(() => {
     let totalValue = 0;
     let totalCost = 0;
-    let todayChange = 0;
 
     processedHoldings.forEach((holding) => {
       const currentPrice = prices[holding.symbol]?.last ?? 0;
@@ -134,29 +119,20 @@ export default function PortfolioClient() {
 
       totalValue += holdingValue;
       totalCost += holdingCost;
-
-      // Calculate today's change only for shares that have seen market opening
-      holding.purchases.forEach((purchase) => {
-        if (purchase.marketHasOpened) {
-          const percentChange = prices[holding.symbol]?.percentChange ?? 0;
-          const purchaseValue = currentPrice * purchase.quantity;
-          todayChange += (purchaseValue * percentChange) / 100;
-        }
-      });
     });
 
     const totalPnL = totalValue - totalCost;
     const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+    const totalPortfolioValue = totalValue + (walletBalance?.cashBalance || 0);
 
     return {
       totalValue,
       totalCost,
       totalPnL,
       totalPnLPercent,
-      todayChange,
-      todayChangePercent: totalValue > 0 ? (todayChange / totalValue) * 100 : 0,
+      totalPortfolioValue,
     };
-  }, [transactions, prices]);
+  }, [processedHoldings, prices, walletBalance]);
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -177,7 +153,6 @@ export default function PortfolioClient() {
           getTransactionHistory(userId),
         ]);
 
-        setHoldings(portfolioData.holdings);
         setTransactions(transactionData);
         setWalletBalance({
           cashBalance: portfolioData.walletBalance.cashBalance,
@@ -228,9 +203,17 @@ export default function PortfolioClient() {
           <MarketStatus />
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <PortfolioStatsCard
-            title="Portfolio Value"
+            title="Total Portfolio"
+            value={`$${portfolioStats.totalPortfolioValue.toFixed(2)}`}
+            iconName="briefcase"
+            ariaLabel="Total value of cash and stocks combined"
+            tooltip="Total value of cash and stocks combined"
+          />
+
+          <PortfolioStatsCard
+            title="Stock Value"
             value={`$${portfolioStats.totalValue.toFixed(2)}`}
             iconName="trending-up"
             ariaLabel="Current market value of all your stock holdings"
@@ -253,24 +236,6 @@ export default function PortfolioClient() {
             }
             ariaLabel="Profit or loss since you bought your stocks"
             tooltip="Profit or loss since you bought your stocks (Current Value - Purchase Cost)"
-          />
-
-          <PortfolioStatsCard
-            title="Today's Change"
-            value={`${
-              portfolioStats.todayChange >= 0 ? "+" : ""
-            }$${portfolioStats.todayChange.toFixed(2)}`}
-            subValue={`(${
-              portfolioStats.todayChangePercent >= 0 ? "+" : ""
-            }${portfolioStats.todayChangePercent.toFixed(2)}%)`}
-            iconName="clock"
-            valueColor={
-              portfolioStats.todayChange >= 0
-                ? "text-emerald-500"
-                : "text-rose-500"
-            }
-            ariaLabel="How much your portfolio value changed today"
-            tooltip="How much your portfolio value changed today based on stock price movements"
           />
 
           {walletBalance && (
@@ -332,17 +297,6 @@ export default function PortfolioClient() {
               const totalCost = holding.totalCost;
               const pnl = currentValue - totalCost;
               const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
-              const percentChange = prices[holding.symbol]?.percentChange ?? 0;
-
-              // Calculate how many shares have seen market opening vs not
-              const sharesWithTrading = holding.purchases
-                .filter((p) => p.marketHasOpened)
-                .reduce((sum, p) => sum + p.quantity, 0);
-              const sharesWithoutTrading =
-                holding.totalQuantity - sharesWithTrading;
-
-              const displayPercentChange =
-                sharesWithTrading > 0 ? percentChange : 0;
 
               return (
                 <div
@@ -374,30 +328,9 @@ export default function PortfolioClient() {
                         <span className="text-sm text-[var(--text-secondary)]">
                           Current Price
                         </span>
-                        <div className="text-right">
-                          <span className="font-bold text-[var(--text-primary)]">
-                            ${currentPrice.toFixed(2)}
-                          </span>
-                          {displayPercentChange !== 0 &&
-                          sharesWithTrading > 0 ? (
-                            <span
-                              className={`ml-2 text-sm ${
-                                displayPercentChange >= 0
-                                  ? "text-emerald-500"
-                                  : "text-rose-500"
-                              }`}
-                            >
-                              {displayPercentChange >= 0 ? "+" : ""}
-                              {displayPercentChange.toFixed(2)}%
-                            </span>
-                          ) : sharesWithoutTrading > 0 ? (
-                            <span className="ml-2 text-sm opacity-60">
-                              {sharesWithoutTrading === holding.totalQuantity
-                                ? "No trading yet"
-                                : `${sharesWithoutTrading} shares no trading yet`}
-                            </span>
-                          ) : null}
-                        </div>
+                        <span className="font-bold text-[var(--text-primary)]">
+                          ${currentPrice.toFixed(2)}
+                        </span>
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -446,39 +379,8 @@ export default function PortfolioClient() {
                       <p className="text-lg font-bold text-[var(--text-primary)]">
                         ${currentPrice.toFixed(2)}
                       </p>
-                      {displayPercentChange !== 0 && sharesWithTrading > 0 ? (
-                        <p
-                          className={`text-sm font-medium flex items-center justify-center gap-1 ${
-                            displayPercentChange >= 0
-                              ? "text-emerald-500"
-                              : "text-rose-500"
-                          }`}
-                        >
-                          <DynamicIcon
-                            iconName={
-                              displayPercentChange >= 0
-                                ? "arrow-up"
-                                : "arrow-down"
-                            }
-                            size={12}
-                          />
-                          {displayPercentChange >= 0 ? "+" : ""}
-                          {displayPercentChange.toFixed(2)}%
-                        </p>
-                      ) : sharesWithoutTrading > 0 ? (
-                        <p className="text-sm font-medium flex items-center justify-center gap-1 opacity-60">
-                          <DynamicIcon iconName="clock" size={12} />
-                          {sharesWithoutTrading === holding.totalQuantity
-                            ? "No trading yet"
-                            : `${sharesWithoutTrading} shares no trading yet`}
-                        </p>
-                      ) : (
-                        <p className="text-sm font-medium opacity-60">
-                          No change
-                        </p>
-                      )}
                       <p className="text-xs text-[var(--text-secondary)] opacity-70">
-                        Today's change
+                        Current price
                       </p>
                     </div>
 
