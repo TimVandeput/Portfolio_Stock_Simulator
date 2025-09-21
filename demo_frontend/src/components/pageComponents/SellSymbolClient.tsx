@@ -15,7 +15,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import PriceCard from "@/components/cards/PriceCard";
 import WalletBalanceCard from "@/components/cards/WalletBalanceCard";
 import QuantityInput from "@/components/input/QuantityInput";
-import OrderSummary from "@/components/trading/OrderSummary";
+import OrderSummary from "@/components/status/OrderSummary";
 import ValidationMessages from "@/components/status/ValidationMessages";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";

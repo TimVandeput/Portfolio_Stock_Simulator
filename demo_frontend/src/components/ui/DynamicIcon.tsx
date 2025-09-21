@@ -14,6 +14,10 @@ import {
   ArrowLeft,
   DollarSign,
   AlertCircle,
+  ChevronDown,
+  Calendar,
+  ChevronUp,
+  Download,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -45,6 +49,10 @@ const iconMap: Record<
   arrowleft: ArrowLeft,
   dollarsign: DollarSign,
   alertcircle: AlertCircle,
+  chevrondown: ChevronDown,
+  chevronup: ChevronUp,
+  calendar: Calendar,
+  download: Download,
 };
 
 const DynamicIcon = memo(

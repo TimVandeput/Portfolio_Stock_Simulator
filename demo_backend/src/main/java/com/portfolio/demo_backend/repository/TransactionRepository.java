@@ -16,6 +16,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByUserIdOrderByExecutedAtDesc(Long userId);
 
+    @Query("SELECT t FROM Transaction t LEFT JOIN FETCH t.symbol WHERE t.userId = :userId ORDER BY t.executedAt DESC")
+    List<Transaction> findByUserIdWithSymbolOrderByExecutedAtDesc(@Param("userId") Long userId);
+
     Page<Transaction> findByUserIdOrderByExecutedAtDesc(Long userId, Pageable pageable);
 
     List<Transaction> findByUserIdAndSymbolOrderByExecutedAtDesc(Long userId, Symbol symbol);

@@ -25,13 +25,13 @@ export default function UniverseImportBar({
         <option value="GSPC">S&amp;P 500</option>
       </select>
 
-      <div className="w-[160px]">
+      <div className="w-[160px] mb-3 sm:mb-0">
         <NeumorphicButton
           onClick={onImport}
           disabled={disabled}
           aria-live="polite"
           aria-busy={disabled}
-          className="w-full"
+          className="w-full "
         >
           {disabled ? "Importing…" : "Import / Refresh"}
         </NeumorphicButton>

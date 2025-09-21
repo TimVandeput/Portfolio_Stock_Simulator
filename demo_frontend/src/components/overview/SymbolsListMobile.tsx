@@ -51,7 +51,7 @@ export default function SymbolsListMobile({
           return (
             <li
               key={row.id}
-              className={`rounded-2xl border shadow-sm p-4 transition-all duration-500 ${
+              className={`neu-card rounded-2xl border shadow-sm p-4 transition-all duration-500 ${
                 isPulsing
                   ? "bg-amber-100 dark:bg-amber-900/30"
                   : "bg-[var(--background)] hover:shadow-md"
