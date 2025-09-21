@@ -4,7 +4,8 @@ import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
-import com.portfolio.demo_backend.model.Transaction;
+import com.portfolio.demo_backend.dto.trading.TransactionDTO;
+import com.portfolio.demo_backend.mapper.TransactionMapper;
 import com.portfolio.demo_backend.service.TradingService;
 import com.portfolio.demo_backend.service.WalletService;
 
@@ -48,8 +49,8 @@ public class TradingController {
     }
 
     @GetMapping("/{userId}/history")
-    public ResponseEntity<List<Transaction>> getTransactionHistory(@PathVariable Long userId) {
-        List<Transaction> history = tradingService.getTransactionHistory(userId);
+    public ResponseEntity<List<TransactionDTO>> getTransactionHistory(@PathVariable Long userId) {
+        List<TransactionDTO> history = TransactionMapper.toDTOList(tradingService.getTransactionHistory(userId));
         return ResponseEntity.ok(history);
     }
 }

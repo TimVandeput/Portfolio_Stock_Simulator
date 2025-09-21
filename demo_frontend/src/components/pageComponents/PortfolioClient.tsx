@@ -4,70 +4,158 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { usePrices } from "@/contexts/PriceContext";
 import { getUserPortfolio } from "@/lib/api/portfolio";
+import { getTransactionHistory } from "@/lib/api/trading";
 import { getUserId } from "@/lib/auth/tokenStorage";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import StatusMessage from "@/components/status/StatusMessage";
+import MarketStatus from "@/components/status/MarketStatus";
 import Loader from "@/components/ui/Loader";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import TableHeader from "@/components/ui/TableHeader";
 import PortfolioStatsCard from "@/components/cards/PortfolioStatsCard";
 import EmptyPortfolio from "@/components/ui/EmptyPortfolio";
 import type { WalletBalanceResponse } from "@/types/wallet";
-import type { PortfolioHolding } from "@/types";
+import type { Transaction } from "@/types/trading";
 
 export default function PortfolioClient() {
   const router = useRouter();
-  const { prices } = usePrices();
-  const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
-  const [walletBalance, setWalletBalance] =
-    useState<WalletBalanceResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { prices, hasInitialPrices } = usePrices();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [walletBalance, setWalletBalance] = useState<WalletBalanceResponse>({
+    cashBalance: 0,
+    totalMarketValue: 0,
+    totalPortfolioValue: 0,
+  });
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [error, setError] = useState("");
+
+  // Process transactions to create detailed holdings with individual purchase tracking
+  const processedHoldings = useMemo(() => {
+    const holdingsMap = new Map<
+      string,
+      {
+        symbol: string;
+        symbolName: string;
+        totalQuantity: number;
+        totalCost: number;
+        avgCostBasis: number;
+        purchases: Array<{
+          quantity: number;
+          pricePerShare: number;
+          purchaseDate: string;
+        }>;
+      }
+    >();
+
+    // Process all transactions in chronological order
+    const sortedTransactions = [...transactions].sort(
+      (a, b) =>
+        new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+    );
+
+    sortedTransactions.forEach((transaction) => {
+      const key = transaction.symbol;
+      const existing = holdingsMap.get(key);
+
+      if (transaction.type === "BUY") {
+        if (existing) {
+          existing.totalQuantity += transaction.quantity;
+          existing.totalCost += transaction.totalAmount;
+          existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
+          existing.purchases.push({
+            quantity: transaction.quantity,
+            pricePerShare: transaction.pricePerShare,
+            purchaseDate: transaction.executedAt,
+          });
+        } else {
+          holdingsMap.set(key, {
+            symbol: transaction.symbol,
+            symbolName: transaction.symbolName,
+            totalQuantity: transaction.quantity,
+            totalCost: transaction.totalAmount,
+            avgCostBasis: transaction.pricePerShare,
+            purchases: [
+              {
+                quantity: transaction.quantity,
+                pricePerShare: transaction.pricePerShare,
+                purchaseDate: transaction.executedAt,
+              },
+            ],
+          });
+        }
+      } else if (transaction.type === "SELL" && existing) {
+        // Reduce quantity and adjust cost basis proportionally
+        const soldQuantity = Math.min(
+          transaction.quantity,
+          existing.totalQuantity
+        );
+        const costBasisToRemove = existing.avgCostBasis * soldQuantity;
+
+        existing.totalQuantity -= soldQuantity;
+        existing.totalCost -= costBasisToRemove;
+
+        // Recalculate average cost basis if shares remain
+        if (existing.totalQuantity > 0) {
+          existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
+        } else {
+          // Position completely closed
+          existing.avgCostBasis = 0;
+          existing.totalCost = 0;
+        }
+      }
+    });
+
+    // Filter out positions that have been completely sold
+    return Array.from(holdingsMap.values()).filter(
+      (holding) => holding.totalQuantity > 0
+    );
+  }, [transactions]);
 
   const portfolioStats = useMemo(() => {
     let totalValue = 0;
     let totalCost = 0;
-    let todayChange = 0;
 
-    holdings.forEach((holding) => {
+    processedHoldings.forEach((holding) => {
       const currentPrice = prices[holding.symbol]?.last ?? 0;
-      const holdingValue = currentPrice * holding.quantity;
-      const holdingCost = holding.avgCostBasis * holding.quantity;
+      const holdingValue = currentPrice * holding.totalQuantity;
+      const holdingCost = holding.totalCost;
 
       totalValue += holdingValue;
       totalCost += holdingCost;
-
-      const percentChange = prices[holding.symbol]?.percentChange ?? 0;
-      todayChange += (holdingValue * percentChange) / 100;
     });
 
     const totalPnL = totalValue - totalCost;
     const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+    const totalPortfolioValue = totalValue + walletBalance.cashBalance;
 
     return {
       totalValue,
       totalCost,
       totalPnL,
       totalPnLPercent,
-      todayChange,
-      todayChangePercent: totalValue > 0 ? (todayChange / totalValue) * 100 : 0,
+      totalPortfolioValue,
     };
-  }, [holdings, prices]);
+  }, [processedHoldings, prices, walletBalance]);
 
   useEffect(() => {
     const loadPortfolio = async () => {
       const userId = getUserId();
       if (!userId) {
         setError("User authentication failed");
-        setLoading(false);
+        setDataLoaded(true);
         return;
       }
 
       try {
-        setLoading(true);
         setError("");
-        const portfolioData = await getUserPortfolio(userId);
-        setHoldings(portfolioData.holdings);
+
+        // Load both portfolio and transaction data
+        const [portfolioData, transactionData] = await Promise.all([
+          getUserPortfolio(userId),
+          getTransactionHistory(userId),
+        ]);
+
+        setTransactions(transactionData);
         setWalletBalance({
           cashBalance: portfolioData.walletBalance.cashBalance,
           totalMarketValue: portfolioData.walletBalance.totalValue,
@@ -75,10 +163,10 @@ export default function PortfolioClient() {
             portfolioData.walletBalance.totalValue +
             portfolioData.walletBalance.cashBalance,
         });
+        setDataLoaded(true);
       } catch (err) {
         setError(getErrorMessage(err) || "Failed to load portfolio");
-      } finally {
-        setLoading(false);
+        setDataLoaded(true);
       }
     };
 
@@ -89,7 +177,10 @@ export default function PortfolioClient() {
     router.push(`/portfolio/${symbol}`);
   };
 
-  if (loading) {
+  // Show loading until both data is loaded AND prices are initialized
+  const isLoading = !dataLoaded || !hasInitialPrices;
+
+  if (isLoading) {
     return (
       <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
         <div className="page-card p-4 sm:p-6 rounded-2xl max-w-4xl mx-auto w-full">
@@ -102,20 +193,32 @@ export default function PortfolioClient() {
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-4xl mx-auto w-full">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
           <h1 className="page-title text-2xl sm:text-3xl font-bold hidden sm:block">
             PORTFOLIO
           </h1>
           <div className="flex items-center gap-3">
             <span className="text-sm opacity-80">
-              Holdings: {holdings.length}
+              Holdings: {processedHoldings.length}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="flex flex-col gap-2 mb-4">
+          <MarketStatus />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <PortfolioStatsCard
-            title="Portfolio Value"
+            title="Total Portfolio"
+            value={`$${portfolioStats.totalPortfolioValue.toFixed(2)}`}
+            iconName="briefcase"
+            ariaLabel="Total value of cash and stocks combined"
+            tooltip="Total value of cash and stocks combined"
+          />
+
+          <PortfolioStatsCard
+            title="Stock Value"
             value={`$${portfolioStats.totalValue.toFixed(2)}`}
             iconName="trending-up"
             ariaLabel="Current market value of all your stock holdings"
@@ -141,32 +244,12 @@ export default function PortfolioClient() {
           />
 
           <PortfolioStatsCard
-            title="Today's Change"
-            value={`${
-              portfolioStats.todayChange >= 0 ? "+" : ""
-            }$${portfolioStats.todayChange.toFixed(2)}`}
-            subValue={`(${
-              portfolioStats.todayChangePercent >= 0 ? "+" : ""
-            }${portfolioStats.todayChangePercent.toFixed(2)}%)`}
-            iconName="clock"
-            valueColor={
-              portfolioStats.todayChange >= 0
-                ? "text-emerald-500"
-                : "text-rose-500"
-            }
-            ariaLabel="How much your portfolio value changed today"
-            tooltip="How much your portfolio value changed today based on stock price movements"
+            title="Available Cash"
+            value={`$${walletBalance.cashBalance.toFixed(2)}`}
+            iconName="wallet"
+            ariaLabel="Cash available for buying more stocks"
+            tooltip="Cash available for buying more stocks"
           />
-
-          {walletBalance && (
-            <PortfolioStatsCard
-              title="Available Cash"
-              value={`$${walletBalance.cashBalance.toFixed(2)}`}
-              iconName="wallet"
-              ariaLabel="Cash available for buying more stocks"
-              tooltip="Cash available for buying more stocks"
-            />
-          )}
         </div>
 
         {error && (
@@ -175,7 +258,7 @@ export default function PortfolioClient() {
           </div>
         )}
 
-        {holdings.length === 0 ? (
+        {processedHoldings.length === 0 ? (
           <EmptyPortfolio onViewMarkets={() => router.push("/market")} />
         ) : (
           <div className="space-y-4">
@@ -211,13 +294,12 @@ export default function PortfolioClient() {
               ]}
             />
 
-            {holdings.map((holding) => {
+            {processedHoldings.map((holding) => {
               const currentPrice = prices[holding.symbol]?.last ?? 0;
-              const currentValue = currentPrice * holding.quantity;
-              const totalCost = holding.avgCostBasis * holding.quantity;
+              const currentValue = currentPrice * holding.totalQuantity;
+              const totalCost = holding.totalCost;
               const pnl = currentValue - totalCost;
               const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
-              const percentChange = prices[holding.symbol]?.percentChange ?? 0;
 
               return (
                 <div
@@ -232,7 +314,7 @@ export default function PortfolioClient() {
                           {holding.symbol}
                         </h3>
                         <p className="text-sm text-[var(--text-secondary)]">
-                          {holding.quantity} shares @ $
+                          {holding.totalQuantity} shares @ $
                           {holding.avgCostBasis.toFixed(2)}
                         </p>
                       </div>
@@ -249,23 +331,9 @@ export default function PortfolioClient() {
                         <span className="text-sm text-[var(--text-secondary)]">
                           Current Price
                         </span>
-                        <div className="text-right">
-                          <span className="font-bold text-[var(--text-primary)]">
-                            ${currentPrice.toFixed(2)}
-                          </span>
-                          {percentChange !== 0 && (
-                            <span
-                              className={`ml-2 text-sm ${
-                                percentChange >= 0
-                                  ? "text-emerald-500"
-                                  : "text-rose-500"
-                              }`}
-                            >
-                              {percentChange >= 0 ? "+" : ""}
-                              {percentChange.toFixed(2)}%
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-bold text-[var(--text-primary)]">
+                          ${currentPrice.toFixed(2)}
+                        </span>
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -302,7 +370,7 @@ export default function PortfolioClient() {
                           {holding.symbol}
                         </h3>
                         <p className="text-sm text-[var(--text-secondary)]">
-                          {holding.quantity} shares
+                          {holding.totalQuantity} shares
                         </p>
                         <p className="text-xs text-[var(--text-secondary)] opacity-70">
                           Avg cost: ${holding.avgCostBasis.toFixed(2)}
@@ -314,26 +382,8 @@ export default function PortfolioClient() {
                       <p className="text-lg font-bold text-[var(--text-primary)]">
                         ${currentPrice.toFixed(2)}
                       </p>
-                      {percentChange !== 0 && (
-                        <p
-                          className={`text-sm font-medium flex items-center justify-center gap-1 ${
-                            percentChange >= 0
-                              ? "text-emerald-500"
-                              : "text-rose-500"
-                          }`}
-                        >
-                          <DynamicIcon
-                            iconName={
-                              percentChange >= 0 ? "arrow-up" : "arrow-down"
-                            }
-                            size={12}
-                          />
-                          {percentChange >= 0 ? "+" : ""}
-                          {percentChange.toFixed(2)}%
-                        </p>
-                      )}
                       <p className="text-xs text-[var(--text-secondary)] opacity-70">
-                        Today's change
+                        Current price
                       </p>
                     </div>
 

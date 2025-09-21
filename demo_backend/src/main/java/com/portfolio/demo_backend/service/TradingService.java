@@ -111,7 +111,7 @@ public class TradingService {
 
         log.info("Getting transaction history for user: {}", username);
 
-        return transactionRepository.findByUserIdOrderByExecutedAtDesc(userId);
+        return transactionRepository.findByUserIdWithSymbolOrderByExecutedAtDesc(userId);
     }
 
     private BigDecimal getCurrentPrice(String symbol) {

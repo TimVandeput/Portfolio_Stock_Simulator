@@ -22,7 +22,7 @@ export default function PortfolioStatsCard({
         <DynamicIcon
           iconName={iconName}
           size={16}
-          className="text-[var(--accent)]"
+          className="text-[var(--text-accent)]"
         />
         <p className="text-sm text-[var(--text-secondary)]">{title}</p>
       </div>

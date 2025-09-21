@@ -1,5 +1,6 @@
 package com.portfolio.demo_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

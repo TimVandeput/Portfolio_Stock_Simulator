@@ -5,6 +5,7 @@ import type { Universe } from "@/types/symbol";
 import type { Role } from "@/types";
 import type { Price } from "@/types/prices";
 import type { WalletBalanceResponse } from "@/types/wallet";
+import type { Transaction } from "@/types/trading";
 
 export interface BaseComponentProps {
   className?: string;
@@ -71,6 +72,11 @@ export interface SortDropdownProps extends BaseComponentProps {
   value: string;
   onChange: (value: string) => void;
   options: SortOption[];
+}
+
+export interface TransactionExporterProps extends BaseComponentProps {
+  transactions: Transaction[];
+  filename?: string;
 }
 
 export interface SortOption {

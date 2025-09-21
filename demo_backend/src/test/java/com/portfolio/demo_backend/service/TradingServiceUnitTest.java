@@ -208,13 +208,13 @@ class TradingServiceUnitTest {
         List<Transaction> expectedHistory = List.of(transaction1, transaction2);
 
         when(userService.getUserById(userId)).thenReturn(testUser);
-        when(transactionRepository.findByUserIdOrderByExecutedAtDesc(userId)).thenReturn(expectedHistory);
+        when(transactionRepository.findByUserIdWithSymbolOrderByExecutedAtDesc(userId)).thenReturn(expectedHistory);
 
         List<Transaction> actualHistory = tradingService.getTransactionHistory(userId);
 
         assertNotNull(actualHistory);
         assertEquals(2, actualHistory.size());
         assertEquals(expectedHistory, actualHistory);
-        verify(transactionRepository).findByUserIdOrderByExecutedAtDesc(userId);
+        verify(transactionRepository).findByUserIdWithSymbolOrderByExecutedAtDesc(userId);
     }
 }

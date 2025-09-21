@@ -12,7 +12,6 @@ import {
   setSymbolEnabled,
 } from "@/lib/api/symbols";
 import type { Universe, SymbolDTO, ImportSummaryDTO } from "@/types/symbol";
-import type { Page } from "@/types/pagination";
 
 import UniverseImportBar from "@/components/button/UniverseImportBar";
 import FiltersBar from "@/components/ui/FiltersBar";
@@ -135,10 +134,14 @@ export default function SymbolsClient() {
   );
 
   const sortOptions = [
-    { value: "symbol", label: "Symbol" },
-    { value: "name", label: "Name" },
-    { value: "exchange", label: "Exchange" },
-    { value: "currency", label: "Currency" },
+    { value: "symbol-asc", label: "Symbol A-Z" },
+    { value: "symbol-desc", label: "Symbol Z-A" },
+    { value: "name-asc", label: "Name A-Z" },
+    { value: "name-desc", label: "Name Z-A" },
+    { value: "exchange-asc", label: "Exchange A-Z" },
+    { value: "exchange-desc", label: "Exchange Z-A" },
+    { value: "currency-asc", label: "Currency A-Z" },
+    { value: "currency-desc", label: "Currency Z-A" },
   ];
 
   const sortedPage = useMemo(() => {
@@ -146,16 +149,28 @@ export default function SymbolsClient() {
 
     const sorted = [...page.content].sort((a, b) => {
       switch (sortBy) {
+        case "symbol-asc":
         case "symbol":
           return a.symbol.localeCompare(b.symbol);
+        case "symbol-desc":
+          return b.symbol.localeCompare(a.symbol);
+        case "name-asc":
         case "name":
           return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "exchange-asc":
         case "exchange":
           return a.exchange.localeCompare(b.exchange);
+        case "exchange-desc":
+          return b.exchange.localeCompare(a.exchange);
+        case "currency-asc":
         case "currency":
           return a.currency.localeCompare(b.currency);
+        case "currency-desc":
+          return b.currency.localeCompare(a.currency);
         default:
-          return 0;
+          return a.symbol.localeCompare(b.symbol);
       }
     });
 
@@ -165,7 +180,7 @@ export default function SymbolsClient() {
   return (
     <div className="symbols-container page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="symbols-card page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="page-title text-2xl sm:text-3xl font-bold">SYMBOLS</h1>
           <UniverseImportBar
             universe={universe}
@@ -193,7 +208,7 @@ export default function SymbolsClient() {
           sortOptions={sortOptions}
         />
 
-        <div className="min-h-[28px] mb-1">
+        <div className="min-h-[28px]">
           {error && <StatusMessage message={error} />}
         </div>
 
