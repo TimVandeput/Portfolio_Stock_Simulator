@@ -278,7 +278,7 @@ class GraphServiceIntegrationTest {
         verify(mockHttpClient).newCall(argThat(request -> {
             String url = request.url().toString();
             return url.contains("/stock/v3/get-chart") &&
-                    url.contains("interval=5m") &&
+                    url.contains("interval=1d") &&
                     url.contains("symbol=AAPL") &&
                     url.contains("range=1d") &&
                     url.contains("region=US") &&
@@ -326,7 +326,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
         graphService.getCharts(testUser.getId(), "1d");
-        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=5m") &&
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=1d")));
 
         reset(mockHttpClient);
@@ -334,12 +334,24 @@ class GraphServiceIntegrationTest {
         when(mockCall.execute()).thenReturn(mockResponse);
 
         graphService.getCharts(testUser.getId(), "1mo");
-        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1h") &&
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=1mo")));
 
         reset(mockHttpClient);
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
+
+        graphService.getCharts(testUser.getId(), "3mo");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
+                request.url().toString().contains("range=3mo")));
+
+        reset(mockHttpClient);
+        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(mockResponse);
+
+        graphService.getCharts(testUser.getId(), "2y");
+        verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1wk") &&
+                request.url().toString().contains("range=2y")));
 
         graphService.getCharts(testUser.getId(), "1y");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&

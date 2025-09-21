@@ -123,11 +123,8 @@ public class GraphService {
     }
 
     private String getIntervalForRange(String range) {
-
         return switch (range) {
-            case "1d", "5d" -> "5m";
-            case "1mo", "3mo" -> "1h";
-            case "6mo", "1y" -> "1d";
+            case "1mo" -> "1d";
             case "2y", "5y" -> "1wk";
             default -> "1d";
         };
