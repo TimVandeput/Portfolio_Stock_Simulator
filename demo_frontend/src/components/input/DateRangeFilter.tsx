@@ -48,7 +48,7 @@ export default function DateRangeFilter({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`neu-button flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all w-full sm:w-auto ${
+        className={`neu-button flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all w-auto ${
           hasActiveFilter ? "bg-[var(--btn-hover)]" : ""
         }`}
         aria-label="Date range filter"

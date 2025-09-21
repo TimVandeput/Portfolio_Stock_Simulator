@@ -9,6 +9,9 @@ import TransactionsListMobile from "@/components/overview/TransactionsListMobile
 import StatusMessage from "@/components/status/StatusMessage";
 import TransactionStats from "@/components/status/TransactionStats";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
+import DateRangeFilter, {
+  type DateRange,
+} from "@/components/input/DateRangeFilter";
 import SortDropdown from "@/components/ui/SortDropdown";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
 import type { Transaction } from "@/types/trading";
@@ -19,6 +22,10 @@ export default function OrdersClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: "",
+    endDate: "",
+  });
   const [sortBy, setSortBy] = useState("date-desc");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(0);
@@ -44,6 +51,26 @@ export default function OrdersClient() {
           transaction.symbol.toLowerCase().includes(query) ||
           transaction.symbolName?.toLowerCase().includes(query)
       );
+    }
+
+    if (dateRange.startDate || dateRange.endDate) {
+      filtered = filtered.filter((transaction) => {
+        const transactionDate = new Date(transaction.executedAt);
+        const startDate = dateRange.startDate
+          ? new Date(dateRange.startDate)
+          : null;
+        const endDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
+
+        // Set end date to end of day if provided
+        if (endDate) {
+          endDate.setHours(23, 59, 59, 999);
+        }
+
+        const afterStart = !startDate || transactionDate >= startDate;
+        const beforeEnd = !endDate || transactionDate <= endDate;
+
+        return afterStart && beforeEnd;
+      });
     }
 
     const sorted = [...filtered].sort((a, b) => {
@@ -82,7 +109,7 @@ export default function OrdersClient() {
     });
 
     return sorted;
-  }, [transactions, q, sortBy]);
+  }, [transactions, q, dateRange, sortBy]);
 
   const totalElements = filteredAndSortedTransactions.length;
   const totalPages = Math.ceil(totalElements / pageSize);
@@ -95,7 +122,7 @@ export default function OrdersClient() {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [q, sortBy]);
+  }, [q, dateRange, sortBy]);
 
   useEffect(() => {
     const loadTransactionHistory = async () => {
@@ -125,9 +152,19 @@ export default function OrdersClient() {
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
         <div className="flex flex-col gap-2 mb-2">
-          <h1 className="page-title text-2xl sm:text-3xl font-bold">
-            ORDER HISTORY
-          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+            <h1 className="page-title text-2xl sm:text-3xl font-bold">
+              ORDER HISTORY
+            </h1>
+            {!loading && !error && transactions.length > 0 && (
+              <div className="flex-shrink-0">
+                <DateRangeFilter
+                  dateRange={dateRange}
+                  onChange={setDateRange}
+                />
+              </div>
+            )}
+          </div>
           {!loading && !error && transactions.length > 0 && (
             <TransactionStats transactions={filteredAndSortedTransactions} />
           )}
