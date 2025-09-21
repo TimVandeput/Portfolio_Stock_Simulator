@@ -14,6 +14,7 @@ import DateRangeFilter, {
 } from "@/components/input/DateRangeFilter";
 import SortDropdown from "@/components/ui/SortDropdown";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
+import TransactionExporter from "@/components/ui/TransactionExporter";
 import type { Transaction } from "@/types/trading";
 import type { SortOption } from "@/types/components";
 
@@ -61,7 +62,6 @@ export default function OrdersClient() {
           : null;
         const endDate = dateRange.endDate ? new Date(dateRange.endDate) : null;
 
-        // Set end date to end of day if provided
         if (endDate) {
           endDate.setHours(23, 59, 59, 999);
         }
@@ -152,15 +152,31 @@ export default function OrdersClient() {
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
         <div className="flex flex-col gap-2 mb-2">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          {/* Mobile title with export button */}
+          <div className="flex justify-between items-center sm:hidden">
+            <h1 className="page-title text-2xl font-bold">ORDER HISTORY</h1>
+            {!loading && !error && transactions.length > 0 && (
+              <TransactionExporter
+                transactions={filteredAndSortedTransactions}
+                filename={`transactions-${
+                  new Date().toISOString().split("T")[0]
+                }`}
+              />
+            )}
+          </div>
+
+          {/* Desktop/Tablet title with export button */}
+          <div className="hidden sm:flex sm:items-start sm:justify-between gap-2">
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
               ORDER HISTORY
             </h1>
             {!loading && !error && transactions.length > 0 && (
               <div className="flex-shrink-0">
-                <DateRangeFilter
-                  dateRange={dateRange}
-                  onChange={setDateRange}
+                <TransactionExporter
+                  transactions={filteredAndSortedTransactions}
+                  filename={`transactions-${
+                    new Date().toISOString().split("T")[0]
+                  }`}
                 />
               </div>
             )}
@@ -171,29 +187,35 @@ export default function OrdersClient() {
         </div>
 
         {!loading && !error && transactions.length > 0 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-[768px]:max-[1023px]:portrait:flex-row min-[768px]:max-[1023px]:portrait:gap-2">
             <NeumorphicInput
               type="text"
               placeholder="Search transactions..."
               value={q}
               onChange={setQ}
-              className="min-w-[260px]"
+              className="w-full sm:min-w-[260px] sm:max-w-md min-[768px]:max-[1023px]:portrait:max-w-[200px] min-[768px]:max-[1023px]:portrait:flex-shrink"
             />
 
-            <div className="flex items-center gap-2 sm:ml-auto">
-              <span className="text-sm opacity-80">Rows:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => setPageSize(parseInt(e.target.value))}
-                className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
-                aria-label="Rows per page"
-              >
-                {[10, 25, 50, 100].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 flex-wrap min-[768px]:max-[1023px]:portrait:gap-1 max-sm:hidden">
+              <DateRangeFilter dateRange={dateRange} onChange={setDateRange} />
+
+              <div className="flex items-center gap-2 min-[768px]:max-[1023px]:portrait:gap-1">
+                <span className="text-sm opacity-80 whitespace-nowrap">
+                  Rows:
+                </span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(parseInt(e.target.value))}
+                  className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)] min-w-[60px]"
+                  aria-label="Rows per page"
+                >
+                  {[10, 25, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <SortDropdown
                 value={sortBy}
@@ -201,6 +223,37 @@ export default function OrdersClient() {
                 options={sortOptions}
               />
             </div>
+          </div>
+        )}
+
+        {/* Mobile controls - Rows and Date on one row, Sort below */}
+        {!loading && !error && transactions.length > 0 && (
+          <div className="flex flex-col gap-3 mt-4 sm:hidden">
+            <div className="flex justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm opacity-80 whitespace-nowrap">
+                  Rows:
+                </span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(parseInt(e.target.value))}
+                  className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                  aria-label="Rows per page"
+                >
+                  {[10, 25, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <DateRangeFilter dateRange={dateRange} onChange={setDateRange} />
+            </div>
+            <SortDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              options={sortOptions}
+            />
           </div>
         )}
 

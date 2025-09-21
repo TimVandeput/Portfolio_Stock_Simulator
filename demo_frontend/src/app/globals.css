@@ -76,6 +76,7 @@ body {
   --btn-hover: rgb(191 219 254);
   --accent-selected: var(--btn-hover);
   --accent-text: var(--btn-text);
+  --export-btn: #2563eb;
 
   /* Modal colors */
   --modal-bg: #e0e5ec;
@@ -116,6 +117,7 @@ body {
   --btn-hover: #252831;
   --accent-selected: #7c3aed;
   --accent-text: #60a5fa;
+  --export-btn: #7c3aed;
 
   /* Modal colors */
   --modal-bg: #2a2d3a;

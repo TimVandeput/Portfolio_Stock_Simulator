@@ -48,25 +48,25 @@ export default function DateRangeFilter({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`neu-button flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all w-auto ${
+        className={`px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)] flex items-center gap-2 text-sm transition-all ${
           hasActiveFilter ? "bg-[var(--btn-hover)]" : ""
         }`}
         aria-label="Date range filter"
       >
         <DynamicIcon
           iconName="calendar"
-          size={16}
+          size={14}
           className={hasActiveFilter ? "text-[var(--text-accent)]" : ""}
         />
         <span>Date</span>
         <DynamicIcon
           iconName={isExpanded ? "chevronup" : "chevrondown"}
-          size={14}
+          size={12}
         />
       </button>
 
       {isExpanded && (
-        <div className="absolute top-full right-0 mt-2 p-4 bg-[var(--bg-surface)] rounded-xl shadow-lg border border-[var(--border-color)] z-10 min-w-[280px]">
+        <div className="absolute top-full right-0 mt-2 p-4 bg-[var(--bg-surface)] rounded-xl shadow-lg border border-[var(--border)] z-10 min-w-[280px]">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-[var(--text-primary)]">
               Filter by Date Range
@@ -94,7 +94,7 @@ export default function DateRangeFilter({
                 type="date"
                 value={dateRange.startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--input-bg)] text-[var(--input-text)] border border-[var(--border-color)] focus:bg-[var(--input-bg-active)] focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--input-bg)] text-[var(--input-text)] border border-[var(--border)] focus:bg-[var(--input-bg-active)] focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100"
                 placeholder="YYYY-MM-DD"
                 pattern="\d{4}-\d{2}-\d{2}"
                 autoComplete="off"
@@ -113,7 +113,7 @@ export default function DateRangeFilter({
                 type="date"
                 value={dateRange.endDate}
                 onChange={(e) => handleEndDateChange(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--input-bg)] text-[var(--input-text)] border border-[var(--border-color)] focus:bg-[var(--input-bg-active)] focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--input-bg)] text-[var(--input-text)] border border-[var(--border)] focus:bg-[var(--input-bg-active)] focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] transition-all [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100"
                 placeholder="YYYY-MM-DD"
                 pattern="\d{4}-\d{2}-\d{2}"
                 autoComplete="off"
@@ -121,6 +121,13 @@ export default function DateRangeFilter({
             </div>
           </div>
         </div>
+      )}
+
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-0"
+          onClick={() => setIsExpanded(false)}
+        />
       )}
     </div>
   );

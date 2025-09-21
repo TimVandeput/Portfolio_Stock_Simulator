@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Calendar,
   ChevronUp,
+  Download,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -51,6 +52,7 @@ const iconMap: Record<
   chevrondown: ChevronDown,
   chevronup: ChevronUp,
   calendar: Calendar,
+  download: Download,
 };
 
 const DynamicIcon = memo(
