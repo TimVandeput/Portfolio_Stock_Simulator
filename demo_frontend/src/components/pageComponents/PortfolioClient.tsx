@@ -19,11 +19,14 @@ import type { Transaction } from "@/types/trading";
 
 export default function PortfolioClient() {
   const router = useRouter();
-  const { prices } = usePrices();
+  const { prices, hasInitialPrices } = usePrices();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [walletBalance, setWalletBalance] =
-    useState<WalletBalanceResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState<WalletBalanceResponse>({
+    cashBalance: 0,
+    totalMarketValue: 0,
+    totalPortfolioValue: 0,
+  });
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [error, setError] = useState("");
 
   // Process transactions to create detailed holdings with individual purchase tracking
@@ -123,7 +126,7 @@ export default function PortfolioClient() {
 
     const totalPnL = totalValue - totalCost;
     const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
-    const totalPortfolioValue = totalValue + (walletBalance?.cashBalance || 0);
+    const totalPortfolioValue = totalValue + walletBalance.cashBalance;
 
     return {
       totalValue,
@@ -139,12 +142,11 @@ export default function PortfolioClient() {
       const userId = getUserId();
       if (!userId) {
         setError("User authentication failed");
-        setLoading(false);
+        setDataLoaded(true);
         return;
       }
 
       try {
-        setLoading(true);
         setError("");
 
         // Load both portfolio and transaction data
@@ -161,10 +163,10 @@ export default function PortfolioClient() {
             portfolioData.walletBalance.totalValue +
             portfolioData.walletBalance.cashBalance,
         });
+        setDataLoaded(true);
       } catch (err) {
         setError(getErrorMessage(err) || "Failed to load portfolio");
-      } finally {
-        setLoading(false);
+        setDataLoaded(true);
       }
     };
 
@@ -175,7 +177,10 @@ export default function PortfolioClient() {
     router.push(`/portfolio/${symbol}`);
   };
 
-  if (loading) {
+  // Show loading until both data is loaded AND prices are initialized
+  const isLoading = !dataLoaded || !hasInitialPrices;
+
+  if (isLoading) {
     return (
       <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
         <div className="page-card p-4 sm:p-6 rounded-2xl max-w-4xl mx-auto w-full">
@@ -238,15 +243,13 @@ export default function PortfolioClient() {
             tooltip="Profit or loss since you bought your stocks (Current Value - Purchase Cost)"
           />
 
-          {walletBalance && (
-            <PortfolioStatsCard
-              title="Available Cash"
-              value={`$${walletBalance.cashBalance.toFixed(2)}`}
-              iconName="wallet"
-              ariaLabel="Cash available for buying more stocks"
-              tooltip="Cash available for buying more stocks"
-            />
-          )}
+          <PortfolioStatsCard
+            title="Available Cash"
+            value={`$${walletBalance.cashBalance.toFixed(2)}`}
+            iconName="wallet"
+            ariaLabel="Cash available for buying more stocks"
+            tooltip="Cash available for buying more stocks"
+          />
         </div>
 
         {error && (
