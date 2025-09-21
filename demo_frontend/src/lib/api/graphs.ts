@@ -82,7 +82,7 @@ const client = new HttpClient();
 
 export async function getGraphsForUserPortfolio(
   userId: number,
-  range: string = "1d"
+  range: string = "1mo"
 ): Promise<GraphData[]> {
   try {
     const url = `/api/market/charts/user/${userId}?range=${range}`;

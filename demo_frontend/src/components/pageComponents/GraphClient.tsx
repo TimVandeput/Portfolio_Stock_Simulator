@@ -7,15 +7,13 @@ import { getErrorMessage } from "@/lib/utils/errorHandling";
 import StatusMessage from "@/components/status/StatusMessage";
 import StockChart from "@/components/graph/StockChart";
 import TimeRangeSelector from "@/components/graph/TimeRangeSelector";
-import DynamicIcon from "@/components/ui/DynamicIcon";
 import type { GraphData } from "@/lib/api/graphs";
 
 export default function GraphClient() {
   const [graphs, setGraphs] = useState<GraphData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedRange, setSelectedRange] = useState("1d");
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [selectedRange, setSelectedRange] = useState("1mo");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const loadGraphs = useCallback(async () => {
@@ -43,30 +41,16 @@ export default function GraphClient() {
     loadGraphs();
   }, [loadGraphs]);
 
-  useEffect(() => {
-    loadGraphs();
-  }, [selectedRange, loadGraphs]);
-
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      loadGraphs();
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, loadGraphs]);
-
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
-              LIVE GRAPHS
+              PORTFOLIO GRAPHS
             </h1>
             <p className="text-sm opacity-80">
-              Real-time graphs for your portfolio holdings
+              Interactive graphs for your portfolio holdings
               {lastUpdated && (
                 <span className="ml-2">
                   • Last updated: {lastUpdated.toLocaleTimeString()}
@@ -80,37 +64,6 @@ export default function GraphClient() {
               selectedRange={selectedRange}
               onRangeChange={setSelectedRange}
             />
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setAutoRefresh(!autoRefresh)}
-                className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                  autoRefresh
-                    ? "bg-[var(--accent)] text-white"
-                    : "bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--border)]"
-                }`}
-              >
-                <DynamicIcon
-                  iconName={autoRefresh ? "pause" : "play"}
-                  className="w-4 h-4"
-                />
-                <span className="hidden sm:inline">
-                  {autoRefresh ? "Auto" : "Manual"}
-                </span>
-              </button>
-
-              <button
-                onClick={loadGraphs}
-                disabled={loading}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] rounded-lg transition-colors disabled:opacity-50"
-              >
-                <DynamicIcon
-                  iconName="refresh"
-                  className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-                />
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -138,7 +91,7 @@ export default function GraphClient() {
               No Holdings Found
             </h3>
             <p className="text-[var(--text-secondary)] mb-6">
-              You need to own some stocks to see live graphs.
+              You need to own some stocks to see graphs.
             </p>
             <button
               onClick={() => (window.location.href = "/market")}
