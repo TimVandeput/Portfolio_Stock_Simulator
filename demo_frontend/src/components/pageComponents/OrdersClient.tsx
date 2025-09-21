@@ -124,50 +124,48 @@ export default function OrdersClient() {
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-6xl mx-auto w-full">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="page-title text-2xl sm:text-3xl font-bold">
-              TRANSACTION HISTORY
-            </h1>
-            {!loading && !error && transactions.length > 0 && (
-              <TransactionStats transactions={filteredAndSortedTransactions} />
-            )}
-          </div>
-
+        <div className="flex flex-col gap-2 mb-2">
+          <h1 className="page-title text-2xl sm:text-3xl font-bold">
+            ORDER HISTORY
+          </h1>
           {!loading && !error && transactions.length > 0 && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3 lg:flex-shrink-0">
-              <NeumorphicInput
-                type="text"
-                placeholder="Search transactions..."
-                value={q}
-                onChange={setQ}
-                className="min-w-[260px]"
-              />
-
-              <div className="flex items-center gap-2 sm:ml-auto">
-                <span className="text-sm opacity-80">Rows:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(parseInt(e.target.value))}
-                  className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
-                  aria-label="Rows per page"
-                >
-                  {[10, 25, 50, 100].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-
-                <SortDropdown
-                  value={sortBy}
-                  onChange={setSortBy}
-                  options={sortOptions}
-                />
-              </div>
-            </div>
+            <TransactionStats transactions={filteredAndSortedTransactions} />
           )}
         </div>
+
+        {!loading && !error && transactions.length > 0 && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+            <NeumorphicInput
+              type="text"
+              placeholder="Search transactions..."
+              value={q}
+              onChange={setQ}
+              className="min-w-[260px]"
+            />
+
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <span className="text-sm opacity-80">Rows:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(parseInt(e.target.value))}
+                className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
+                aria-label="Rows per page"
+              >
+                {[10, 25, 50, 100].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+
+              <SortDropdown
+                value={sortBy}
+                onChange={setSortBy}
+                options={sortOptions}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="min-h-[28px]">
           {error && <StatusMessage message={error} />}

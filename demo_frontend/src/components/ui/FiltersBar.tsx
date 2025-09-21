@@ -29,13 +29,13 @@ export default function FiltersBar({
   sortOptions,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 md:flex-col lg:flex-row lg:flex-wrap lg:items-center lg:gap-3 mb-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 md:flex-row md:flex-wrap md:items-center md:gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-3 mb-3">
       <NeumorphicInput
         type="text"
         placeholder="Search symbol or name…"
         value={q}
         onChange={setQ}
-        className="w-full sm:flex-none sm:w-80 md:w-96 lg:w-[28rem]"
+        className="w-full sm:flex-none sm:w-80 md:flex-none md:w-80 lg:w-[28rem]"
       />
 
       <div className="hidden md:flex lg:hidden items-center gap-3 w-full">
