@@ -6,12 +6,7 @@ import { exportToCSV } from "@/components/files/CSVExporter";
 import { exportToExcel } from "@/components/files/ExcelExporter";
 import { exportToPDF } from "@/components/files/PDFExporter";
 import type { Transaction } from "@/types/trading";
-
-interface TransactionExporterProps {
-  transactions: Transaction[];
-  filename?: string;
-  className?: string;
-}
+import type { TransactionExporterProps } from "@/types/components";
 
 export default function TransactionExporter({
   transactions,
