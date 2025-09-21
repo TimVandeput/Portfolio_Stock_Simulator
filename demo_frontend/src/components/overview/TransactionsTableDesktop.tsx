@@ -85,7 +85,7 @@ export default function TransactionsTableDesktop({
   return (
     <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm">
           <thead className="border-b border-[var(--accent)]/20">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[100px]">
