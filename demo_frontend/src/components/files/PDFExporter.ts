@@ -21,14 +21,18 @@ const formatDate = (dateString: string) => {
 
 export const exportToPDF = async (
   transactions: Transaction[],
-  filename: string
+  filename: string,
+  allTransactions?: Transaction[]
 ) => {
   const doc = new jsPDF();
+
+  // Use all transactions for P&L calculation, fall back to filtered if not provided
+  const transactionsForPL = allTransactions || transactions;
 
   const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
     if (sellTransaction.type !== "SELL") return null;
 
-    const symbolTransactions = transactions
+    const symbolTransactions = transactionsForPL
       .filter((t) => t.symbol === sellTransaction.symbol)
       .sort(
         (a, b) =>
@@ -104,25 +108,49 @@ export const exportToPDF = async (
   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
   doc.text(`Total Transactions: ${transactions.length}`, 20, 42);
 
-  const tableData = transactions.map((transaction) => [
-    formatDate(transaction.executedAt),
-    transaction.symbol,
-    transaction.symbolName,
-    transaction.type,
-    transaction.quantity.toString(),
-    formatCurrency(transaction.pricePerShare),
-    formatCurrency(transaction.totalAmount),
-  ]);
+  const tableData = transactions.map((transaction) => {
+    const profitLoss = calculateProfitLoss(transaction);
+
+    const maxCompanyNameLength = 20;
+    const truncatedCompanyName =
+      transaction.symbolName &&
+      transaction.symbolName.length > maxCompanyNameLength
+        ? transaction.symbolName.substring(0, maxCompanyNameLength) + "..."
+        : transaction.symbolName;
+
+    return [
+      formatDate(transaction.executedAt),
+      transaction.symbol,
+      truncatedCompanyName,
+      transaction.type,
+      transaction.quantity.toString(),
+      formatCurrency(transaction.pricePerShare),
+      formatCurrency(transaction.totalAmount),
+      profitLoss !== null
+        ? `${profitLoss >= 0 ? "+" : ""}${formatCurrency(profitLoss)}`
+        : "—",
+    ];
+  });
 
   autoTable(doc, {
     head: [
-      ["Date", "Symbol", "Company", "Type", "Qty", "Price/Share", "Total"],
+      [
+        "Date",
+        "Symbol",
+        "Company",
+        "Type",
+        "Qty",
+        "Price/Share",
+        "Total",
+        "P&L",
+      ],
     ],
     body: tableData,
     startY: 50,
     styles: {
       fontSize: 8,
       cellPadding: 3,
+      overflow: "linebreak",
     },
     headStyles: {
       fillColor: [96, 165, 250],
@@ -133,13 +161,14 @@ export const exportToPDF = async (
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 20 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 15 },
-      4: { cellWidth: 15 },
-      5: { cellWidth: 25 },
-      6: { cellWidth: 25 },
+      0: { cellWidth: 25 },
+      1: { cellWidth: 18 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 18 },
+      4: { cellWidth: 12 },
+      5: { cellWidth: 22 },
+      6: { cellWidth: 22 },
+      7: { cellWidth: 22 },
     },
     margin: { left: 20, right: 20 },
     didDrawPage: (data) => {

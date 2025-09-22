@@ -2,8 +2,46 @@ import type { Transaction } from "@/types/trading";
 
 export const exportToExcel = async (
   transactions: Transaction[],
-  filename: string
+  filename: string,
+  allTransactions?: Transaction[]
 ) => {
+  const transactionsForPL = allTransactions || transactions;
+
+  const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
+    if (sellTransaction.type !== "SELL") return null;
+
+    const symbolTransactions = transactionsForPL
+      .filter((t) => t.symbol === sellTransaction.symbol)
+      .sort(
+        (a, b) =>
+          new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+      );
+
+    const sellIndex = symbolTransactions.findIndex(
+      (t) => t.id === sellTransaction.id
+    );
+    if (sellIndex === -1) return null;
+
+    const relevantTransactions = symbolTransactions.slice(0, sellIndex + 1);
+
+    let remainingShares = sellTransaction.quantity;
+    let totalCostBasis = 0;
+
+    for (const transaction of relevantTransactions) {
+      if (transaction.type === "BUY" && remainingShares > 0) {
+        const sharesToUse = Math.min(remainingShares, transaction.quantity);
+        totalCostBasis += sharesToUse * transaction.pricePerShare;
+        remainingShares -= sharesToUse;
+      }
+    }
+
+    if (remainingShares > 0) {
+      return null;
+    }
+
+    const sellValue = sellTransaction.quantity * sellTransaction.pricePerShare;
+    return sellValue - totalCostBasis;
+  };
   const excelXML = `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -67,6 +105,7 @@ export const exportToExcel = async (
    <Column ss:Width="80"/>
    <Column ss:Width="100"/>
    <Column ss:Width="100"/>
+   <Column ss:Width="100"/>
    <Row ss:Height="25">
     <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Date</Data></Cell>
     <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Symbol</Data></Cell>
@@ -75,6 +114,7 @@ export const exportToExcel = async (
     <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Quantity</Data></Cell>
     <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Price per Share</Data></Cell>
     <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Total Amount</Data></Cell>
+    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">P&L</Data></Cell>
    </Row>
    ${transactions
      .map((transaction) => {
@@ -86,6 +126,9 @@ export const exportToExcel = async (
            day: "2-digit",
          }
        );
+
+       const profitLoss = calculateProfitLoss(transaction);
+
        return `
    <Row>
     <Cell ss:StyleID="DataStyle"><Data ss:Type="String">${date}</Data></Cell>
@@ -108,13 +151,18 @@ export const exportToExcel = async (
     <Cell ss:StyleID="CurrencyStyle"><Data ss:Type="Number">${
       transaction.totalAmount
     }</Data></Cell>
+    <Cell ss:StyleID="${profitLoss !== null ? "CurrencyStyle" : "DataStyle"}">${
+         profitLoss !== null
+           ? `<Data ss:Type="Number">${profitLoss}</Data>`
+           : `<Data ss:Type="String">—</Data>`
+       }</Cell>
    </Row>`;
      })
      .join("")}
   </Table>
   <AutoFilter x:Range="R1C1:R${
     transactions.length + 1
-  }C7" xmlns="urn:schemas-microsoft-com:office:excel">
+  }C8" xmlns="urn:schemas-microsoft-com:office:excel">
   </AutoFilter>
   <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
    <PageSetup>

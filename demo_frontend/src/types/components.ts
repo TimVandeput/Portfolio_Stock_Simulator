@@ -76,6 +76,7 @@ export interface SortDropdownProps extends BaseComponentProps {
 
 export interface TransactionExporterProps extends BaseComponentProps {
   transactions: Transaction[];
+  allTransactions?: Transaction[];
   filename?: string;
 }
 

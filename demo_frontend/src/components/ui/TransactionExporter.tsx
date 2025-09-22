@@ -10,6 +10,7 @@ import type { TransactionExporterProps } from "@/types/components";
 
 export default function TransactionExporter({
   transactions,
+  allTransactions,
   filename = "transactions",
   className = "",
 }: TransactionExporterProps) {
@@ -19,12 +20,13 @@ export default function TransactionExporter({
   const handleExport = async (
     exportFunction: (
       transactions: Transaction[],
-      filename: string
+      filename: string,
+      allTransactions?: Transaction[]
     ) => Promise<void>
   ) => {
     setIsExporting(true);
     try {
-      await exportFunction(transactions, filename);
+      await exportFunction(transactions, filename, allTransactions);
     } catch (error) {
       console.error("Export error:", error);
     } finally {

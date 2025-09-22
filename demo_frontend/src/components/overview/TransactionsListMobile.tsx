@@ -5,17 +5,21 @@ import DynamicIcon from "@/components/ui/DynamicIcon";
 
 interface TransactionsListMobileProps {
   transactions: Transaction[];
+  allTransactions?: Transaction[];
   loading?: boolean;
 }
 
 export default function TransactionsListMobile({
   transactions,
+  allTransactions,
   loading = false,
 }: TransactionsListMobileProps) {
+  const transactionsForPL = allTransactions || transactions;
+
   const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
     if (sellTransaction.type !== "SELL") return null;
 
-    const symbolTransactions = transactions
+    const symbolTransactions = transactionsForPL
       .filter((t) => t.symbol === sellTransaction.symbol)
       .sort(
         (a, b) =>

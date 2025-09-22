@@ -2,11 +2,50 @@ import type { Transaction } from "@/types/trading";
 
 export const exportToCSV = async (
   transactions: Transaction[],
-  filename: string
+  filename: string,
+  allTransactions?: Transaction[]
 ) => {
+  const transactionsForPL = allTransactions || transactions;
+
+  const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
+    if (sellTransaction.type !== "SELL") return null;
+
+    const symbolTransactions = transactionsForPL
+      .filter((t) => t.symbol === sellTransaction.symbol)
+      .sort(
+        (a, b) =>
+          new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+      );
+
+    const sellIndex = symbolTransactions.findIndex(
+      (t) => t.id === sellTransaction.id
+    );
+    if (sellIndex === -1) return null;
+
+    const relevantTransactions = symbolTransactions.slice(0, sellIndex + 1);
+
+    let remainingShares = sellTransaction.quantity;
+    let totalCostBasis = 0;
+
+    for (const transaction of relevantTransactions) {
+      if (transaction.type === "BUY" && remainingShares > 0) {
+        const sharesToUse = Math.min(remainingShares, transaction.quantity);
+        totalCostBasis += sharesToUse * transaction.pricePerShare;
+        remainingShares -= sharesToUse;
+      }
+    }
+
+    if (remainingShares > 0) {
+      return null;
+    }
+
+    const sellValue = sellTransaction.quantity * sellTransaction.pricePerShare;
+    return sellValue - totalCostBasis;
+  };
+
   const csvLines = [];
   csvLines.push(
-    "Date;Symbol;Company Name;Type;Quantity;Price per Share;Total Amount"
+    "Date;Symbol;Company Name;Type;Quantity;Price per Share;Total Amount;P&L"
   );
 
   transactions.forEach((transaction) => {
@@ -19,6 +58,12 @@ export const exportToCSV = async (
     const pricePerShare = transaction.pricePerShare.toFixed(2);
     const totalAmount = transaction.totalAmount.toFixed(2);
 
+    const profitLoss = calculateProfitLoss(transaction);
+    const profitLossValue =
+      profitLoss !== null
+        ? `${profitLoss >= 0 ? "+" : ""}${profitLoss.toFixed(2)}`
+        : "—";
+
     const line = [
       `"${date}"`,
       `"${transaction.symbol}"`,
@@ -27,6 +72,7 @@ export const exportToCSV = async (
       transaction.quantity,
       pricePerShare,
       totalAmount,
+      `"${profitLossValue}"`,
     ].join(";");
     csvLines.push(line);
   });
