@@ -139,6 +139,10 @@ export const exportToPDF = async (
       0
     );
 
+    const profitLoss = totalSellAmount - totalBuyAmount;
+    const profitLossPercent =
+      totalBuyAmount > 0 ? (profitLoss / totalBuyAmount) * 100 : 0;
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text("Summary", 20, finalY + 20);
@@ -162,6 +166,22 @@ export const exportToPDF = async (
       `Net Investment: ${formatCurrency(totalBuyAmount - totalSellAmount)}`,
       20,
       finalY + 44
+    );
+
+    const profitLossColor = profitLoss >= 0 ? [34, 197, 94] : [239, 68, 68]; // Green or Red
+    doc.setTextColor(
+      profitLossColor[0],
+      profitLossColor[1],
+      profitLossColor[2]
+    );
+    doc.text(
+      `Profit/Loss: ${profitLoss >= 0 ? "+" : ""}${formatCurrency(
+        profitLoss
+      )} (${profitLossPercent >= 0 ? "+" : ""}${profitLossPercent.toFixed(
+        2
+      )}%)`,
+      20,
+      finalY + 51
     );
   }
 

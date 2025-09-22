@@ -413,7 +413,11 @@ export default function PortfolioClient() {
                         onClick={() => handleSellClick(holding.symbol)}
                         className="neu-button px-4 py-2 rounded-xl hover:scale-105 transition-transform text-rose-500 font-medium flex items-center gap-2 ml-auto"
                       >
-                        <DynamicIcon iconName="minus-circle" size={16} />
+                        <DynamicIcon
+                          iconName="minus-circle"
+                          size={16}
+                          className="text-[var(--text-accent)]"
+                        />
                         Sell
                       </button>
                     </div>
