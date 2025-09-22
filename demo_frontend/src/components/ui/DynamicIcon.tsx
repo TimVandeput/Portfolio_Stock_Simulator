@@ -18,6 +18,10 @@ import {
   Calendar,
   ChevronUp,
   Download,
+  TrendingUp,
+  TrendingDown,
+  MinusCircle,
+  PlusCircle,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -48,11 +52,16 @@ const iconMap: Record<
   receipt: Receipt,
   arrowleft: ArrowLeft,
   dollarsign: DollarSign,
+  "dollar-sign": DollarSign,
   alertcircle: AlertCircle,
   chevrondown: ChevronDown,
   chevronup: ChevronUp,
   calendar: Calendar,
   download: Download,
+  "trending-up": TrendingUp,
+  "trending-down": TrendingDown,
+  "minus-circle": MinusCircle,
+  "plus-circle": PlusCircle,
 };
 
 const DynamicIcon = memo(

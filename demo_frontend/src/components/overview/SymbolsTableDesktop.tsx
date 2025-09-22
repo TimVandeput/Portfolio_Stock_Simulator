@@ -111,7 +111,7 @@ export default function SymbolsTableDesktop({
     <div className="space-y-4">
       <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[480px]">
             <thead className="border-b border-[var(--accent)]/20">
               <tr>
                 <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[80px]">
@@ -119,7 +119,7 @@ export default function SymbolsTableDesktop({
                     <span className="whitespace-nowrap">Symbol</span>
                   </div>
                 </th>
-                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] min-w-[150px]">
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] min-w-[80px] lg:min-w-[150px]">
                   <div className="flex items-center gap-2">
                     <span className="whitespace-nowrap">Name</span>
                   </div>
@@ -198,7 +198,7 @@ export default function SymbolsTableDesktop({
                       {row.symbol}
                     </td>
 
-                    <td className="px-3 py-3 min-w-[150px]">
+                    <td className="px-3 py-3 min-w-[80px] lg:min-w-[150px] max-w-[120px] lg:max-w-[200px]">
                       <span className="block truncate" title={row.name}>
                         {row.name}
                       </span>
@@ -270,7 +270,13 @@ export default function SymbolsTableDesktop({
                           <NeumorphicButton
                             onClick={() => onBuy?.(row)}
                             disabled={!row.enabled}
+                            className="flex items-center gap-2"
                           >
+                            <DynamicIcon
+                              iconName="plus-circle"
+                              size={16}
+                              className="text-[var(--text-accent)]"
+                            />
                             Buy
                           </NeumorphicButton>
                         )}
