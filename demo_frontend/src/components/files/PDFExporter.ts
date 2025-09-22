@@ -25,6 +25,42 @@ export const exportToPDF = async (
 ) => {
   const doc = new jsPDF();
 
+  const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
+    if (sellTransaction.type !== "SELL") return null;
+
+    const symbolTransactions = transactions
+      .filter((t) => t.symbol === sellTransaction.symbol)
+      .sort(
+        (a, b) =>
+          new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+      );
+
+    const sellIndex = symbolTransactions.findIndex(
+      (t) => t.id === sellTransaction.id
+    );
+    if (sellIndex === -1) return null;
+
+    const relevantTransactions = symbolTransactions.slice(0, sellIndex + 1);
+
+    let remainingShares = sellTransaction.quantity;
+    let totalCostBasis = 0;
+
+    for (const transaction of relevantTransactions) {
+      if (transaction.type === "BUY" && remainingShares > 0) {
+        const sharesToUse = Math.min(remainingShares, transaction.quantity);
+        totalCostBasis += sharesToUse * transaction.pricePerShare;
+        remainingShares -= sharesToUse;
+      }
+    }
+
+    if (remainingShares > 0) {
+      return null;
+    }
+
+    const sellValue = sellTransaction.quantity * sellTransaction.pricePerShare;
+    return sellValue - totalCostBasis;
+  };
+
   try {
     const logoImage = new Image();
     logoImage.crossOrigin = "anonymous";
@@ -139,9 +175,10 @@ export const exportToPDF = async (
       0
     );
 
-    const profitLoss = totalSellAmount - totalBuyAmount;
-    const profitLossPercent =
-      totalBuyAmount > 0 ? (profitLoss / totalBuyAmount) * 100 : 0;
+    const totalProfitLoss = transactions
+      .map((t) => calculateProfitLoss(t))
+      .filter((pl) => pl !== null)
+      .reduce((sum, pl) => sum + pl!, 0);
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -168,21 +205,22 @@ export const exportToPDF = async (
       finalY + 44
     );
 
-    const profitLossColor = profitLoss >= 0 ? [34, 197, 94] : [239, 68, 68]; // Green or Red
-    doc.setTextColor(
-      profitLossColor[0],
-      profitLossColor[1],
-      profitLossColor[2]
-    );
-    doc.text(
-      `Profit/Loss: ${profitLoss >= 0 ? "+" : ""}${formatCurrency(
-        profitLoss
-      )} (${profitLossPercent >= 0 ? "+" : ""}${profitLossPercent.toFixed(
-        2
-      )}%)`,
-      20,
-      finalY + 51
-    );
+    if (sellTransactions.length > 0) {
+      const profitLossColor =
+        totalProfitLoss >= 0 ? [34, 197, 94] : [239, 68, 68]; // green or red
+      doc.setTextColor(
+        profitLossColor[0],
+        profitLossColor[1],
+        profitLossColor[2]
+      );
+      doc.text(
+        `Total Profit/Loss: ${totalProfitLoss >= 0 ? "+" : ""}${formatCurrency(
+          totalProfitLoss
+        )}`,
+        20,
+        finalY + 51
+      );
+    }
   }
 
   doc.save(`${filename}.pdf`);
