@@ -9,11 +9,6 @@ export default function RotationPrompt() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname === "/") {
-      setShouldShow(false);
-      return;
-    }
-
     const checkDeviceAndOrientation = () => {
       try {
         const isMobileDevice =
