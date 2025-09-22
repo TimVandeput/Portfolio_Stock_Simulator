@@ -31,10 +31,15 @@ export default function RotationPrompt() {
 
         const isLandscape = window.innerHeight < window.innerWidth;
 
-        const isNotDesktop = window.innerWidth <= 1366;
+        const hasFinePrecisionPointer =
+          window.matchMedia("(pointer: fine)").matches;
+        const hasHoverCapability = window.matchMedia("(hover: hover)").matches;
+
+        const isDesktop =
+          hasFinePrecisionPointer && hasHoverCapability && !isTablet;
 
         const shouldShowForPhone =
-          isMobileDevice && !isTablet && isLandscape && isNotDesktop;
+          isMobileDevice && !isTablet && isLandscape && !isDesktop;
 
         setShouldShow(shouldShowForPhone);
       } catch (error) {
