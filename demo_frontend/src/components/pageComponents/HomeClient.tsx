@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { filterNavItemsByRole } from "@/components/general/Header";
+import { filterNavItemsByRole } from "@/lib/utils";
 import { navItems } from "@/lib/constants/navItems";
 import type { NavItem } from "@/types";
 import { useAccessControl } from "@/hooks/useAuth";

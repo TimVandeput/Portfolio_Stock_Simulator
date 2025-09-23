@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -10,20 +10,8 @@ import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
 import CursorTrailButton from "@/components/button/CursorTrailButton";
-import { useAuth } from "@/hooks/useAuth";
-import type { NavItem, Role } from "@/types";
-import navItems from "@/lib/constants/navItems";
-
-export function filterNavItemsByRole(
-  items: NavItem[],
-  userRole: Role | null
-): NavItem[] {
-  return items.filter((item) => {
-    if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
-    if (!userRole) return true;
-    return item.allowedRoles.includes(userRole);
-  });
-}
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { useHeaderState } from "@/hooks/useHeaderState";
 
 export default function Header({
   onShowConfirmation,
@@ -41,30 +29,10 @@ export default function Header({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "/";
-  const { role } = useAuth();
 
-  const filteredNavItems = filterNavItemsByRole(navItems, role);
-
-  const hideLogout = pathname === "/";
-  const hideNav = pathname === "/home" || hideLogout;
-  const hideHamburger = pathname === "/home" || hideLogout;
-
-  const isDashboard = pathname === "/home";
-  const filteredForView = filteredNavItems.filter(
-    (item) => !(isDashboard && item.hideOnDashboard)
-  );
-
-  const showCenteredTitle = useMemo(
-    () => pathname !== "/" && pathname !== "/home",
-    [pathname]
-  );
-
-  const pageTitle = useMemo(() => {
-    const match = navItems.find((n) => n.href === pathname)?.name;
-    if (match) return match;
-    const slug = pathname.replace(/^\/+/, "");
-    return slug ? slug.replace(/[-_]+/g, " ").toUpperCase() : "";
-  }, [pathname]);
+  const { pageTitle, showCenteredTitle } = usePageTitle(pathname);
+  const { hideLogout, hideNav, hideHamburger, isHomePage, filteredForView } =
+    useHeaderState(pathname);
 
   return (
     <header
@@ -78,7 +46,7 @@ export default function Header({
               <DesktopNav navItems={filteredForView} hideNav={false} />
             </div>
 
-            {pathname === "/" || pathname === "/home" ? (
+            {isHomePage ? (
               <div className="ml-4">
                 <Image
                   src="/logoSS.png"
@@ -118,7 +86,7 @@ export default function Header({
               <HamburgerButton onClick={() => setOpen(true)} />
             </div>
 
-            {pathname === "/" || pathname === "/home" ? (
+            {isHomePage ? (
               <Image
                 src="/logoSS_mobile.png"
                 alt="Stock Simulator mobile logo"
