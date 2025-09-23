@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import { logout } from "@/lib/api/auth";
 import type { BaseComponentProps } from "@/types/components";
 
@@ -50,7 +50,7 @@ export default function LogoutButton({
       className="neu-button p-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-50 transition-none"
       title={isLoggingOut ? "Logging out..." : "Logout"}
     >
-      <LogOut size={20} style={{ color: "var(--logout-icon)" }} />
+      <DynamicIcon iconName="logout" size={20} style={{ color: "var(--logout-icon)" }} />
     </button>
   );
 }

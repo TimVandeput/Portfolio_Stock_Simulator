@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MousePointer2, MousePointerBan } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 import type { BaseComponentProps } from "@/types/components";
@@ -69,9 +69,9 @@ export default function CursorTrailButton({
       onClick={handleToggle}
     >
       {cursorTrailEnabled ? (
-        <MousePointer2 size={20} style={{ color: "orange" }} />
+        <DynamicIcon iconName="mouse-pointer-2" size={20} style={{ color: "orange" }} />
       ) : (
-        <MousePointerBan size={20} style={{ color: "orange" }} />
+        <DynamicIcon iconName="mouse-pointer-ban" size={20} style={{ color: "orange" }} />
       )}
     </button>
   );

@@ -22,6 +22,11 @@ import {
   TrendingDown,
   MinusCircle,
   PlusCircle,
+  LogOut,
+  Sun,
+  Moon,
+  MousePointer2,
+  MousePointerBan,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -62,6 +67,14 @@ const iconMap: Record<
   "trending-down": TrendingDown,
   "minus-circle": MinusCircle,
   "plus-circle": PlusCircle,
+  logout: LogOut,
+  "log-out": LogOut,
+  sun: Sun,
+  moon: Moon,
+  mousepointer2: MousePointer2,
+  "mouse-pointer-2": MousePointer2,
+  mousepointerban: MousePointerBan,
+  "mouse-pointer-ban": MousePointerBan,
 };
 
 const DynamicIcon = memo(
