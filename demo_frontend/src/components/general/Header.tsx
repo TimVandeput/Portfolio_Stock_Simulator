@@ -26,14 +26,17 @@ export function filterNavItemsByRole(
 }
 
 export default function Header({
-  onLogoutClick,
-  isLoggingOut,
+  onShowConfirmation,
   cursorTrailEnabled,
   setCursorTrailEnabled,
   hideTrailButton,
 }: {
-  onLogoutClick: () => void;
-  isLoggingOut: boolean;
+  onShowConfirmation: (
+    show: boolean,
+    loggingOut: boolean,
+    onConfirm: () => void,
+    onCancel: () => void
+  ) => void;
   cursorTrailEnabled: boolean;
   setCursorTrailEnabled: (enabled: boolean) => void;
   hideTrailButton?: boolean;
@@ -176,10 +179,7 @@ export default function Header({
             </button>
           )}
           {!hideLogout && (
-            <LogoutButton
-              onLogoutClick={onLogoutClick}
-              isLoggingOut={isLoggingOut}
-            />
+            <LogoutButton onShowConfirmation={onShowConfirmation} />
           )}
         </div>
       </div>

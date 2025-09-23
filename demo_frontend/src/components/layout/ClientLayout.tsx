@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
@@ -12,7 +12,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
-import { logout } from "@/lib/api/auth";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
 import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
@@ -23,7 +22,6 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
 
   const {
@@ -34,6 +32,10 @@ export default function ClientLayout({
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutHandlers, setLogoutHandlers] = useState<{
+    onConfirm: () => void;
+    onCancel: () => void;
+  } | null>(null);
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isSmallPhone, setIsSmallPhone] = useState(false);
@@ -42,22 +44,15 @@ export default function ClientLayout({
     loadTokensFromStorage();
   }, []);
 
-  const handleLogoutClick = () => {
-    router.prefetch("/");
-    setShowConfirmation(true);
-  };
-
-  const handleCancelLogout = () => setShowConfirmation(false);
-
-  const handleConfirmLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      router.replace("/");
-    } catch {
-      setIsLoggingOut(false);
-      setShowConfirmation(false);
-    }
+  const handleShowConfirmation = (
+    show: boolean,
+    loggingOut: boolean,
+    onConfirm: () => void,
+    onCancel: () => void
+  ) => {
+    setShowConfirmation(show);
+    setIsLoggingOut(loggingOut);
+    setLogoutHandlers(show ? { onConfirm, onCancel } : null);
   };
 
   useEffect(() => {
@@ -110,8 +105,7 @@ export default function ClientLayout({
         <RotationPrompt />
         {cursorTrailEnabled && <CursorTrail />}
         <Header
-          onLogoutClick={handleLogoutClick}
-          isLoggingOut={isLoggingOut}
+          onShowConfirmation={handleShowConfirmation}
           cursorTrailEnabled={cursorTrailEnabled}
           setCursorTrailEnabled={setCursorTrailEnabled}
           hideTrailButton={isMobile}
@@ -133,8 +127,8 @@ export default function ClientLayout({
                 message="Are you sure you want to logout? You will need to login again to access your account."
                 confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
                 cancelText="Cancel"
-                onConfirm={handleConfirmLogout}
-                onCancel={handleCancelLogout}
+                onConfirm={logoutHandlers?.onConfirm || (() => {})}
+                onCancel={logoutHandlers?.onCancel || (() => {})}
                 confirmDisabled={isLoggingOut}
                 cancelDisabled={isLoggingOut}
               />
