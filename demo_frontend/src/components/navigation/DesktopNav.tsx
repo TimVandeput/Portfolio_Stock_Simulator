@@ -91,8 +91,12 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`
-    neu-button neumorphic-button p-3 font-bold inline-flex items-center gap-2
-    ${open ? "rounded-t-xl" : "rounded-xl"}
+    neu-button neumorphic-button p-3 font-bold inline-flex items-center gap-2 relative z-50
+    ${
+      open
+        ? "rounded-t-xl border-b border-[var(--border)] menu-open-no-bottom"
+        : "rounded-xl"
+    }
   `}
         onMouseDown={(e) => e.preventDefault()}
       >
@@ -107,25 +111,27 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
           aria-label="Main navigation"
           onKeyDown={onKeyDown}
           className="
-            absolute left-0 right-0 top-full
+            absolute left-0 top-full
             z-40
           "
         >
           <div
             className="
-              w-full border-t
               bg-[var(--bg-surface)]
-              shadow-lg
-              px-4 md:px-6 lg:px-8 py-4
-              rounded-b-xl
+              px-8 py-6
+              rounded-b-xl rounded-tr-xl
+              inline-block
+              max-h-[80vh] overflow-y-auto
             "
-            style={{ boxShadow: "var(--shadow-large)" }}
+            style={{
+              boxShadow: "var(--shadow-large)",
+            }}
           >
             <ul
               ref={listRef}
               className="
-                grid gap-3 md:gap-4 lg:gap-4
-                [grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))]
+                flex flex-col gap-3 md:gap-4 lg:gap-4
+                items-stretch
               "
             >
               {navItems.map((item, idx) => {
@@ -136,12 +142,12 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
                       href={item.href}
                       data-menuitem
                       role="menuitem"
-                      className="no-underline"
+                      className="no-underline block"
                       onClick={() => setOpen(false)}
                     >
                       <div
                         className={`
-                          rounded-xl px-3 py-2
+                          rounded-xl px-3 py-2 text-center whitespace-nowrap
                           focus-visible:outline focus-visible:outline-2
                           transition-colors
                           ${idx === 0 ? "mt-4 md:mt-6" : ""}

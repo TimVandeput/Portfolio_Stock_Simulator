@@ -459,3 +459,12 @@ body {
 .dark select::-ms-expand {
   filter: invert(1);
 }
+
+/* Menu button no bottom shadow when open */
+.menu-open-no-bottom {
+  box-shadow: -6px -6px 10px #e6f0fa, 6px -6px 10px #e6f0fa !important;
+}
+
+.dark .menu-open-no-bottom {
+  box-shadow: -6px -6px 10px #363a4c, 6px -6px 10px #363a4c !important;
+}
