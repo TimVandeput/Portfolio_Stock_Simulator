@@ -462,9 +462,9 @@ body {
 
 /* Menu button no bottom shadow when open */
 .menu-open-no-bottom {
-  box-shadow: -6px -6px 10px #e6f0fa, 6px -6px 10px #e6f0fa !important;
+  box-shadow: -6px -6px 10px #e6f0fa, 6px 0px 10px #c2c8d0 !important;
 }
 
 .dark .menu-open-no-bottom {
-  box-shadow: -6px -6px 10px #363a4c, 6px -6px 10px #363a4c !important;
+  box-shadow: -6px -6px 10px #363a4c, 6px 0px 10px #1e2028 !important;
 }
