@@ -69,9 +69,17 @@ export default function CursorTrailButton({
       onClick={handleToggle}
     >
       {cursorTrailEnabled ? (
-        <DynamicIcon iconName="mouse-pointer-2" size={20} style={{ color: "orange" }} />
+        <DynamicIcon
+          iconName="mouse-pointer-2"
+          size={20}
+          style={{ color: "orange" }}
+        />
       ) : (
-        <DynamicIcon iconName="mouse-pointer-ban" size={20} style={{ color: "orange" }} />
+        <DynamicIcon
+          iconName="mouse-pointer-ban"
+          size={20}
+          style={{ color: "orange" }}
+        />
       )}
     </button>
   );
