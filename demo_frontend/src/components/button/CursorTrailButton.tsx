@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import { getCookie, setCookie } from "@/lib/utils/cookies";
-import { BREAKPOINTS } from "@/lib/constants/breakpoints";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useCursorTrailSettings } from "@/hooks/useCursorTrailSettings";
 import type { BaseComponentProps } from "@/types/components";
 
 interface CursorTrailButtonProps extends BaseComponentProps {
@@ -13,48 +12,11 @@ interface CursorTrailButtonProps extends BaseComponentProps {
 export default function CursorTrailButton({
   onTrailChange,
 }: CursorTrailButtonProps) {
-  const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const cookieValue = getCookie("cursorTrailEnabled");
-    if (cookieValue === "true") {
-      setCursorTrailEnabled(true);
-    } else {
-      setCursorTrailEnabled(false);
-    }
-
-    const checkMobile = () => {
-      const mobile = window.matchMedia(BREAKPOINTS.MOBILE_DOWN).matches;
-      setIsMobile(mobile);
-      if (mobile) {
-        setCursorTrailEnabled(false);
-        onTrailChange?.(false);
-      } else {
-        const savedValue = getCookie("cursorTrailEnabled");
-        const enabled = savedValue === "true";
-        setCursorTrailEnabled(enabled);
-        onTrailChange?.(enabled);
-      }
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, [onTrailChange]);
-
-  useEffect(() => {
-    if (!isMobile) {
-      setCookie("cursorTrailEnabled", String(cursorTrailEnabled), {
-        days: 365,
-      });
-    }
-    onTrailChange?.(cursorTrailEnabled);
-  }, [cursorTrailEnabled, isMobile, onTrailChange]);
-
-  const handleToggle = () => {
-    setCursorTrailEnabled(!cursorTrailEnabled);
-  };
+  const { isMobile } = useIsMobile();
+  const { cursorTrailEnabled, toggleCursorTrail } = useCursorTrailSettings(
+    isMobile,
+    onTrailChange
+  );
 
   if (isMobile) {
     return null;
@@ -66,7 +28,7 @@ export default function CursorTrailButton({
       title={
         cursorTrailEnabled ? "Disable Cursor Trail" : "Enable Cursor Trail"
       }
-      onClick={handleToggle}
+      onClick={toggleCursorTrail}
     >
       {cursorTrailEnabled ? (
         <DynamicIcon
