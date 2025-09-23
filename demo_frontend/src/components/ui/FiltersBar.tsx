@@ -60,7 +60,7 @@ export default function FiltersBar({
             className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
             aria-label="Rows per page"
           >
-            {[10, 25, 50, 100].map((n) => (
+            {[10, 25, 50].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -98,7 +98,7 @@ export default function FiltersBar({
           className="px-2 py-1 rounded-xl border bg-[var(--surface)] text-[var(--text-primary)] border-[var(--border)]"
           aria-label="Rows per page"
         >
-          {[10, 25, 50, 100].map((n) => (
+          {[10, 25, 50].map((n) => (
             <option key={n} value={n}>
               {n}
             </option>
