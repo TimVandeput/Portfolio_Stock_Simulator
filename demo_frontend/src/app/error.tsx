@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import Link from "next/link";
 
 export default function Error({
@@ -20,7 +20,11 @@ export default function Error({
       <div className="text-center max-w-md">
         <div className="mb-8">
           <div className="flex justify-center mb-4">
-            <AlertCircle size={64} className="text-red-500" />
+            <DynamicIcon
+              iconName="alert-circle"
+              size={64}
+              className="text-red-500"
+            />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
             Something went wrong!
@@ -45,7 +49,7 @@ export default function Error({
             onClick={reset}
             className="inline-flex items-center gap-2 neu-button px-6 py-3 rounded-xl font-medium transition-all duration-150 hover:scale-105"
           >
-            <RefreshCw size={20} />
+            <DynamicIcon iconName="refresh-cw" size={20} />
             Try Again
           </button>
 
@@ -54,7 +58,7 @@ export default function Error({
               href="/home"
               className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
-              <Home size={16} />
+              <DynamicIcon iconName="home" size={16} />
               Go to Home
             </Link>
           </div>

@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavItem } from "@/types";
-import { Menu, X } from "lucide-react";
+import DynamicIcon from "../ui/DynamicIcon";
+import { useDropdownMenu } from "@/hooks/useDropdownMenu";
 
 interface DesktopNavProps {
   navItems: NavItem[];
@@ -13,68 +14,8 @@ interface DesktopNavProps {
 
 export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
   const pathname = usePathname();
-
-  const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const btnRef = useRef<HTMLButtonElement | null>(null);
-  const listRef = useRef<HTMLUListElement | null>(null);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (panelRef.current?.contains(target)) return;
-      if (btnRef.current?.contains(target)) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
-
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!open) return;
-      const items = Array.from(
-        listRef.current?.querySelectorAll<HTMLAnchorElement>(
-          "a[data-menuitem]"
-        ) ?? []
-      );
-      const i = items.findIndex((el) => el === document.activeElement);
-
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
-        btnRef.current?.focus();
-      } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-        e.preventDefault();
-        const next = items[(i + 1 + items.length) % items.length];
-        next?.focus();
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-        e.preventDefault();
-        const prev = items[(i - 1 + items.length) % items.length];
-        prev?.focus();
-      } else if (e.key === "Home") {
-        e.preventDefault();
-        items[0]?.focus();
-      } else if (e.key === "End") {
-        e.preventDefault();
-        items[items.length - 1]?.focus();
-      }
-    },
-    [open]
-  );
-
-  // Focus first item when opening
-  useEffect(() => {
-    if (!open) return;
-    const first =
-      listRef.current?.querySelector<HTMLAnchorElement>("a[data-menuitem]");
-    first?.focus();
-  }, [open]);
+  const { open, setOpen, panelRef, btnRef, listRef, onKeyDown } =
+    useDropdownMenu();
 
   const hidden = hideNav
     ? "pointer-events-none opacity-0 h-0 overflow-hidden"
@@ -100,7 +41,11 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
   `}
         onMouseDown={(e) => e.preventDefault()}
       >
-        {open ? <X size={18} /> : <Menu size={18} />}
+        {open ? (
+          <DynamicIcon iconName="x" size={18} />
+        ) : (
+          <DynamicIcon iconName="menu" size={18} />
+        )}
         Menu
       </button>
 

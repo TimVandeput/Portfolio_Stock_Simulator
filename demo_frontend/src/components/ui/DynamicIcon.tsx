@@ -27,6 +27,13 @@ import {
   Moon,
   MousePointer2,
   MousePointerBan,
+  Eye,
+  EyeOff,
+  Menu,
+  X,
+  RotateCcw,
+  RefreshCw,
+  MousePointer,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -56,9 +63,11 @@ const iconMap: Record<
   users: Users,
   receipt: Receipt,
   arrowleft: ArrowLeft,
+  "arrow-left": ArrowLeft,
   dollarsign: DollarSign,
   "dollar-sign": DollarSign,
   alertcircle: AlertCircle,
+  "alert-circle": AlertCircle,
   chevrondown: ChevronDown,
   chevronup: ChevronUp,
   calendar: Calendar,
@@ -73,8 +82,19 @@ const iconMap: Record<
   moon: Moon,
   mousepointer2: MousePointer2,
   "mouse-pointer-2": MousePointer2,
+  mousepointer: MousePointer,
+  "mouse-pointer": MousePointer,
   mousepointerban: MousePointerBan,
   "mouse-pointer-ban": MousePointerBan,
+  eye: Eye,
+  eyeoff: EyeOff,
+  "eye-off": EyeOff,
+  menu: Menu,
+  x: X,
+  rotateccw: RotateCcw,
+  "rotate-ccw": RotateCcw,
+  refreshcw: RefreshCw,
+  "refresh-cw": RefreshCw,
 };
 
 const DynamicIcon = memo(
