@@ -15,6 +15,7 @@ import SymbolsPagination from "@/components/button/SymbolsPagination";
 import { listSymbols } from "@/lib/api/symbols";
 import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
+import type { SortOption } from "@/components/ui/SortDropdown";
 
 export default function MarketClient() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function MarketClient() {
     [router]
   );
 
-  const marketSortOptions = [
+  const marketSortOptions: SortOption[] = [
     { value: "symbol-asc", label: "Symbol A-Z" },
     { value: "symbol-desc", label: "Symbol Z-A" },
     { value: "name-asc", label: "Name A-Z" },

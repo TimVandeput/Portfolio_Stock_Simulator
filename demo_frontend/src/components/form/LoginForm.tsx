@@ -7,7 +7,21 @@ import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
 import RoleSelector from "@/components/button/RoleSelector";
 import type { Role } from "@/types";
-import type { LoginFormProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface LoginFormProps extends BaseComponentProps {
+  username: string;
+  setUsername: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  error: string | null;
+  success: string | null;
+  selectedRole: Role;
+  setSelectedRole: (role: Role) => void;
+  isLoggingIn: boolean;
+  onSubmit: () => void;
+  onFlipToRegister: () => void;
+}
 
 export default function LoginForm({
   username,

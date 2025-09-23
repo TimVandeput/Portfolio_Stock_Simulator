@@ -6,7 +6,13 @@ import { exportToCSV } from "@/components/files/CSVExporter";
 import { exportToExcel } from "@/components/files/ExcelExporter";
 import { exportToPDF } from "@/components/files/PDFExporter";
 import type { Transaction } from "@/types/trading";
-import type { TransactionExporterProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface TransactionExporterProps extends BaseComponentProps {
+  transactions: Transaction[];
+  allTransactions?: Transaction[];
+  filename?: string;
+}
 
 export default function TransactionExporter({
   transactions,

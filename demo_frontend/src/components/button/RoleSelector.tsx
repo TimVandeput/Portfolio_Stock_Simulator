@@ -1,6 +1,12 @@
 "use client";
 
-import type { Role, RoleSelectorProps } from "@/types";
+import type { Role } from "@/types";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface RoleSelectorProps extends BaseComponentProps {
+  selectedRole: Role;
+  onRoleChange: (role: Role) => void;
+}
 
 export default function RoleSelector({
   selectedRole,

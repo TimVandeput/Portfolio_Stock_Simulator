@@ -1,4 +1,9 @@
-import type { StatusMessageProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface StatusMessageProps extends BaseComponentProps {
+  message: string;
+  type?: "error" | "success";
+}
 
 export default function StatusMessage({
   message,

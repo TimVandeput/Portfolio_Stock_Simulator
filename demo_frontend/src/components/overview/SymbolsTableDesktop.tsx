@@ -5,11 +5,25 @@ import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type {
-  SymbolsTableDesktopProps,
-  Mode,
-  TableColumn,
-} from "@/types/components";
+import type { BaseComponentProps, Mode } from "@/types/components";
+
+export interface TableColumn {
+  id: string;
+  label: string;
+  description?: string;
+  width?: string;
+  alignment?: "left" | "center" | "right";
+  icon?: string;
+}
+
+export interface SymbolsTableDesktopProps extends BaseComponentProps {
+  page: Page<SymbolDTO> | null;
+  mode: Mode;
+  onToggle?: (symbol: SymbolDTO, enabled: boolean) => void;
+  prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
+  onBuy?: (symbol: SymbolDTO) => void;
+}
 
 export default function SymbolsTableDesktop({
   page,

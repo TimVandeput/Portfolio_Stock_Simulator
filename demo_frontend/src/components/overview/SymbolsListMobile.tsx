@@ -4,7 +4,16 @@ import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-import type { SymbolsListMobileProps, Mode } from "@/types/components";
+import type { BaseComponentProps, Mode } from "@/types/components";
+
+export interface SymbolsListMobileProps extends BaseComponentProps {
+  page: Page<SymbolDTO> | null;
+  mode: Mode;
+  onToggle?: (symbol: SymbolDTO, enabled: boolean) => void;
+  prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
+  onBuy?: (symbol: SymbolDTO) => void;
+}
 
 export default function SymbolsListMobile({
   page,

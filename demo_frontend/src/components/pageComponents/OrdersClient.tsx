@@ -16,7 +16,7 @@ import SortDropdown from "@/components/ui/SortDropdown";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
 import TransactionExporter from "@/components/ui/TransactionExporter";
 import type { Transaction } from "@/types/trading";
-import type { SortOption } from "@/types/components";
+import type { SortOption } from "@/components/ui/SortDropdown";
 
 export default function OrdersClient() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

@@ -1,7 +1,11 @@
 "use client";
 
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type { EmptyPortfolioProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface EmptyPortfolioProps extends BaseComponentProps {
+  onViewMarkets: () => void;
+}
 
 export default function EmptyPortfolio({ onViewMarkets }: EmptyPortfolioProps) {
   return (

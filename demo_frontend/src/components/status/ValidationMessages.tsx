@@ -1,7 +1,16 @@
 "use client";
 
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type { ValidationMessagesProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface ValidationMessagesProps extends BaseComponentProps {
+  canAfford: boolean;
+  totalCost: number;
+  walletLoading: boolean;
+  lastPrice: number;
+  success?: string;
+  loading?: boolean;
+}
 
 export default function ValidationMessages({
   canAfford,

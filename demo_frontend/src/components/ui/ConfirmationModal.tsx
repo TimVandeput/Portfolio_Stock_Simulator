@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import type { ConfirmationModalProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface ConfirmationModalProps extends BaseComponentProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmDisabled?: boolean;
+  cancelDisabled?: boolean;
+}
 
 export default function ConfirmationModal({
   isOpen,

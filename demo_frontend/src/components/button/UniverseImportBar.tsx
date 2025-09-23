@@ -2,7 +2,15 @@
 
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import type { Universe } from "@/types/symbol";
-import type { UniverseImportBarProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface UniverseImportBarProps extends BaseComponentProps {
+  universe: Universe;
+  setUniverse: (u: Universe) => void;
+  onImport: () => void;
+  importBusy: boolean;
+  importRunning: boolean;
+}
 
 export default function UniverseImportBar({
   universe,
