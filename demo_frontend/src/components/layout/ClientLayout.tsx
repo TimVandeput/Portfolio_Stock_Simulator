@@ -13,7 +13,6 @@ import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
-import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
 
@@ -37,7 +36,6 @@ export default function ClientLayout({
     onCancel: () => void;
   } | null>(null);
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [isSmallPhone, setIsSmallPhone] = useState(false);
 
   useEffect(() => {
@@ -55,42 +53,21 @@ export default function ClientLayout({
     setLogoutHandlers(show ? { onConfirm, onCancel } : null);
   };
 
-  useEffect(() => {
-    const cookieValue = getCookie("cursorTrailEnabled");
-    if (cookieValue === "true") {
-      setCursorTrailEnabled(true);
-    } else {
-      setCursorTrailEnabled(false);
-    }
+  const handleTrailChange = (enabled: boolean) => {
+    setCursorTrailEnabled(enabled);
+  };
 
+  useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.matchMedia(BREAKPOINTS.MOBILE_DOWN).matches;
       const smallPhone = window.matchMedia(
         BREAKPOINTS.SMALL_PHONE_DOWN
       ).matches;
-      setIsMobile(mobile);
       setIsSmallPhone(smallPhone);
-      if (mobile) {
-        setCursorTrailEnabled(false);
-      } else {
-        const savedValue = getCookie("cursorTrailEnabled");
-        if (savedValue === "true") {
-          setCursorTrailEnabled(true);
-        }
-      }
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (!isMobile) {
-      setCookie("cursorTrailEnabled", String(cursorTrailEnabled), {
-        days: 365,
-      });
-    }
-  }, [cursorTrailEnabled, isMobile]);
 
   useEffect(() => {
     if (pathname === "/" && (isLoggingOut || showConfirmation)) {
@@ -106,9 +83,7 @@ export default function ClientLayout({
         {cursorTrailEnabled && <CursorTrail />}
         <Header
           onShowConfirmation={handleShowConfirmation}
-          cursorTrailEnabled={cursorTrailEnabled}
-          setCursorTrailEnabled={setCursorTrailEnabled}
-          hideTrailButton={isMobile}
+          onTrailChange={handleTrailChange}
         />
 
         <main className="flex-1 w-full overflow-y-auto flex flex-col">

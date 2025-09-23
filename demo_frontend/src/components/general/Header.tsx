@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import HamburgerButton from "@/components/button/HamburgerButton";
@@ -10,6 +9,7 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
+import CursorTrailButton from "@/components/button/CursorTrailButton";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavItem, Role } from "@/types";
 import navItems from "@/lib/constants/navItems";
@@ -27,9 +27,7 @@ export function filterNavItemsByRole(
 
 export default function Header({
   onShowConfirmation,
-  cursorTrailEnabled,
-  setCursorTrailEnabled,
-  hideTrailButton,
+  onTrailChange,
 }: {
   onShowConfirmation: (
     show: boolean,
@@ -37,9 +35,7 @@ export default function Header({
     onConfirm: () => void,
     onCancel: () => void
   ) => void;
-  cursorTrailEnabled: boolean;
-  setCursorTrailEnabled: (enabled: boolean) => void;
-  hideTrailButton?: boolean;
+  onTrailChange?: (enabled: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "/";
@@ -161,23 +157,7 @@ export default function Header({
         {/* Theme/Trail/Logout */}
         <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">
           <ThemeToggle />
-          {!hideTrailButton && (
-            <button
-              className="neu-button p-3 rounded-xl font-bold active:translate-y-0.5 active:duration-75"
-              title={
-                cursorTrailEnabled
-                  ? "Disable Cursor Trail"
-                  : "Enable Cursor Trail"
-              }
-              onClick={() => setCursorTrailEnabled(!cursorTrailEnabled)}
-            >
-              {cursorTrailEnabled ? (
-                <MousePointer2 size={20} style={{ color: "orange" }} />
-              ) : (
-                <MousePointerBan size={20} style={{ color: "orange" }} />
-              )}
-            </button>
-          )}
+          <CursorTrailButton onTrailChange={onTrailChange} />
           {!hideLogout && (
             <LogoutButton onShowConfirmation={onShowConfirmation} />
           )}
