@@ -15,6 +15,8 @@ import Loader from "@/components/ui/Loader";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
 import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
+import { useConfirmationModal } from "@/hooks/useConfirmationModal";
+import { useLogoutFlow } from "@/hooks/useLogoutFlow";
 
 export default function ClientLayout({
   children,
@@ -27,14 +29,12 @@ export default function ClientLayout({
     showModal: showAccessModal,
     setShowModal: setShowAccessModal,
     accessError,
+    setLoggingOut,
   } = useLayoutAccessControl();
 
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [logoutHandlers, setLogoutHandlers] = useState<{
-    onConfirm: () => void;
-    onCancel: () => void;
-  } | null>(null);
+  const confirmationModal = useConfirmationModal();
+  const logoutFlow = useLogoutFlow();
+
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
   const [isSmallPhone, setIsSmallPhone] = useState(false);
 
@@ -48,9 +48,22 @@ export default function ClientLayout({
     onConfirm: () => void,
     onCancel: () => void
   ) => {
-    setShowConfirmation(show);
-    setIsLoggingOut(loggingOut);
-    setLogoutHandlers(show ? { onConfirm, onCancel } : null);
+    if (show) {
+      confirmationModal.showModal(onConfirm, onCancel, false);
+      if (loggingOut) {
+        logoutFlow.startLogout();
+        setLoggingOut(true);
+      }
+    } else {
+      confirmationModal.hideModal();
+      if (loggingOut) {
+        logoutFlow.startLogout();
+        setLoggingOut(true);
+      } else {
+        logoutFlow.endLogout();
+        setLoggingOut(false);
+      }
+    }
   };
 
   const handleTrailChange = (enabled: boolean) => {
@@ -70,11 +83,22 @@ export default function ClientLayout({
   }, []);
 
   useEffect(() => {
-    if (pathname === "/" && (isLoggingOut || showConfirmation)) {
-      setIsLoggingOut(false);
-      setShowConfirmation(false);
+    if (
+      pathname === "/" &&
+      (logoutFlow.isLoggingOut || confirmationModal.showConfirmation)
+    ) {
+      logoutFlow.endLogout();
+      confirmationModal.hideModal();
+      setLoggingOut(false);
     }
-  }, [pathname, isLoggingOut, showConfirmation]);
+  }, [
+    pathname,
+    logoutFlow.isLoggingOut,
+    confirmationModal.showConfirmation,
+    logoutFlow,
+    confirmationModal,
+    setLoggingOut,
+  ]);
 
   return (
     <ThemeProvider>
@@ -83,6 +107,7 @@ export default function ClientLayout({
         {cursorTrailEnabled && <CursorTrail />}
         <Header
           onShowConfirmation={handleShowConfirmation}
+          onUpdateConfirmationLoading={confirmationModal.updateLoading}
           onTrailChange={handleTrailChange}
         />
 
@@ -95,23 +120,27 @@ export default function ClientLayout({
                 message={accessError?.message || "Access denied"}
                 onClose={() => setShowAccessModal(false)}
               />
-            ) : showConfirmation ? (
+            ) : confirmationModal.showConfirmation ? (
               <ConfirmationModal
-                isOpen={showConfirmation}
+                isOpen={confirmationModal.showConfirmation}
                 title="Confirm Logout"
                 message="Are you sure you want to logout? You will need to login again to access your account."
-                confirmText={isLoggingOut ? "Logging out..." : "Yes, Logout"}
+                confirmText={
+                  confirmationModal.isLoading ? "Logging out..." : "Yes, Logout"
+                }
                 cancelText="Cancel"
-                onConfirm={logoutHandlers?.onConfirm || (() => {})}
-                onCancel={logoutHandlers?.onCancel || (() => {})}
-                confirmDisabled={isLoggingOut}
-                cancelDisabled={isLoggingOut}
+                onConfirm={confirmationModal.handlers?.onConfirm || (() => {})}
+                onCancel={confirmationModal.handlers?.onCancel || (() => {})}
+                confirmDisabled={confirmationModal.isLoading}
+                cancelDisabled={confirmationModal.isLoading}
               />
             ) : (
               children
             )}
 
-            {isLoggingOut && <Loader cover="content" />}
+            {logoutFlow.isLoggingOut && !confirmationModal.showConfirmation && (
+              <Loader cover="content" />
+            )}
           </div>
         </main>
 

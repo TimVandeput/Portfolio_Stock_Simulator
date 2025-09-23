@@ -27,6 +27,7 @@ export function filterNavItemsByRole(
 
 export default function Header({
   onShowConfirmation,
+  onUpdateConfirmationLoading,
   onTrailChange,
 }: {
   onShowConfirmation: (
@@ -35,6 +36,7 @@ export default function Header({
     onConfirm: () => void,
     onCancel: () => void
   ) => void;
+  onUpdateConfirmationLoading?: (loading: boolean) => void;
   onTrailChange?: (enabled: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -159,7 +161,10 @@ export default function Header({
           <ThemeToggle />
           <CursorTrailButton onTrailChange={onTrailChange} />
           {!hideLogout && (
-            <LogoutButton onShowConfirmation={onShowConfirmation} />
+            <LogoutButton
+              onShowConfirmation={onShowConfirmation}
+              onUpdateConfirmationLoading={onUpdateConfirmationLoading}
+            />
           )}
         </div>
       </div>

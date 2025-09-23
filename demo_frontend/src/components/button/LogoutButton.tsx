@@ -13,10 +13,12 @@ interface LogoutButtonProps extends BaseComponentProps {
     onConfirm: () => void,
     onCancel: () => void
   ) => void;
+  onUpdateConfirmationLoading?: (loading: boolean) => void;
 }
 
 export default function LogoutButton({
   onShowConfirmation,
+  onUpdateConfirmationLoading,
 }: LogoutButtonProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -26,12 +28,15 @@ export default function LogoutButton({
 
     const handleConfirm = async () => {
       setIsLoggingOut(true);
-      onShowConfirmation?.(false, true, handleConfirm, handleCancel);
+      onUpdateConfirmationLoading?.(true);
+
       try {
         await logout();
+        onShowConfirmation?.(false, true, handleConfirm, handleCancel);
         router.replace("/");
       } catch {
         setIsLoggingOut(false);
+        onUpdateConfirmationLoading?.(false);
         onShowConfirmation?.(false, false, handleConfirm, handleCancel);
       }
     };
