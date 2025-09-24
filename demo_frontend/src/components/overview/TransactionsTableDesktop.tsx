@@ -233,7 +233,8 @@ export default function TransactionsTableDesktop({
                             : "text-rose-600 dark:text-rose-400"
                         }`}
                       >
-                        {profitLoss >= 0 ? "+" : ""}${profitLoss.toFixed(2)}
+                        {profitLoss >= 0 ? "+$" : "-$"}
+                        {Math.abs(profitLoss).toFixed(2)}
                       </span>
                     ) : (
                       <span className="text-[var(--text-secondary)]">—</span>

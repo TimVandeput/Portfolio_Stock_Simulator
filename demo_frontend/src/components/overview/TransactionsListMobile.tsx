@@ -171,7 +171,8 @@ export default function TransactionsListMobile({
                         : "text-rose-600 dark:text-rose-400"
                     }`}
                   >
-                    {profitLoss >= 0 ? "+" : ""}${profitLoss.toFixed(2)}
+                    {profitLoss >= 0 ? "+$" : "-$"}
+                    {Math.abs(profitLoss).toFixed(2)}
                   </span>
                 </div>
               )}
