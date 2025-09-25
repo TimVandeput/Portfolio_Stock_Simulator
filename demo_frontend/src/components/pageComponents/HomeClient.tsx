@@ -47,17 +47,45 @@ export default function HomeClient() {
                   style={getItemStyle(index)}
                 >
                   <button
-                    className="neu-button neumorphic-button flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)] max-w-20 sm:max-w-24 md:max-w-28 lg:max-w-32"
+                    className="flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)] max-w-20 sm:max-w-24 md:max-w-28 lg:max-w-32 relative overflow-hidden "
                     style={{
                       color: "var(--btn-text)",
                       fontWeight: "bold",
+                      background:
+                        "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                      boxShadow:
+                        "0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                     }}
                     onClick={() => router.push(item.href)}
+                    title={
+                      item.name === "MARKETS"
+                        ? "Browse/buy stocks • Real-time prices • Market analysis"
+                        : item.name === "PORTFOLIO"
+                        ? "Holdings overview • Performance tracking • Sell stocks"
+                        : item.name === "ORDERS"
+                        ? "Transaction history • Buy/sell records • Profit/loss tracking"
+                        : item.name === "WALLET"
+                        ? "Cash balance • Fund management • Alerts & auto-buy/sell"
+                        : item.name === "GRAPHS"
+                        ? "Performance-history charts of your shares"
+                        : item.name === "USERS"
+                        ? "User management • Role permissions • Account control"
+                        : item.name === "SYMBOLS"
+                        ? "Stock symbols • Market data • Symbol management"
+                        : item.name === "NOTIFICATIONS"
+                        ? "Alerts • Notifications • Account updates"
+                        : item.name === "ABOUT"
+                        ? "App information • Creator info • Contact info"
+                        : item.name === "HELP"
+                        ? "User guide"
+                        : item.name
+                    }
                   >
                     {item.icon && (
                       <DynamicIcon
                         iconName={item.icon}
-                        className="w-[80%] h-[80%] text-primary"
+                        className="w-[80%] h-[80%]"
+                        style={{ color: "var(--dashboard-icon-color)" }}
                       />
                     )}
                   </button>

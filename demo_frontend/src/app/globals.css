@@ -92,6 +92,7 @@ body {
   --logout-icon: #ef4444;
   --confirm-btn: #dc2626;
   --success-text: #22c55e;
+  --dashboard-icon-color: #ffffff;
 }
 
 .dark {
@@ -133,6 +134,7 @@ body {
   --logout-icon: #f87171;
   --confirm-btn: #f87171;
   --success-text: #34d399;
+  --dashboard-icon-color: #374151;
 }
 
 /* Body */
