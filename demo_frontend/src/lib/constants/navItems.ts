@@ -35,7 +35,7 @@ export const navItems: NavItem[] = [
   {
     name: "GRAPHS",
     href: "/graphs",
-    icon: "activity",
+    icon: "trending-up",
     allowedRoles: ["ROLE_USER"],
   },
   {
