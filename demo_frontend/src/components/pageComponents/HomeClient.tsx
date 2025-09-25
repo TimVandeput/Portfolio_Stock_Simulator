@@ -47,7 +47,7 @@ export default function HomeClient() {
                   style={getItemStyle(index)}
                 >
                   <button
-                    className="flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)] max-w-20 sm:max-w-24 md:max-w-28 lg:max-w-32 relative overflow-hidden "
+                    className="flex items-center justify-center aspect-square w-full rounded-xl transition-all duration-150 hover:bg-[var(--btn-hover)] hover:shadow-[var(--shadow-neu-hover)] max-w-20 sm:max-w-24 md:max-w-28 lg:max-w-32 relative overflow-hidden cursor-pointer"
                     style={{
                       color: "var(--btn-text)",
                       fontWeight: "bold",
