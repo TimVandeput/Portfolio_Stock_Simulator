@@ -152,6 +152,15 @@ body {
   transition: all 0.15s ease;
 }
 
+/* Make all buttons and clickable elements non-draggable */
+* {
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  user-select: none;
+}
+
 .neu-button:hover {
   background: var(--btn-hover);
   box-shadow: var(--shadow-neu-hover);

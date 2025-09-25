@@ -104,6 +104,7 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
                       role="menuitem"
                       className="no-underline block"
                       onClick={() => setOpen(false)}
+                      draggable="false"
                     >
                       <div
                         className={`
