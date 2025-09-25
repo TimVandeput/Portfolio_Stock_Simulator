@@ -168,8 +168,6 @@ body {
   transform: translateY(0.125rem) !important;
 }
 
-
-
 .role-selected {
   background: var(--accent-selected);
   color: var(--accent-text);
