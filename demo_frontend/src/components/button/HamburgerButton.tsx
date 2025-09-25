@@ -7,7 +7,7 @@ export default function HamburgerButton({ onClick }: HamburgerButtonProps) {
     <button
       aria-label="Open menu"
       onClick={onClick}
-      className="md:hidden p-3"
+      className="neu-button md:hidden p-3 rounded-xl"
       style={{ color: "var(--text-primary)" }}
     >
       <svg

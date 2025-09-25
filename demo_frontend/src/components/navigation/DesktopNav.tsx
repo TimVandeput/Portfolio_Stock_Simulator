@@ -32,14 +32,29 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`
-    neu-button neumorphic-button p-3 font-bold inline-flex items-center gap-2 relative z-50
+    neu-button p-3 font-bold inline-flex items-center gap-2 relative z-50
     ${
       open
         ? "rounded-t-xl border-b border-[var(--border)] menu-open-no-bottom"
         : "rounded-xl"
     }
   `}
-        onMouseDown={(e) => e.preventDefault()}
+        style={{
+          transition: "all 0.15s ease",
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.currentTarget.style.transform = "translateY(2px)";
+          e.currentTarget.style.boxShadow = "var(--shadow-neu-inset)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = "";
+          e.currentTarget.style.boxShadow = "";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "";
+          e.currentTarget.style.boxShadow = "";
+        }}
       >
         {open ? (
           <DynamicIcon iconName="x" size={18} />
@@ -92,7 +107,7 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
                     >
                       <div
                         className={`
-                          rounded-xl px-3 py-2 text-center whitespace-nowrap
+                          neu-button rounded-xl px-3 py-2 text-center whitespace-nowrap
                           focus-visible:outline focus-visible:outline-2
                           transition-colors
                           ${idx === 0 ? "mt-4 md:mt-6" : ""}

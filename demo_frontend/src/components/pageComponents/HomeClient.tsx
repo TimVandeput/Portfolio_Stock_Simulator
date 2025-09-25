@@ -54,7 +54,7 @@ export default function HomeClient() {
                       background:
                         "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
                       boxShadow:
-                        "0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                        "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                     }}
                     onClick={() => router.push(item.href)}
                     title={
