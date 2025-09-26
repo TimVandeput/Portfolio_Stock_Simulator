@@ -61,7 +61,10 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
   }, [quantityNum, lastPrice]);
 
   const canAfford = useMemo(() => {
-    return walletBalance ? totalCost <= walletBalance.cashBalance : false;
+    if (!walletBalance) return false;
+    // Add a small tolerance for floating point precision issues
+    const tolerance = 0.01; // 1 cent tolerance
+    return totalCost <= walletBalance.cashBalance + tolerance;
   }, [totalCost, walletBalance]);
 
   const isValidOrder = useMemo(() => {
@@ -144,7 +147,14 @@ export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
   const setMaxAffordable = () => {
     if (walletBalance && lastPrice > 0) {
       const maxShares = Math.floor(walletBalance.cashBalance / lastPrice);
-      setQuantity(maxShares.toString());
+
+      const calculatedCost = maxShares * lastPrice;
+
+      if (calculatedCost <= walletBalance.cashBalance) {
+        setQuantity(maxShares.toString());
+      } else {
+        setQuantity(Math.max(0, maxShares - 1).toString());
+      }
     }
   };
 
