@@ -112,9 +112,11 @@ export default function SymbolsListMobile({
 
                 {isMarket && (
                   <>
-                    <div className={`rounded-xl border p-2 transition-all duration-500 ${
-                      isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                    }`}>
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       <div className="opacity-70">Last</div>
                       <div
                         className={`font-mono transition-all duration-500 ${
@@ -126,9 +128,11 @@ export default function SymbolsListMobile({
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </div>
                     </div>
-                    <div className={`rounded-xl border p-2 transition-all duration-500 ${
-                      isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                    }`}>
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       <div className="opacity-70">% Chg</div>
                       <div
                         className={`${pcClass} font-mono transition-all duration-500`}

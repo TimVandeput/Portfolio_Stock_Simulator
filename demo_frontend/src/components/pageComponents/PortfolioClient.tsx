@@ -27,6 +27,7 @@ export default function PortfolioClient() {
     totalPortfolioValue: 0,
   });
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [loadingSuccess, setLoadingSuccess] = useState(false);
   const [error, setError] = useState("");
 
   // Process transactions to create detailed holdings with individual purchase tracking
@@ -163,9 +164,11 @@ export default function PortfolioClient() {
             portfolioData.walletBalance.totalValue +
             portfolioData.walletBalance.cashBalance,
         });
+        setLoadingSuccess(true);
         setDataLoaded(true);
       } catch (err) {
         setError(getErrorMessage(err) || "Failed to load portfolio");
+        setLoadingSuccess(false);
         setDataLoaded(true);
       }
     };
@@ -177,8 +180,8 @@ export default function PortfolioClient() {
     router.push(`/portfolio/${symbol}`);
   };
 
-  // Show loading until both data is loaded AND prices are initialized
-  const isLoading = !dataLoaded || !hasInitialPrices;
+  // Show loading until portfolio data is loaded - don't wait for prices
+  const isLoading = !dataLoaded;
 
   if (isLoading) {
     return (
@@ -258,7 +261,22 @@ export default function PortfolioClient() {
           </div>
         )}
 
-        {processedHoldings.length === 0 ? (
+        {!loadingSuccess ? (
+          <div className="text-center py-8">
+            <div className="text-lg font-medium text-[var(--text-primary)] mb-2">
+              Unable to load portfolio data
+            </div>
+            <div className="text-sm text-[var(--text-secondary)] mb-4">
+              Please check your connection and try again
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="neu-button px-4 py-2 rounded-xl hover:scale-105 transition-transform"
+            >
+              Retry
+            </button>
+          </div>
+        ) : processedHoldings.length === 0 ? (
           <EmptyPortfolio onViewMarkets={() => router.push("/market")} />
         ) : (
           <div className="space-y-4">
