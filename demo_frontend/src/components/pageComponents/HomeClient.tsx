@@ -8,7 +8,6 @@ import { useAccessControl } from "@/hooks/useAuth";
 import { useAnimationSequence } from "@/hooks/useAnimationSequence";
 import { useResponsiveGrid } from "@/hooks/useResponsiveGrid";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import Loader from "@/components/ui/Loader";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -32,7 +31,18 @@ export default function HomeClient() {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       {isLoading || !role || dashboardItems.length === 0 ? (
-        <Loader />
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4"
+              style={{
+                borderColor: "var(--loader-spinner)",
+                borderTopColor: "transparent",
+              }}
+            />
+            <span className="text-sm opacity-70">Loading dashboard...</span>
+          </div>
+        </div>
       ) : (
         <div className="dashboard-container flex flex-col items-center justify-center w-full px-4 py-8 pt-12 sm:py-12 sm:pt-16 md:pt-20 pb-16 min-h-full">
           <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto flex flex-col items-center justify-center">

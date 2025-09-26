@@ -35,49 +35,51 @@ export default function LoginClient() {
         minHeight: "calc(100vh - 8.5rem)",
       }}
     >
-      <div className="login-perspective">
-        <div
-          className={`
-            relative
-            w-[340px] h-[500px] sm:w-[320px] sm:h-[480px] xs:w-[300px] xs:h-[460px]
-            transition-transform duration-500
-            [transform-style:preserve-3d]
-            rounded-2xl
-            ${isFlipped ? "rotate-y-180" : ""}
-          `}
-        >
-          <LoginForm
-            username={loginForm.username}
-            setUsername={loginForm.setUsername}
-            password={loginForm.password}
-            setPassword={loginForm.setPassword}
-            error={loginForm.error}
-            success={loginForm.success}
-            selectedRole={loginForm.selectedRole}
-            setSelectedRole={loginForm.setSelectedRole}
-            isLoggingIn={loginForm.isLoggingIn}
-            onSubmit={loginForm.handleSubmit}
-            onFlipToRegister={() => flipToRegister(loginForm.clearMessages)}
-          />
+      {loginForm.showLoader ? (
+        <Loader />
+      ) : (
+        <div className="login-perspective">
+          <div
+            className={`
+              relative
+              w-[340px] h-[500px] sm:w-[320px] sm:h-[480px] xs:w-[300px] xs:h-[460px]
+              transition-transform duration-500
+              [transform-style:preserve-3d]
+              rounded-2xl
+              ${isFlipped ? "rotate-y-180" : ""}
+            `}
+          >
+            <LoginForm
+              username={loginForm.username}
+              setUsername={loginForm.setUsername}
+              password={loginForm.password}
+              setPassword={loginForm.setPassword}
+              error={loginForm.error}
+              success={loginForm.success}
+              selectedRole={loginForm.selectedRole}
+              setSelectedRole={loginForm.setSelectedRole}
+              isLoggingIn={loginForm.isLoggingIn}
+              onSubmit={loginForm.handleSubmit}
+              onFlipToRegister={() => flipToRegister(loginForm.clearMessages)}
+            />
 
-          <RegisterForm
-            rUser={registerForm.rUser}
-            setRUser={registerForm.setRUser}
-            rPass={registerForm.rPass}
-            setRPass={registerForm.setRPass}
-            rPass2={registerForm.rPass2}
-            setRPass2={registerForm.setRPass2}
-            rCode={registerForm.rCode}
-            setRCode={registerForm.setRCode}
-            rStatus={registerForm.rStatus}
-            isRegistering={registerForm.isRegistering}
-            onSubmit={() => registerForm.handleSubmit(() => flipToLogin())}
-            onFlipToLogin={() => flipToLogin(registerForm.clearStatus)}
-          />
+            <RegisterForm
+              rUser={registerForm.rUser}
+              setRUser={registerForm.setRUser}
+              rPass={registerForm.rPass}
+              setRPass={registerForm.setRPass}
+              rPass2={registerForm.rPass2}
+              setRPass2={registerForm.setRPass2}
+              rCode={registerForm.rCode}
+              setRCode={registerForm.setRCode}
+              rStatus={registerForm.rStatus}
+              isRegistering={registerForm.isRegistering}
+              onSubmit={() => registerForm.handleSubmit(() => flipToLogin())}
+              onFlipToLogin={() => flipToLogin(registerForm.clearStatus)}
+            />
+          </div>
         </div>
-      </div>
-
-      {loginForm.showLoader && <Loader cover="page" />}
+      )}
     </div>
   );
 }
