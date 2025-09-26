@@ -22,11 +22,10 @@ export default function HomeClient() {
   );
 
   const { gridStyle } = useResponsiveGrid(dashboardItems.length);
-  const { animateFromLogin, getItemStyle, getTextStyle } = useAnimationSequence(
-    {
+  const { animateFromLogin, getItemStyle, getTextStyle, getShadowStyle } =
+    useAnimationSequence({
       itemCount: dashboardItems.length,
-    }
-  );
+    });
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -63,8 +62,7 @@ export default function HomeClient() {
                       fontWeight: "bold",
                       background:
                         "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                      boxShadow:
-                        "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                      ...getShadowStyle(index),
                     }}
                     onClick={() => router.push(item.href)}
                     title={

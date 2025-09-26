@@ -27,10 +27,16 @@ export function useAnimationSequence({
     new Array(itemCount).fill(false)
   );
   const [animationStarted, setAnimationStarted] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState<boolean[]>(
+    new Array(itemCount).fill(animateFromLogin ? false : true)
+  );
   const hasAnimated = useRef(false);
 
   useEffect(() => {
     setButtonAnimations(
+      new Array(itemCount).fill(animateFromLogin ? false : true)
+    );
+    setAnimationComplete(
       new Array(itemCount).fill(animateFromLogin ? false : true)
     );
     setAnimationStarted(false);
@@ -62,7 +68,8 @@ export function useAnimationSequence({
 
     const timers: number[] = [];
     for (let i = 0; i < itemCount; i++) {
-      const t = window.setTimeout(() => {
+      // Show text timer
+      const textTimer = window.setTimeout(() => {
         setShowText((prev) => {
           if (prev[i]) return prev;
           const next = [...prev];
@@ -70,7 +77,18 @@ export function useAnimationSequence({
           return next;
         });
       }, i * stagger + duration);
-      timers.push(t);
+      timers.push(textTimer);
+
+      // Animation complete timer (when item reaches final position)
+      const completeTimer = window.setTimeout(() => {
+        setAnimationComplete((prev) => {
+          if (prev[i]) return prev;
+          const next = [...prev];
+          next[i] = true;
+          return next;
+        });
+      }, i * stagger + duration);
+      timers.push(completeTimer);
     }
 
     return () => {
@@ -106,11 +124,18 @@ export function useAnimationSequence({
     opacity: showText[index] ? 1 : 0,
   });
 
+  const getShadowStyle = (index: number) => ({
+    boxShadow: animationComplete[index]
+      ? "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+      : "none",
+  });
+
   return {
     animateFromLogin,
     animationStarted,
     getItemStyle,
     getTextStyle,
+    getShadowStyle,
     stagger,
   };
 }
