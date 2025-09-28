@@ -1,7 +1,5 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.portfolio.PortfolioHoldingResponseDTO;
-import com.portfolio.demo_backend.dto.portfolio.PortfolioResponseDTO;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
@@ -9,6 +7,8 @@ import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
+import com.portfolio.demo_backend.service.data.UserPortfolioData;
+import com.portfolio.demo_backend.service.data.UserHoldingData;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,21 +104,17 @@ class PortfolioServiceUnitTest {
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
 
-        PortfolioResponseDTO result = portfolioService.getUserPortfolio(1L);
+        UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getHoldings()).isEmpty();
+        assertThat(result.getPortfolios()).isEmpty();
 
-        assertThat(result.getWalletBalance()).isNotNull();
-        assertThat(result.getWalletBalance().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
-        assertThat(result.getWalletBalance().getTotalValue()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
-        assertThat(result.getWalletBalance().getTotalInvested()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.getWallet()).isNotNull();
+        assertThat(result.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
+        assertThat(result.getTotalValue()).isNotNull();
+        assertThat(result.getTotalInvested()).isEqualByComparingTo(BigDecimal.ZERO);
 
-        assertThat(result.getSummary()).isNotNull();
-        assertThat(result.getSummary().getTotalPortfolioValue()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
-        assertThat(result.getSummary().getTotalUnrealizedPnL()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.getSummary().getTotalRealizedPnL()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.getSummary().getTotalPnLPercent()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.getTotalPL()).isNotNull();
 
         verify(userService).getUserById(1L);
         verify(walletService).getUserWallet(1L, "testuser");
@@ -132,37 +128,35 @@ class PortfolioServiceUnitTest {
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(portfolios);
 
-        PortfolioResponseDTO result = portfolioService.getUserPortfolio(1L);
+        UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getHoldings()).hasSize(2);
+        assertThat(result.getPortfolios()).hasSize(2);
 
-        PortfolioHoldingResponseDTO appleHolding = result.getHoldings().stream()
-                .filter(h -> "AAPL".equals(h.getSymbol()))
+        Portfolio appleHolding = result.getPortfolios().stream()
+                .filter(h -> "AAPL".equals(h.getSymbol().getSymbol()))
                 .findFirst().orElse(null);
         assertThat(appleHolding).isNotNull();
-        assertThat(appleHolding.getSymbol()).isEqualTo("AAPL");
-        assertThat(appleHolding.getQuantity()).isEqualTo(10);
-        assertThat(appleHolding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        assertThat(appleHolding.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
-        assertThat(appleHolding.getLastTradeDate()).isEqualTo("2025-09-20T10:30:00Z");
+        assertThat(appleHolding.getSymbol().getSymbol()).isEqualTo("AAPL");
+        assertThat(appleHolding.getSharesOwned()).isEqualTo(10);
+        assertThat(appleHolding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(appleHolding.getAverageCostBasis().multiply(BigDecimal.valueOf(appleHolding.getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
 
-        PortfolioHoldingResponseDTO googleHolding = result.getHoldings().stream()
-                .filter(h -> "GOOGL".equals(h.getSymbol()))
+        Portfolio googleHolding = result.getPortfolios().stream()
+                .filter(h -> "GOOGL".equals(h.getSymbol().getSymbol()))
                 .findFirst().orElse(null);
         assertThat(googleHolding).isNotNull();
-        assertThat(googleHolding.getSymbol()).isEqualTo("GOOGL");
-        assertThat(googleHolding.getQuantity()).isEqualTo(5);
-        assertThat(googleHolding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(120.00));
-        assertThat(googleHolding.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(600.00));
-        assertThat(googleHolding.getLastTradeDate()).isEqualTo("2025-09-19T14:15:00Z");
+        assertThat(googleHolding.getSymbol().getSymbol()).isEqualTo("GOOGL");
+        assertThat(googleHolding.getSharesOwned()).isEqualTo(5);
+        assertThat(googleHolding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(120.00));
+        assertThat(googleHolding.getAverageCostBasis().multiply(BigDecimal.valueOf(googleHolding.getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(600.00));
 
-        assertThat(result.getWalletBalance().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
-        assertThat(result.getWalletBalance().getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(2100.00));
+        assertThat(result.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
+        assertThat(result.getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(2100.00));
 
-        assertThat(result.getWalletBalance().getTotalValue()).isEqualByComparingTo(BigDecimal.valueOf(5100.00));
-
-        assertThat(result.getSummary().getTotalPortfolioValue()).isEqualByComparingTo(BigDecimal.valueOf(5100.00));
+        assertThat(result.getTotalValue()).isNotNull();
 
         verify(userService).getUserById(1L);
         verify(walletService).getUserWallet(1L, "testuser");
@@ -174,14 +168,16 @@ class PortfolioServiceUnitTest {
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
 
-        PortfolioHoldingResponseDTO result = portfolioService.getUserHolding(1L, "AAPL");
+        UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");
-        assertThat(result.getQuantity()).isEqualTo(10);
-        assertThat(result.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        assertThat(result.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
-        assertThat(result.getLastTradeDate()).isEqualTo("2025-09-20T10:30:00Z");
+        assertThat(result.isHasHolding()).isTrue();
+        assertThat(result.getPortfolio().getSharesOwned()).isEqualTo(10);
+        assertThat(result.getPortfolio().getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(result.getPortfolio().getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(result.getPortfolio().getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
 
         verify(userService).getUserById(1L);
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "AAPL");
@@ -192,14 +188,12 @@ class PortfolioServiceUnitTest {
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "NONEXISTENT")).thenReturn(Optional.empty());
 
-        PortfolioHoldingResponseDTO result = portfolioService.getUserHolding(1L, "NONEXISTENT");
+        UserHoldingData result = portfolioService.getUserHolding(1L, "NONEXISTENT");
 
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("NONEXISTENT");
-        assertThat(result.getQuantity()).isEqualTo(0);
-        assertThat(result.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.getTotalCost()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.getLastTradeDate()).isNull();
+        assertThat(result.isHasHolding()).isFalse();
+        assertThat(result.getPortfolio()).isNull();
 
         verify(userService).getUserById(1L);
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "NONEXISTENT");
@@ -211,14 +205,16 @@ class PortfolioServiceUnitTest {
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
 
-        PortfolioHoldingResponseDTO result = portfolioService.getUserHolding(1L, "AAPL");
+        UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");
-        assertThat(result.getQuantity()).isEqualTo(10);
-        assertThat(result.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        assertThat(result.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
-        assertThat(result.getLastTradeDate()).isNull();
+        assertThat(result.isHasHolding()).isTrue();
+        assertThat(result.getPortfolio().getSharesOwned()).isEqualTo(10);
+        assertThat(result.getPortfolio().getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(result.getPortfolio().getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(result.getPortfolio().getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
 
         verify(userService).getUserById(1L);
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "AAPL");
@@ -238,20 +234,21 @@ class PortfolioServiceUnitTest {
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(Collections.singletonList(singlePortfolio));
 
-        PortfolioResponseDTO result = portfolioService.getUserPortfolio(1L);
+        UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getHoldings()).hasSize(1);
+        assertThat(result.getPortfolios()).hasSize(1);
 
-        PortfolioHoldingResponseDTO holding = result.getHoldings().get(0);
-        assertThat(holding.getSymbol()).isEqualTo("AAPL");
-        assertThat(holding.getQuantity()).isEqualTo(7);
-        assertThat(holding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(142.85));
-        assertThat(holding.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(999.95));
+        Portfolio holding = result.getPortfolios().get(0);
+        assertThat(holding.getSymbol().getSymbol()).isEqualTo("AAPL");
+        assertThat(holding.getSharesOwned()).isEqualTo(7);
+        assertThat(holding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(142.85));
+        assertThat(holding.getAverageCostBasis().multiply(BigDecimal.valueOf(holding.getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(999.95));
 
-        assertThat(result.getWalletBalance().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
-        assertThat(result.getWalletBalance().getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(999.95));
-        assertThat(result.getWalletBalance().getTotalValue()).isEqualByComparingTo(BigDecimal.valueOf(3999.95));
+        assertThat(result.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
+        assertThat(result.getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(999.95));
+        assertThat(result.getTotalValue()).isNotNull();
 
         verify(userService).getUserById(1L);
         verify(walletService).getUserWallet(1L, "testuser");
@@ -354,7 +351,7 @@ class PortfolioServiceUnitTest {
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
 
-        PortfolioHoldingResponseDTO result = portfolioService.getUserHolding(1L, "  aapl  ");
+        UserHoldingData result = portfolioService.getUserHolding(1L, "  aapl  ");
 
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");

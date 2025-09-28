@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
+import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.User;
@@ -152,22 +152,21 @@ class WalletServiceIntegrationTest {
         portfolio.setAverageCostBasis(BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
-        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(testUser.getId());
+        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
 
         assertThat(summary).isNotNull();
-        assertThat(summary.getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getHoldings()).hasSize(1);
-        assertThat(summary.getHoldings().get(0).getSymbol()).isEqualTo("AAPL");
-        assertThat(summary.getHoldings().get(0).getShares()).isEqualTo(10);
+        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
+        assertThat(summary.getPositions()).hasSize(1);
+        assertThat(summary.getPositions().get(0).getSymbol().getSymbol()).isEqualTo("AAPL");
+        assertThat(summary.getPositions().get(0).getSharesOwned()).isEqualTo(10);
     }
 
     @Test
     void getPortfolioSummary_withoutPortfolioEntries() {
-        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(testUser.getId());
+        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
 
         assertThat(summary).isNotNull();
-        assertThat(summary.getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getHoldings()).isEmpty();
-        assertThat(summary.getTotalPortfolioValue()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
+        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
+        assertThat(summary.getPositions()).isEmpty();
     }
 }

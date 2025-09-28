@@ -6,8 +6,10 @@ import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.dto.trading.TransactionDTO;
 import com.portfolio.demo_backend.mapper.TransactionMapper;
+import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.service.TradingService;
 import com.portfolio.demo_backend.service.WalletService;
+import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +46,9 @@ public class TradingController {
 
     @GetMapping("/{userId}/portfolio")
     public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
-        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(userId);
+        PortfolioSummaryData summaryData = walletService.getPortfolioSummary(userId);
+        PortfolioSummaryDTO summary = TradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(),
+                summaryData.getPositions(), summaryData.getCurrentPrices());
         return ResponseEntity.ok(summary);
     }
 

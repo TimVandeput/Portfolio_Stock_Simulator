@@ -1,11 +1,9 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.Symbol;
-import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
-import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
-import com.portfolio.demo_backend.mapper.SymbolMapper;
+import com.portfolio.demo_backend.service.data.ImportData;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient.SymbolItem;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -193,18 +191,18 @@ public class SymbolService {
         }
     }
 
-    public Page<SymbolDTO> list(String q, Boolean enabled, Pageable pageable) {
+    public Page<Symbol> list(String q, Boolean enabled, Pageable pageable) {
         Page<Symbol> page = symbolRepository.search(emptyToNull(q), enabled, ensureSort(pageable));
-        return page.map(e -> SymbolMapper.toSymbol(e));
+        return page;
     }
 
-    public SymbolDTO setEnabled(Long id, boolean enabled) {
+    public Symbol setEnabled(Long id, boolean enabled) {
         Symbol e = symbolRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Symbol not found"));
 
         e.setEnabled(enabled);
         symbolRepository.save(e);
-        return SymbolMapper.toSymbol(e);
+        return e;
     }
 
     private String emptyToNull(String s) {
@@ -219,10 +217,8 @@ public class SymbolService {
         return p;
     }
 
-    public ImportStatusDTO importStatus() {
-        return new ImportStatusDTO(importRunning.get(),
-                lastImportedAt != null ? lastImportedAt.toString() : null,
-                lastSummary);
+    public ImportData importStatus() {
+        return new ImportData(importRunning.get(), lastImportedAt, lastSummary);
     }
 
     public List<String> getEnabledSymbols() {

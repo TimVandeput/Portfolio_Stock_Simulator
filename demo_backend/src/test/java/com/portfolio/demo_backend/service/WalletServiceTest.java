@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
+import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.*;
@@ -68,14 +68,12 @@ class WalletServiceTest {
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(testWallet));
         when(portfolioRepository.findByUserId(1L)).thenReturn(List.of());
 
-        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(userId);
+        PortfolioSummaryData summary = walletService.getPortfolioSummary(userId);
 
         assertNotNull(summary);
-        assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
-        assertEquals(BigDecimal.ZERO, summary.getTotalMarketValue());
-        assertEquals(new BigDecimal("5000.00"), summary.getTotalPortfolioValue());
-        assertEquals(BigDecimal.ZERO, summary.getTotalUnrealizedGainLoss());
-        assertTrue(summary.getHoldings().isEmpty());
+        assertEquals(new BigDecimal("5000.00"), summary.getWallet().getCashBalance());
+        assertEquals(0, summary.getPositions().size());
+        assertTrue(summary.getPositions().isEmpty());
     }
 
     @Test
@@ -97,22 +95,17 @@ class WalletServiceTest {
         when(portfolioRepository.findByUserId(1L)).thenReturn(List.of(portfolio));
         when(priceService.getAllCurrentPrices()).thenReturn(Map.of("AAPL", testQuote));
 
-        PortfolioSummaryDTO summary = walletService.getPortfolioSummary(userId);
+        PortfolioSummaryData summary = walletService.getPortfolioSummary(userId);
 
         assertNotNull(summary);
-        assertEquals(new BigDecimal("5000.00"), summary.getCashBalance());
-        assertEquals(new BigDecimal("1500.0"), summary.getTotalMarketValue());
-        assertEquals(new BigDecimal("6500.00"), summary.getTotalPortfolioValue());
-        assertEquals(new BigDecimal("100.00"), summary.getTotalUnrealizedGainLoss());
-        assertEquals(1, summary.getHoldings().size());
+        assertEquals(new BigDecimal("5000.00"), summary.getWallet().getCashBalance());
+        assertEquals(1, summary.getPositions().size());
+        assertEquals("AAPL", summary.getCurrentPrices().keySet().iterator().next());
 
-        var holding = summary.getHoldings().get(0);
-        assertEquals("AAPL", holding.getSymbol());
-        assertEquals(10, holding.getShares());
-        assertEquals(new BigDecimal("140.00"), holding.getAverageCost());
-        assertEquals(new BigDecimal("150.0"), holding.getCurrentPrice());
-        assertEquals(new BigDecimal("1500.0"), holding.getMarketValue());
-        assertEquals(new BigDecimal("100.00"), holding.getUnrealizedGainLoss());
+        var holding = summary.getPositions().get(0);
+        assertEquals("AAPL", holding.getSymbol().getSymbol());
+        assertEquals(10, holding.getSharesOwned());
+        assertEquals(new BigDecimal("140.00"), holding.getAverageCostBasis());
     }
 
     @Test
