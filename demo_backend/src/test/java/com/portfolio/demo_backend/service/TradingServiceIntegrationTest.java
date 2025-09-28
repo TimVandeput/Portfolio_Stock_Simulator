@@ -63,6 +63,7 @@ class TradingServiceIntegrationTest {
     void setUp() {
         testUser = User.builder()
                 .username("trader")
+                .email("trader@example.com")
                 .password("encodedpassword")
                 .build();
         testUser = userRepository.save(testUser);
@@ -179,6 +180,7 @@ class TradingServiceIntegrationTest {
     void getTransactionHistory_emptyForNewUser() {
         User newUser = User.builder()
                 .username("newuser")
+                .email("newuser@example.com")
                 .password("password")
                 .build();
         newUser = userRepository.save(newUser);

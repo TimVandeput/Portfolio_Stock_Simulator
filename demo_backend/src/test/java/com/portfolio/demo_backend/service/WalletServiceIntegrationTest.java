@@ -64,6 +64,7 @@ class WalletServiceIntegrationTest {
     void setUp() {
         testUser = User.builder()
                 .username("testuser")
+                .email("testuser@example.com")
                 .password("encodedpassword")
                 .build();
         testUser = userRepository.save(testUser);

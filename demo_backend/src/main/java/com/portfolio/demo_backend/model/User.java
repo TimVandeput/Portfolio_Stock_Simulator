@@ -25,12 +25,11 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
     @Column(nullable = false, length = 60)
     private String password;
-
-    @Column(name = "is_fake", nullable = false)
-    @Builder.Default
-    private boolean isFake = false;
 
     @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)

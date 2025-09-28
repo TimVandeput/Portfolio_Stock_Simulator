@@ -50,6 +50,7 @@ class PortfolioServiceIntegrationTest {
     void setUp() {
         testUser = User.builder()
                 .username("testuser")
+                .email("testuser@example.com")
                 .password("encodedpassword")
                 .roles(EnumSet.of(Role.ROLE_USER))
                 .build();

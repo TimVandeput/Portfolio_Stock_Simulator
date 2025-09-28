@@ -30,6 +30,7 @@ class RefreshTokenServiceIntegrationTest {
     private User seedUser() {
         User u = User.builder()
                 .username("rachel")
+                .email("rachel@example.com")
                 .password("$2a$10$hash")
                 .roles(new HashSet<>(Set.of(Role.ROLE_USER)))
                 .build();

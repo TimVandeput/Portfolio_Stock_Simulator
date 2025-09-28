@@ -27,26 +27,23 @@ public class AuthService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasscodeService passcodeService;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
     public RegistrationResponse register(RegisterRequest req) {
-        passcodeService.validate(req.getPasscode());
-
         User created = userService.createUser(
                 User.builder()
                         .username(req.getUsername().trim())
+                        .email(req.getEmail().trim().toLowerCase())
                         .password(req.getPassword())
                         .roles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN))
-                        .isFake(false)
                         .build());
 
         return new RegistrationResponse(created.getId(), created.getUsername(), created.getRoles());
     }
 
     public AuthResponse login(LoginRequest req) {
-        User user = userRepository.findByUsername(req.getUsername())
+        User user = userRepository.findByUsernameOrEmail(req.getUsernameOrEmail())
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
