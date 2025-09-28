@@ -158,7 +158,6 @@ export default function OrdersClient() {
             {!loading && !error && transactions.length > 0 && (
               <TransactionExporter
                 transactions={filteredAndSortedTransactions}
-                allTransactions={transactions}
                 filename={`transactions-${
                   new Date().toISOString().split("T")[0]
                 }`}
@@ -175,7 +174,6 @@ export default function OrdersClient() {
               <div className="flex-shrink-0">
                 <TransactionExporter
                   transactions={filteredAndSortedTransactions}
-                  allTransactions={transactions}
                   filename={`transactions-${
                     new Date().toISOString().split("T")[0]
                   }`}
@@ -265,12 +263,10 @@ export default function OrdersClient() {
 
         <TransactionsTableDesktop
           transactions={paginatedTransactions}
-          allTransactions={transactions}
           loading={loading}
         />
         <TransactionsListMobile
           transactions={paginatedTransactions}
-          allTransactions={transactions}
           loading={loading}
         />
 

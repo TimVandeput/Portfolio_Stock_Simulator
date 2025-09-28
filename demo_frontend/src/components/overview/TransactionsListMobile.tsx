@@ -5,53 +5,13 @@ import DynamicIcon from "@/components/ui/DynamicIcon";
 
 interface TransactionsListMobileProps {
   transactions: Transaction[];
-  allTransactions?: Transaction[];
   loading?: boolean;
 }
 
 export default function TransactionsListMobile({
   transactions,
-  allTransactions,
   loading = false,
 }: TransactionsListMobileProps) {
-  const transactionsForPL = allTransactions || transactions;
-
-  const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
-    if (sellTransaction.type !== "SELL") return null;
-
-    const symbolTransactions = transactionsForPL
-      .filter((t) => t.symbol === sellTransaction.symbol)
-      .sort(
-        (a, b) =>
-          new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
-      );
-
-    const sellIndex = symbolTransactions.findIndex(
-      (t) => t.id === sellTransaction.id
-    );
-    if (sellIndex === -1) return null;
-
-    const relevantTransactions = symbolTransactions.slice(0, sellIndex + 1);
-
-    let remainingShares = sellTransaction.quantity;
-    let totalCostBasis = 0;
-
-    for (const transaction of relevantTransactions) {
-      if (transaction.type === "BUY" && remainingShares > 0) {
-        const sharesToUse = Math.min(remainingShares, transaction.quantity);
-        totalCostBasis += sharesToUse * transaction.pricePerShare;
-        remainingShares -= sharesToUse;
-      }
-    }
-
-    if (remainingShares > 0) {
-      return null;
-    }
-
-    const sellValue = sellTransaction.quantity * sellTransaction.pricePerShare;
-    return sellValue - totalCostBasis;
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -90,7 +50,7 @@ export default function TransactionsListMobile({
     <div className="md:hidden">
       <ul className="space-y-3">
         {transactions.map((transaction) => {
-          const profitLoss = calculateProfitLoss(transaction);
+          const profitLoss = transaction.profitLoss;
 
           return (
             <li

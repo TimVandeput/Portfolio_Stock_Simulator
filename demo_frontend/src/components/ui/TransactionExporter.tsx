@@ -10,13 +10,11 @@ import type { BaseComponentProps } from "@/types/components";
 
 export interface TransactionExporterProps extends BaseComponentProps {
   transactions: Transaction[];
-  allTransactions?: Transaction[];
   filename?: string;
 }
 
 export default function TransactionExporter({
   transactions,
-  allTransactions,
   filename = "transactions",
   className = "",
 }: TransactionExporterProps) {
@@ -26,13 +24,12 @@ export default function TransactionExporter({
   const handleExport = async (
     exportFunction: (
       transactions: Transaction[],
-      filename: string,
-      allTransactions?: Transaction[]
+      filename: string
     ) => Promise<void>
   ) => {
     setIsExporting(true);
     try {
-      await exportFunction(transactions, filename, allTransactions);
+      await exportFunction(transactions, filename);
     } catch (error) {
       console.error("Export error:", error);
     } finally {
@@ -55,7 +52,8 @@ export default function TransactionExporter({
           color: "var(--dashboard-icon-color)",
           fontWeight: "bold",
           background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-          boxShadow: "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+          boxShadow:
+            "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
         }}
       >
         {isExporting ? (

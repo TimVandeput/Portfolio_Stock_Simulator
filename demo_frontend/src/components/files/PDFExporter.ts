@@ -21,49 +21,9 @@ const formatDate = (dateString: string) => {
 
 export const exportToPDF = async (
   transactions: Transaction[],
-  filename: string,
-  allTransactions?: Transaction[]
+  filename: string
 ) => {
   const doc = new jsPDF();
-
-  // Use all transactions for P&L calculation, fall back to filtered if not provided
-  const transactionsForPL = allTransactions || transactions;
-
-  const calculateProfitLoss = (sellTransaction: Transaction): number | null => {
-    if (sellTransaction.type !== "SELL") return null;
-
-    const symbolTransactions = transactionsForPL
-      .filter((t) => t.symbol === sellTransaction.symbol)
-      .sort(
-        (a, b) =>
-          new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
-      );
-
-    const sellIndex = symbolTransactions.findIndex(
-      (t) => t.id === sellTransaction.id
-    );
-    if (sellIndex === -1) return null;
-
-    const relevantTransactions = symbolTransactions.slice(0, sellIndex + 1);
-
-    let remainingShares = sellTransaction.quantity;
-    let totalCostBasis = 0;
-
-    for (const transaction of relevantTransactions) {
-      if (transaction.type === "BUY" && remainingShares > 0) {
-        const sharesToUse = Math.min(remainingShares, transaction.quantity);
-        totalCostBasis += sharesToUse * transaction.pricePerShare;
-        remainingShares -= sharesToUse;
-      }
-    }
-
-    if (remainingShares > 0) {
-      return null;
-    }
-
-    const sellValue = sellTransaction.quantity * sellTransaction.pricePerShare;
-    return sellValue - totalCostBasis;
-  };
 
   try {
     const logoImage = new Image();
@@ -93,7 +53,7 @@ export const exportToPDF = async (
 
     const logoDataUrl = canvas.toDataURL("image/png", 1.0);
     doc.addImage(logoDataUrl, "PNG", 20, 10, logoWidth, logoHeight);
-  } catch (error) {
+  } catch {
     doc.setFontSize(20);
     doc.setTextColor(96, 165, 250);
     doc.text("StockSim", 20, 25);
@@ -109,7 +69,7 @@ export const exportToPDF = async (
   doc.text(`Total Transactions: ${transactions.length}`, 20, 42);
 
   const tableData = transactions.map((transaction) => {
-    const profitLoss = calculateProfitLoss(transaction);
+    const profitLoss = transaction.profitLoss;
 
     const maxCompanyNameLength = 20;
     const truncatedCompanyName =
@@ -205,7 +165,7 @@ export const exportToPDF = async (
     );
 
     const totalProfitLoss = transactions
-      .map((t) => calculateProfitLoss(t))
+      .map((t) => t.profitLoss)
       .filter((pl) => pl !== null)
       .reduce((sum, pl) => sum + pl!, 0);
 

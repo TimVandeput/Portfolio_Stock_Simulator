@@ -50,6 +50,7 @@ export interface Transaction {
   quantity: number;
   pricePerShare: number;
   totalAmount: number;
+  profitLoss: number | null;
   type: TransactionType;
   executedAt: string;
 }
