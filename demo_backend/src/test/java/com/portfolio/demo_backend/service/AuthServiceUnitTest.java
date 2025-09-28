@@ -7,7 +7,6 @@ import com.portfolio.demo_backend.dto.auth.RegisterRequest;
 import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
-import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.model.RefreshToken;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
@@ -83,13 +82,12 @@ class AuthServiceUnitTest {
     }
 
     @Test
-    void login_happy_path_checks_password_role_and_returns_tokens() {
+    void login_happy_path_checks_password_and_returns_tokens() {
         LoginRequest req = new LoginRequest();
         req.setUsernameOrEmail("alice");
         req.setPassword("Plain123");
-        req.setChosenRole("user");
 
-        User u = user("alice", "alice@example.com", EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN), "$2aHash");
+        User u = user("alice", "alice@example.com", EnumSet.of(Role.ROLE_USER), "$2aHash");
         when(userRepository.findByUsernameOrEmail("alice")).thenReturn(Optional.of(u));
         when(passwordEncoder.matches("Plain123", "$2aHash")).thenReturn(true);
         when(jwtService.generateAccessToken("alice", 42L, Role.ROLE_USER)).thenReturn("jwt-access");
@@ -102,7 +100,7 @@ class AuthServiceUnitTest {
         assertThat(out.getRefreshToken()).isEqualTo("refresh-1");
         assertThat(out.getTokenType()).isEqualTo("Bearer");
         assertThat(out.getUsername()).isEqualTo("alice");
-        assertThat(out.getRoles()).contains(Role.ROLE_USER, Role.ROLE_ADMIN);
+        assertThat(out.getRoles()).contains(Role.ROLE_USER);
         assertThat(out.getAuthenticatedAs()).isEqualTo(Role.ROLE_USER);
     }
 
@@ -111,7 +109,6 @@ class AuthServiceUnitTest {
         LoginRequest req = new LoginRequest();
         req.setUsernameOrEmail("ghost");
         req.setPassword("x");
-        req.setChosenRole("USER");
 
         when(userRepository.findByUsernameOrEmail("ghost")).thenReturn(Optional.empty());
 
@@ -124,7 +121,6 @@ class AuthServiceUnitTest {
         LoginRequest req = new LoginRequest();
         req.setUsernameOrEmail("bob");
         req.setPassword("wrong");
-        req.setChosenRole("ADMIN");
 
         User u = user("bob", "bob@example.com", EnumSet.of(Role.ROLE_ADMIN), "$2aHash");
         when(userRepository.findByUsernameOrEmail("bob")).thenReturn(Optional.of(u));
@@ -132,21 +128,6 @@ class AuthServiceUnitTest {
 
         assertThatThrownBy(() -> authService.login(req))
                 .isInstanceOf(InvalidCredentialsException.class);
-    }
-
-    @Test
-    void login_throws_RoleNotAssigned_when_role_not_present() {
-        LoginRequest req = new LoginRequest();
-        req.setUsernameOrEmail("carol");
-        req.setPassword("Pass1234");
-        req.setChosenRole("ADMIN");
-
-        User u = user("carol", "carol@example.com", EnumSet.of(Role.ROLE_USER), "$2aHash");
-        when(userRepository.findByUsernameOrEmail("carol")).thenReturn(Optional.of(u));
-        when(passwordEncoder.matches("Pass1234", "$2aHash")).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.login(req))
-                .isInstanceOf(RoleNotAssignedException.class);
     }
 
     @Test

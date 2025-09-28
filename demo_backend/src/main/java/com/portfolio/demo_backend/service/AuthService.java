@@ -7,7 +7,6 @@ import com.portfolio.demo_backend.dto.auth.RegisterRequest;
 import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
-import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
 import com.portfolio.demo_backend.model.RefreshToken;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
@@ -18,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -50,17 +48,14 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        Role chosen = parseRole(req.getChosenRole());
-        if (!user.getRoles().contains(chosen)) {
-            throw new RoleNotAssignedException(chosen.name());
-        }
+        Role userRole = user.getRoles().iterator().next();
 
-        String access = jwtService.generateAccessToken(user.getUsername(), user.getId(), chosen);
+        String access = jwtService.generateAccessToken(user.getUsername(), user.getId(), userRole);
         RefreshToken refresh = refreshTokenService.create(user);
-        refreshTokenService.setAuthenticatedAs(refresh.getToken(), chosen);
+        refreshTokenService.setAuthenticatedAs(refresh.getToken(), userRole);
 
         return new AuthResponse(access, refresh.getToken(), "Bearer",
-                user.getUsername(), user.getRoles(), chosen);
+                user.getUsername(), user.getRoles(), userRole);
     }
 
     public AuthResponse refresh(RefreshRequest req) {
@@ -80,13 +75,5 @@ public class AuthService {
 
     public void logout(RefreshRequest req) {
         refreshTokenService.revoke(req.getRefreshToken());
-    }
-
-    private Role parseRole(String input) {
-        String norm = input.trim().toUpperCase(Locale.ROOT);
-        if (!norm.startsWith("ROLE_")) {
-            norm = "ROLE_" + norm;
-        }
-        return Role.valueOf(norm);
     }
 }
