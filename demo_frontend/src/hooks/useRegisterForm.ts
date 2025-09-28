@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { register } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import type { RegisterRequest } from "@/types";
@@ -15,6 +15,10 @@ export function useRegisterForm() {
     type: "error" | "success";
   } | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  useEffect(() => {
+    console.log("RegisterForm rStatus changed:", rStatus);
+  }, [rStatus]);
 
   const clearStatus = () => {
     setRStatus(null);
@@ -68,7 +72,11 @@ export function useRegisterForm() {
         message: `Registration successful! Please log in.`,
         type: "success",
       });
-      resetForm();
+
+      setRUser("");
+      setREmail("");
+      setRPass("");
+      setRPass2("");
 
       setTimeout(() => {
         onSuccess?.();
