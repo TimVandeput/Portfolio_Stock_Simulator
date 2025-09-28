@@ -68,18 +68,18 @@ class AuthServiceUnitTest {
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         when(userService.createUser(userCaptor.capture()))
-                .thenReturn(user("tim", "tim@example.com", EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN), "$2a..."));
+                .thenReturn(user("tim", "tim@example.com", EnumSet.of(Role.ROLE_USER), "$2a..."));
 
         RegistrationResponse out = authService.register(req);
 
         User createdArg = userCaptor.getValue();
         assertThat(createdArg.getUsername()).isEqualTo("tim");
         assertThat(createdArg.getEmail()).isEqualTo("tim@example.com");
-        assertThat(createdArg.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER, Role.ROLE_ADMIN);
+        assertThat(createdArg.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
 
         assertThat(out.getId()).isEqualTo(42L);
         assertThat(out.getUsername()).isEqualTo("tim");
-        assertThat(out.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER, Role.ROLE_ADMIN);
+        assertThat(out.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
     }
 
     @Test

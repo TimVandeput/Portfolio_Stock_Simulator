@@ -36,7 +36,7 @@ public class AuthService {
                         .username(req.getUsername().trim())
                         .email(req.getEmail().trim().toLowerCase())
                         .password(req.getPassword())
-                        .roles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN))
+                        .roles(EnumSet.of(Role.ROLE_USER))
                         .build());
 
         return new RegistrationResponse(created.getId(), created.getUsername(), created.getRoles());

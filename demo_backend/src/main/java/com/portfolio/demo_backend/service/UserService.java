@@ -47,7 +47,7 @@ public class UserService {
         validateAndEncodePassword(user);
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN));
+            user.setRoles(EnumSet.of(Role.ROLE_USER));
         } else {
             user.setRoles(EnumSet.copyOf(user.getRoles()));
         }
