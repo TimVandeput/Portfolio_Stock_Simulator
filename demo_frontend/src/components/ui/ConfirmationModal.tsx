@@ -13,6 +13,7 @@ export interface ConfirmationModalProps extends BaseComponentProps {
   onCancel: () => void;
   confirmDisabled?: boolean;
   cancelDisabled?: boolean;
+  buttonType?: "danger" | "primary";
 }
 
 export default function ConfirmationModal({
@@ -25,6 +26,7 @@ export default function ConfirmationModal({
   onCancel,
   confirmDisabled = false,
   cancelDisabled = false,
+  buttonType = "danger",
 }: ConfirmationModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -81,7 +83,9 @@ export default function ConfirmationModal({
           <button
             onClick={confirmDisabled ? undefined : onConfirm}
             disabled={confirmDisabled}
-            className={`neu-button neumorphic-button btn-danger px-8 py-3 rounded-xl font-medium transition-all duration-150 ${
+            className={`neu-button neumorphic-button ${
+              buttonType === "danger" ? "btn-danger" : "btn-primary"
+            } px-8 py-3 rounded-xl font-medium transition-all duration-150 ${
               confirmDisabled
                 ? "opacity-50 cursor-not-allowed"
                 : "active:translate-y-0.5 active:duration-75"

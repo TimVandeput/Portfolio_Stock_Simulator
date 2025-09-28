@@ -180,6 +180,7 @@ This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
             }}
             confirmDisabled={loading}
             cancelDisabled={loading}
+            buttonType="primary"
           />
         ) : (
           <>
