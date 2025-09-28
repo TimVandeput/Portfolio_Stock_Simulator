@@ -22,6 +22,7 @@ public class TransactionMapper {
                 transaction.getQuantity(),
                 transaction.getPricePerShare(),
                 transaction.getTotalAmount(),
+                transaction.getProfitLoss(),
                 transaction.getExecutedAt());
     }
 

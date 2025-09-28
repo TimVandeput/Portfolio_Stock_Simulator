@@ -40,6 +40,9 @@ public class Transaction {
     @Column(name = "executed_at", nullable = false)
     private Instant executedAt;
 
+    @Column(name = "profit_loss", precision = 15, scale = 2)
+    private BigDecimal profitLoss;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     @JsonIgnore
