@@ -50,14 +50,12 @@ export default function LoginClient() {
             `}
           >
             <LoginForm
-              username={loginForm.username}
-              setUsername={loginForm.setUsername}
+              usernameOrEmail={loginForm.usernameOrEmail}
+              setUsernameOrEmail={loginForm.setUsernameOrEmail}
               password={loginForm.password}
               setPassword={loginForm.setPassword}
               error={loginForm.error}
               success={loginForm.success}
-              selectedRole={loginForm.selectedRole}
-              setSelectedRole={loginForm.setSelectedRole}
               isLoggingIn={loginForm.isLoggingIn}
               onSubmit={loginForm.handleSubmit}
               onFlipToRegister={() => flipToRegister(loginForm.clearMessages)}
@@ -66,12 +64,12 @@ export default function LoginClient() {
             <RegisterForm
               rUser={registerForm.rUser}
               setRUser={registerForm.setRUser}
+              rEmail={registerForm.rEmail}
+              setREmail={registerForm.setREmail}
               rPass={registerForm.rPass}
               setRPass={registerForm.setRPass}
               rPass2={registerForm.rPass2}
               setRPass2={registerForm.setRPass2}
-              rCode={registerForm.rCode}
-              setRCode={registerForm.setRCode}
               rStatus={registerForm.rStatus}
               isRegistering={registerForm.isRegistering}
               onSubmit={() => registerForm.handleSubmit(() => flipToLogin())}

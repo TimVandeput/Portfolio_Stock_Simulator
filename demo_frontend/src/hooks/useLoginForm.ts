@@ -4,15 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
-import type { LoginRequest, Role } from "@/types";
+import type { LoginRequest } from "@/types";
 
 export function useLoginForm() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [selectedRole, setSelectedRole] = useState<Role>("ROLE_USER");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
 
@@ -22,7 +21,7 @@ export function useLoginForm() {
   };
 
   const resetForm = () => {
-    setUsername("");
+    setUsernameOrEmail("");
     setPassword("");
     clearMessages();
   };
@@ -30,22 +29,21 @@ export function useLoginForm() {
   const handleSubmit = async () => {
     clearMessages();
 
-    if (!username || !password) {
-      setError("Please enter your username and password.");
+    if (!usernameOrEmail || !password) {
+      setError("Please enter your email/username and password.");
       return;
     }
 
     setIsLoggingIn(true);
     try {
       const loginData: LoginRequest = {
-        username,
+        usernameOrEmail,
         password,
-        chosenRole: selectedRole,
       };
       const response = await login(loginData);
 
       setSuccess(`Login successful! Welcome, ${response.username}!`);
-      setUsername("");
+      setUsernameOrEmail("");
       setPassword("");
 
       setTimeout(() => {
@@ -65,14 +63,12 @@ export function useLoginForm() {
   };
 
   return {
-    username,
-    setUsername,
+    usernameOrEmail,
+    setUsernameOrEmail,
     password,
     setPassword,
     error,
     success,
-    selectedRole,
-    setSelectedRole,
     isLoggingIn,
     showLoader,
     handleSubmit,

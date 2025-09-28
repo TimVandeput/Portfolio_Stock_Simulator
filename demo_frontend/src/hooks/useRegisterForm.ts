@@ -7,9 +7,9 @@ import type { RegisterRequest } from "@/types";
 
 export function useRegisterForm() {
   const [rUser, setRUser] = useState("");
+  const [rEmail, setREmail] = useState("");
   const [rPass, setRPass] = useState("");
   const [rPass2, setRPass2] = useState("");
-  const [rCode, setRCode] = useState("");
   const [rStatus, setRStatus] = useState<{
     message: string;
     type: "error" | "success";
@@ -22,19 +22,27 @@ export function useRegisterForm() {
 
   const resetForm = () => {
     setRUser("");
+    setREmail("");
     setRPass("");
     setRPass2("");
-    setRCode("");
     clearStatus();
   };
 
   const validateForm = () => {
-    if (!rUser || !rPass || !rPass2 || !rCode) {
+    if (!rUser || !rEmail || !rPass || !rPass2) {
       setRStatus({ message: "Please fill in all fields.", type: "error" });
       return false;
     }
     if (rPass !== rPass2) {
       setRStatus({ message: "Passwords do not match.", type: "error" });
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(rEmail)) {
+      setRStatus({
+        message: "Please enter a valid email address.",
+        type: "error",
+      });
       return false;
     }
     return true;
@@ -51,8 +59,8 @@ export function useRegisterForm() {
     try {
       const registerData: RegisterRequest = {
         username: rUser,
+        email: rEmail,
         password: rPass,
-        passcode: rCode,
       };
       await register(registerData);
 
@@ -80,12 +88,12 @@ export function useRegisterForm() {
   return {
     rUser,
     setRUser,
+    rEmail,
+    setREmail,
     rPass,
     setRPass,
     rPass2,
     setRPass2,
-    rCode,
-    setRCode,
     rStatus,
     isRegistering,
     handleSubmit,

@@ -15,12 +15,12 @@ export interface RegisterStatus {
 export interface RegisterFormProps extends BaseComponentProps {
   rUser: string;
   setRUser: (value: string) => void;
+  rEmail: string;
+  setREmail: (value: string) => void;
   rPass: string;
   setRPass: (value: string) => void;
   rPass2: string;
   setRPass2: (value: string) => void;
-  rCode: string;
-  setRCode: (value: string) => void;
   rStatus: RegisterStatus | null;
   isRegistering: boolean;
   onSubmit: () => void;
@@ -30,12 +30,12 @@ export interface RegisterFormProps extends BaseComponentProps {
 export default function RegisterForm({
   rUser,
   setRUser,
+  rEmail,
+  setREmail,
   rPass,
   setRPass,
   rPass2,
   setRPass2,
-  rCode,
-  setRCode,
   rStatus,
   isRegistering,
   onSubmit,
@@ -87,10 +87,11 @@ export default function RegisterForm({
           onChange={setRUser}
           className="my-2"
         />
-        <PasswordInput
-          placeholder="Passcode"
-          value={rCode}
-          onChange={setRCode}
+        <NeumorphicInput
+          type="email"
+          placeholder="Email"
+          value={rEmail}
+          onChange={setREmail}
           className="my-2"
         />
         <PasswordInput
