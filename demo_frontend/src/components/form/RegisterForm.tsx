@@ -5,17 +5,37 @@ import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
-import type { RegisterFormProps, RegisterStatus } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface RegisterStatus {
+  message: string;
+  type: "error" | "success";
+}
+
+export interface RegisterFormProps extends BaseComponentProps {
+  rUser: string;
+  setRUser: (value: string) => void;
+  rEmail: string;
+  setREmail: (value: string) => void;
+  rPass: string;
+  setRPass: (value: string) => void;
+  rPass2: string;
+  setRPass2: (value: string) => void;
+  rStatus: RegisterStatus | null;
+  isRegistering: boolean;
+  onSubmit: () => void;
+  onFlipToLogin: () => void;
+}
 
 export default function RegisterForm({
   rUser,
   setRUser,
+  rEmail,
+  setREmail,
   rPass,
   setRPass,
   rPass2,
   setRPass2,
-  rCode,
-  setRCode,
   rStatus,
   isRegistering,
   onSubmit,
@@ -67,10 +87,11 @@ export default function RegisterForm({
           onChange={setRUser}
           className="my-2"
         />
-        <PasswordInput
-          placeholder="Passcode"
-          value={rCode}
-          onChange={setRCode}
+        <NeumorphicInput
+          type="email"
+          placeholder="Email"
+          value={rEmail}
+          onChange={setREmail}
           className="my-2"
         />
         <PasswordInput

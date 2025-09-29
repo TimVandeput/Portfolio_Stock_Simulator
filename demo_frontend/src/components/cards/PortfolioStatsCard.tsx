@@ -1,7 +1,17 @@
 "use client";
 
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type { PortfolioStatsCardProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface PortfolioStatsCardProps extends BaseComponentProps {
+  title: string;
+  value: string;
+  subValue?: string;
+  iconName: string;
+  valueColor?: string;
+  ariaLabel?: string;
+  tooltip?: string;
+}
 
 export default function PortfolioStatsCard({
   title,

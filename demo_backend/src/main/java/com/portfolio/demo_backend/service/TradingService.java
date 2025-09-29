@@ -95,8 +95,11 @@ public class TradingService {
         updatePortfolioForSell(portfolio, request.getQuantity());
 
         Symbol symbol = getSymbolEntity(request.getSymbol());
+
+        BigDecimal profitLoss = calculateProfitLoss(userId, request.getSymbol(), request.getQuantity(), currentPrice);
+
         Transaction transaction = createTransaction(userId, symbol, TransactionType.SELL,
-                request.getQuantity(), currentPrice, totalProceeds);
+                request.getQuantity(), currentPrice, totalProceeds, profitLoss);
 
         log.info("Sell order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
@@ -168,6 +171,11 @@ public class TradingService {
 
     private Transaction createTransaction(Long userId, Symbol symbol, TransactionType type,
             int quantity, BigDecimal pricePerShare, BigDecimal totalAmount) {
+        return createTransaction(userId, symbol, type, quantity, pricePerShare, totalAmount, null);
+    }
+
+    private Transaction createTransaction(Long userId, Symbol symbol, TransactionType type,
+            int quantity, BigDecimal pricePerShare, BigDecimal totalAmount, BigDecimal profitLoss) {
         Transaction transaction = new Transaction();
         transaction.setUserId(userId);
         transaction.setSymbol(symbol);
@@ -175,7 +183,39 @@ public class TradingService {
         transaction.setQuantity(quantity);
         transaction.setPricePerShare(pricePerShare);
         transaction.setTotalAmount(totalAmount);
+        transaction.setProfitLoss(profitLoss);
         transaction.setExecutedAt(Instant.now());
         return transactionRepository.save(transaction);
+    }
+
+    private BigDecimal calculateProfitLoss(Long userId, String symbol, Integer sellQuantity, BigDecimal sellPrice) {
+        List<Transaction> symbolTransactions = transactionRepository
+                .findByUserIdAndSymbolOrderByExecutedAtAsc(userId, symbol);
+
+        if (symbolTransactions.isEmpty()) {
+            return null;
+        }
+
+        int remainingShares = sellQuantity;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
+
+        for (Transaction transaction : symbolTransactions) {
+            if (transaction.getType() == TransactionType.BUY && remainingShares > 0) {
+                int sharesToUse = Math.min(remainingShares, transaction.getQuantity());
+                BigDecimal costForShares = transaction.getPricePerShare()
+                        .multiply(BigDecimal.valueOf(sharesToUse));
+                totalCostBasis = totalCostBasis.add(costForShares);
+                remainingShares -= sharesToUse;
+            }
+        }
+
+        if (remainingShares > 0) {
+            log.warn("Insufficient purchase history to calculate profit/loss for user: {}, symbol: {}, quantity: {}",
+                    userId, symbol, sellQuantity);
+            return null;
+        }
+
+        BigDecimal sellValue = sellPrice.multiply(BigDecimal.valueOf(sellQuantity));
+        return sellValue.subtract(totalCostBasis);
     }
 }

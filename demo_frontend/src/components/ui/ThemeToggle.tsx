@@ -1,6 +1,6 @@
 "use client";
 
-import { Sun, Moon } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function ThemeToggle() {
@@ -13,9 +13,9 @@ export default function ThemeToggle() {
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
-        <Moon size={20} className="text-secondary" />
+        <DynamicIcon iconName="moon" size={20} className="text-secondary" />
       ) : (
-        <Sun size={20} className="text-primary" />
+        <DynamicIcon iconName="sun" size={20} className="text-primary" />
       )}
     </button>
   );

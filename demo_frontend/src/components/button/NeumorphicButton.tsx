@@ -1,4 +1,13 @@
-import type { ButtonProps } from "@/types";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface ButtonProps extends BaseComponentProps {
+  onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "danger";
+  size?: "small" | "medium" | "large";
+  "aria-label"?: string;
+}
 
 export default function NeumorphicButton({
   children,

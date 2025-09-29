@@ -20,5 +20,6 @@ public class TransactionDTO {
     private Integer quantity;
     private BigDecimal pricePerShare;
     private BigDecimal totalAmount;
+    private BigDecimal profitLoss;
     private Instant executedAt;
 }

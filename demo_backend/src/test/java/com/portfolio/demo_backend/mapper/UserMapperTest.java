@@ -9,33 +9,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserMapperTest {
 
     @Test
-    void toEntity_setsIsFake_whenDtoProvidesTrue() {
+    void toEntity_mapsFieldsCorrectly() {
         CreateUserDTO dto = new CreateUserDTO();
         dto.setId(1L);
         dto.setUsername("demo");
+        dto.setEmail("demo@example.com");
         dto.setPassword("password123");
-        dto.setIsFake(Boolean.TRUE);
 
         User user = UserMapper.toEntity(dto);
 
         assertThat(user).isNotNull();
-        assertThat(user.isFake()).isTrue();
         assertThat(user.getUsername()).isEqualTo("demo");
+        assertThat(user.getEmail()).isEqualTo("demo@example.com");
+        assertThat(user.getPassword()).isEqualTo("password123");
     }
 
     @Test
-    void toDTO_includesIsFake_fromEntity() {
+    void toDTO_mapsFieldsCorrectlyExcludingPassword() {
         User user = User.builder()
                 .id(2L)
                 .username("realuser")
+                .email("real@example.com")
                 .password("secret")
-                .isFake(true)
                 .build();
 
         CreateUserDTO dto = UserMapper.toDTO(user);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getIsFake()).isTrue();
         assertThat(dto.getUsername()).isEqualTo("realuser");
+        assertThat(dto.getEmail()).isEqualTo("real@example.com");
+        assertThat(dto.getPassword()).isNull();
     }
 }

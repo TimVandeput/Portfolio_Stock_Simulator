@@ -1,6 +1,16 @@
 "use client";
 
-import type { SymbolsPaginationProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface SymbolsPaginationProps extends BaseComponentProps {
+  pageIdx: number;
+  totalPages: number;
+  totalElements: number;
+  loading: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+  onGoto: (idx: number) => void;
+}
 
 export default function SymbolsPagination({
   pageIdx,

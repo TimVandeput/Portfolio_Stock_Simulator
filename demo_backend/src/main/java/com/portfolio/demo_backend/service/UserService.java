@@ -1,5 +1,6 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.exception.user.EmailAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
@@ -38,10 +39,15 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException(user.getEmail());
+        }
+
         validateAndEncodePassword(user);
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles(EnumSet.of(Role.ROLE_USER, Role.ROLE_ADMIN));
+            user.setRoles(EnumSet.of(Role.ROLE_USER));
         } else {
             user.setRoles(EnumSet.copyOf(user.getRoles()));
         }
@@ -75,6 +81,15 @@ public class UserService {
                 throw new UserAlreadyExistsException(newUsername);
             }
             user.setUsername(newUsername);
+        }
+
+        if (updatedUser.getEmail() != null) {
+            String newEmail = updatedUser.getEmail().trim().toLowerCase();
+            if (!newEmail.equals(user.getEmail())
+                    && userRepository.findByEmail(newEmail).isPresent()) {
+                throw new EmailAlreadyExistsException(newEmail);
+            }
+            user.setEmail(newEmail);
         }
 
         if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {

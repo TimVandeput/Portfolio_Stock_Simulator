@@ -2,8 +2,8 @@ export type Role = "ROLE_USER" | "ROLE_ADMIN";
 
 export interface RegisterRequest {
   username: string;
+  email: string;
   password: string;
-  passcode: string;
 }
 
 export interface RegistrationResponse {
@@ -13,9 +13,8 @@ export interface RegistrationResponse {
 }
 
 export interface LoginRequest {
-  username: string;
+  usernameOrEmail: string;
   password: string;
-  chosenRole: Role | "USER" | "ADMIN";
 }
 
 export interface RefreshRequest {

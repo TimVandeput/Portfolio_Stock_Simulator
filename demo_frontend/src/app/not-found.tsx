@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, ArrowLeft } from "lucide-react";
+import DynamicIcon from "@/components/ui/DynamicIcon";
 
 export default function NotFound() {
   return (
@@ -22,7 +22,7 @@ export default function NotFound() {
             href="/home"
             className="inline-flex items-center gap-2 neu-button px-6 py-3 rounded-xl font-medium transition-all duration-150 hover:scale-105"
           >
-            <Home size={20} />
+            <DynamicIcon iconName="home" size={20} />
             Go to Home
           </Link>
 
@@ -31,7 +31,7 @@ export default function NotFound() {
               onClick={() => window.history.back()}
               className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
-              <ArrowLeft size={16} />
+              <DynamicIcon iconName="arrow-left" size={16} />
               Go Back
             </button>
           </div>

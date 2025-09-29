@@ -1,11 +1,11 @@
 "use client";
 
 type LoaderProps = {
-  cover?: "page" | "content";
+  cover?: "page" | "content" | "main";
   className?: string;
 };
 
-export default function Loader({ cover = "page", className }: LoaderProps) {
+export default function Loader({ cover = "main", className }: LoaderProps) {
   const overlayClasses = `grid place-items-center ${className ?? ""}`;
   const styleOverlay = { backgroundColor: "var(--bg-primary)" } as const;
   const styleSpinner = {
@@ -32,6 +32,17 @@ export default function Loader({ cover = "page", className }: LoaderProps) {
     return (
       <div
         className={`absolute inset-0 z-[5] ${overlayClasses}`}
+        style={styleOverlay}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  if (cover === "main") {
+    return (
+      <div
+        className={`flex-1 flex items-center justify-center ${className ?? ""}`}
         style={styleOverlay}
       >
         {content}

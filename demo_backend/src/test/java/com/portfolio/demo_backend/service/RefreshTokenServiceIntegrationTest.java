@@ -30,6 +30,7 @@ class RefreshTokenServiceIntegrationTest {
     private User seedUser() {
         User u = User.builder()
                 .username("rachel")
+                .email("rachel@example.com")
                 .password("$2a$10$hash")
                 .roles(new HashSet<>(Set.of(Role.ROLE_USER)))
                 .build();
@@ -49,12 +50,25 @@ class RefreshTokenServiceIntegrationTest {
         assertThat(validated.getId()).isEqualTo(t1.getId());
 
         RefreshToken t2 = refreshTokenService.rotate(t1);
-        assertThat(t2.getToken()).isNotEqualTo(t1.getToken());
+        assertThat(t2.getToken()).isEqualTo(t1.getToken());
+        assertThat(refreshTokenRepository.findByToken(t1.getToken()))
+                .get()
+                .extracting(RefreshToken::isRevoked)
+                .isEqualTo(false);
+
+        assertThat(refreshTokenService.validateUsable(t2.getToken())).isNotNull();
+
+        Instant nearExpiry = Instant.now().plusMillis(60000);
+        t1.setExpiresAt(nearExpiry);
+        refreshTokenRepository.save(t1);
+
+        RefreshToken t3 = refreshTokenService.rotate(t1);
+        assertThat(t3.getToken()).isNotEqualTo(t1.getToken());
         assertThat(refreshTokenRepository.findByToken(t1.getToken()))
                 .get()
                 .extracting(RefreshToken::isRevoked)
                 .isEqualTo(true);
 
-        assertThat(refreshTokenService.validateUsable(t2.getToken())).isNotNull();
+        assertThat(refreshTokenService.validateUsable(t3.getToken())).isNotNull();
     }
 }

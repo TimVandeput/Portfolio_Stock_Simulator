@@ -6,7 +6,12 @@ import { exportToCSV } from "@/components/files/CSVExporter";
 import { exportToExcel } from "@/components/files/ExcelExporter";
 import { exportToPDF } from "@/components/files/PDFExporter";
 import type { Transaction } from "@/types/trading";
-import type { TransactionExporterProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface TransactionExporterProps extends BaseComponentProps {
+  transactions: Transaction[];
+  filename?: string;
+}
 
 export default function TransactionExporter({
   transactions,
@@ -42,7 +47,14 @@ export default function TransactionExporter({
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isExporting}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-[var(--export-btn)] hover:opacity-80 disabled:opacity-50 rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap"
+        className="neu-button flex items-center gap-2 px-3 py-2 text-sm font-medium disabled:opacity-50 rounded-lg transition-all duration-200 whitespace-nowrap cursor-pointer"
+        style={{
+          color: "var(--dashboard-icon-color)",
+          fontWeight: "bold",
+          background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+          boxShadow:
+            "var(--shadow-neu), 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+        }}
       >
         {isExporting ? (
           <>

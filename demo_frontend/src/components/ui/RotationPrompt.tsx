@@ -1,64 +1,10 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import DynamicIcon from "./DynamicIcon";
+import { useDeviceOrientation } from "@/hooks/useDeviceOrientation";
 
 export default function RotationPrompt() {
-  const [shouldShow, setShouldShow] = useState(false);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (pathname === "/") {
-      setShouldShow(false);
-      return;
-    }
-
-    const checkDeviceAndOrientation = () => {
-      try {
-        const isMobileDevice =
-          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-          ) ||
-          "ontouchstart" in window ||
-          navigator.maxTouchPoints > 0;
-
-        const isTablet =
-          /iPad/i.test(navigator.userAgent) ||
-          (/Android/i.test(navigator.userAgent) &&
-            !/Mobile/i.test(navigator.userAgent)) ||
-          (window.innerWidth >= 768 && window.innerHeight >= 768);
-
-        const isLandscape = window.innerHeight < window.innerWidth;
-
-        const isNotDesktop = window.innerWidth <= 1366;
-
-        const shouldShowForPhone =
-          isMobileDevice && !isTablet && isLandscape && isNotDesktop;
-
-        setShouldShow(shouldShowForPhone);
-      } catch (error) {
-        console.warn(
-          "RotationPrompt: Error in checkDeviceAndOrientation",
-          error
-        );
-        setShouldShow(false);
-      }
-    };
-
-    checkDeviceAndOrientation();
-
-    window.addEventListener("orientationchange", checkDeviceAndOrientation);
-    window.addEventListener("resize", checkDeviceAndOrientation);
-
-    return () => {
-      window.removeEventListener(
-        "orientationchange",
-        checkDeviceAndOrientation
-      );
-      window.removeEventListener("resize", checkDeviceAndOrientation);
-    };
-  }, [pathname]);
+  const { shouldShow } = useDeviceOrientation();
 
   if (!shouldShow) {
     return null;
@@ -72,7 +18,8 @@ export default function RotationPrompt() {
         color: "var(--text-primary)",
       }}
     >
-      <RotateCcw
+      <DynamicIcon
+        iconName="rotate-ccw"
         className="w-16 h-16 mb-4 animate-pulse"
         style={{ color: "var(--text-primary)" }}
       />

@@ -1,8 +1,7 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
-import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.model.Symbol;
+import com.portfolio.demo_backend.service.data.ImportData;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,12 +44,12 @@ class SymbolServiceIntegrationTest {
     void list_withNoFilter_returnsAllSymbols() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<SymbolDTO> result = symbolService.list(null, null, pageable);
+        Page<Symbol> result = symbolService.list(null, null, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
-        assertThat(result.getContent().get(0).name).isEqualTo("Apple Inc.");
+        assertThat(result.getContent().get(0).getSymbol()).isEqualTo("AAPL");
+        assertThat(result.getContent().get(0).getName()).isEqualTo("Apple Inc.");
     }
 
     @Test
@@ -63,30 +62,30 @@ class SymbolServiceIntegrationTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<SymbolDTO> result = symbolService.list(null, true, pageable);
+        Page<Symbol> result = symbolService.list(null, true, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
-        assertThat(result.getContent().get(0).enabled).isTrue();
+        assertThat(result.getContent().get(0).getSymbol()).isEqualTo("AAPL");
+        assertThat(result.getContent().get(0).isEnabled()).isTrue();
     }
 
     @Test
     void list_withQueryFilter_findsMatchingSymbols() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<SymbolDTO> result = symbolService.list("App", null, pageable);
+        Page<Symbol> result = symbolService.list("App", null, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
+        assertThat(result.getContent().get(0).getSymbol()).isEqualTo("AAPL");
     }
 
     @Test
     void list_withNoMatches_returnsEmpty() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<SymbolDTO> result = symbolService.list("NONEXISTENT", null, pageable);
+        Page<Symbol> result = symbolService.list("NONEXISTENT", null, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isEmpty();
@@ -94,10 +93,10 @@ class SymbolServiceIntegrationTest {
 
     @Test
     void setEnabled_disablesSymbol() {
-        SymbolDTO result = symbolService.setEnabled(testSymbol.getId(), false);
+        Symbol result = symbolService.setEnabled(testSymbol.getId(), false);
 
         assertThat(result).isNotNull();
-        assertThat(result.enabled).isFalse();
+        assertThat(result.isEnabled()).isFalse();
 
         Symbol updatedSymbol = symbolRepository.findById(testSymbol.getId()).orElseThrow();
         assertThat(updatedSymbol.isEnabled()).isFalse();
@@ -108,10 +107,10 @@ class SymbolServiceIntegrationTest {
         testSymbol.setEnabled(false);
         symbolRepository.save(testSymbol);
 
-        SymbolDTO result = symbolService.setEnabled(testSymbol.getId(), true);
+        Symbol result = symbolService.setEnabled(testSymbol.getId(), true);
 
         assertThat(result).isNotNull();
-        assertThat(result.enabled).isTrue();
+        assertThat(result.isEnabled()).isTrue();
 
         Symbol updatedSymbol = symbolRepository.findById(testSymbol.getId()).orElseThrow();
         assertThat(updatedSymbol.isEnabled()).isTrue();
@@ -125,10 +124,10 @@ class SymbolServiceIntegrationTest {
 
     @Test
     void importStatus_returnsCurrentStatus() {
-        ImportStatusDTO status = symbolService.importStatus();
+        ImportData status = symbolService.importStatus();
 
         assertThat(status).isNotNull();
-        assertThat(status.running).isFalse();
+        assertThat(status.isRunning()).isFalse();
     }
 
     @Test

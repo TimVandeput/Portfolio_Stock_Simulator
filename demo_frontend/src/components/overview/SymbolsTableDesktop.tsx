@@ -5,11 +5,25 @@ import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import DynamicIcon from "@/components/ui/DynamicIcon";
-import type {
-  SymbolsTableDesktopProps,
-  Mode,
-  TableColumn,
-} from "@/types/components";
+import type { BaseComponentProps, Mode } from "@/types/components";
+
+export interface TableColumn {
+  id: string;
+  label: string;
+  description?: string;
+  width?: string;
+  alignment?: "left" | "center" | "right";
+  icon?: string;
+}
+
+export interface SymbolsTableDesktopProps extends BaseComponentProps {
+  page: Page<SymbolDTO> | null;
+  mode: Mode;
+  onToggle?: (symbol: SymbolDTO, enabled: boolean) => void;
+  prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
+  onBuy?: (symbol: SymbolDTO) => void;
+}
 
 export default function SymbolsTableDesktop({
   page,
@@ -111,7 +125,7 @@ export default function SymbolsTableDesktop({
     <div className="space-y-4">
       <div className="neu-card hidden md:block rounded-2xl overflow-hidden border shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[480px]">
             <thead className="border-b border-[var(--accent)]/20">
               <tr>
                 <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] w-[80px]">
@@ -119,7 +133,7 @@ export default function SymbolsTableDesktop({
                     <span className="whitespace-nowrap">Symbol</span>
                   </div>
                 </th>
-                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] min-w-[150px]">
+                <th className="px-3 py-3 text-left text-sm font-medium text-[var(--text-primary)] min-w-[80px] lg:min-w-[150px]">
                   <div className="flex items-center gap-2">
                     <span className="whitespace-nowrap">Name</span>
                   </div>
@@ -187,47 +201,59 @@ export default function SymbolsTableDesktop({
                 return (
                   <tr
                     key={row.id}
-                    className={`border-t transition-all duration-500 ${
-                      isPulsing ? "bg-amber-100 dark:bg-amber-900/30" : ""
-                    }`}
+                    className="border-t transition-all duration-500"
                   >
                     <td
-                      className="px-3 py-3 font-semibold whitespace-nowrap w-[80px]"
+                      className={`px-3 py-3 font-semibold whitespace-nowrap w-[80px] transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
                       title={row.symbol}
                     >
                       {row.symbol}
                     </td>
 
-                    <td className="px-3 py-3 min-w-[150px]">
+                    <td
+                      className={`px-3 py-3 min-w-[80px] lg:min-w-[150px] max-w-[120px] lg:max-w-[200px] transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       <span className="block truncate" title={row.name}>
                         {row.name}
                       </span>
                     </td>
 
                     <td
-                      className="px-3 py-3 whitespace-nowrap w-[100px]"
+                      className={`px-3 py-3 whitespace-nowrap w-[100px] transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
                       title={row.exchange}
                     >
                       {row.exchange}
                     </td>
 
-                    <td className="px-3 py-3 whitespace-nowrap w-[70px]">
+                    <td
+                      className={`px-3 py-3 whitespace-nowrap w-[70px] transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       {row.currency}
                     </td>
 
                     {isMarket && (
                       <>
                         <td
-                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 w-[90px] ${
+                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-500 w-[90px] ${
                             isPulsing
-                              ? "text-amber-600 dark:text-amber-400"
+                              ? "text-amber-600 dark:text-amber-400 bg-blue-50 dark:bg-blue-900/20"
                               : "text-amber-500"
                           }`}
                         >
                           {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                         </td>
                         <td
-                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-300 w-[90px] ${pcClass}`}
+                          className={`px-3 py-3 whitespace-nowrap font-mono text-right transition-all duration-500 w-[90px] ${pcClass} ${
+                            isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                          }`}
                           title={pc !== 0 ? `${pc}%` : undefined}
                         >
                           {p.percentChange !== undefined
@@ -270,7 +296,13 @@ export default function SymbolsTableDesktop({
                           <NeumorphicButton
                             onClick={() => onBuy?.(row)}
                             disabled={!row.enabled}
+                            className="flex items-center gap-2"
                           >
+                            <DynamicIcon
+                              iconName="plus-circle"
+                              size={16}
+                              className="text-[var(--text-accent)]"
+                            />
                             Buy
                           </NeumorphicButton>
                         )}

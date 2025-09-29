@@ -1,8 +1,6 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.wallet.WalletBalanceResponse;
-import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
@@ -10,6 +8,7 @@ import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
+import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class WalletService {
     private final PriceService priceService;
     private final UserService userService;
 
-    public PortfolioSummaryDTO getPortfolioSummary(Long userId) {
+    public PortfolioSummaryData getPortfolioSummary(Long userId) {
         User user = userService.getUserById(userId);
         String username = user.getUsername();
 
@@ -45,7 +44,7 @@ public class WalletService {
 
         Map<String, BigDecimal> currentPrices = getCurrentPrices(symbols);
 
-        return TradingMapper.toPortfolioSummaryDTO(wallet, positions, currentPrices);
+        return new PortfolioSummaryData(wallet, positions, currentPrices);
     }
 
     @Transactional
