@@ -217,4 +217,163 @@ class TradingServiceUnitTest {
         assertEquals(expectedHistory, actualHistory);
         verify(transactionRepository).findByUserIdWithSymbolOrderByExecutedAtDesc(userId);
     }
+
+    @Test
+    void executeSellOrder_withTransactionHistory_calculatesCorrectProfitLoss() {
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        Portfolio portfolio = new Portfolio();
+        portfolio.setUserId(1L);
+        portfolio.setSymbol(testSymbol);
+        portfolio.setSharesOwned(10);
+        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
+
+        Transaction buyTransaction = new Transaction();
+        buyTransaction.setUserId(userId);
+        buyTransaction.setSymbol(testSymbol);
+        buyTransaction.setType(TransactionType.BUY);
+        buyTransaction.setQuantity(10);
+        buyTransaction.setPricePerShare(new BigDecimal("120.00"));
+        buyTransaction.setTotalAmount(new BigDecimal("1200.00"));
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
+                .thenReturn(List.of(buyTransaction));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            assertEquals(new BigDecimal("150.00"), saved.getProfitLoss());
+            return saved;
+        });
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
+
+        assertNotNull(response);
+        assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
+
+        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
+        verify(transactionRepository).save(any(Transaction.class));
+    }
+
+    @Test
+    void executeSellOrder_withMultipleBuyTransactions_usesFIFOForProfitLoss() {
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(8);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        Portfolio portfolio = new Portfolio();
+        portfolio.setUserId(1L);
+        portfolio.setSymbol(testSymbol);
+        portfolio.setSharesOwned(15);
+        portfolio.setAverageCostBasis(new BigDecimal("115.00"));
+
+        Transaction buyTransaction1 = new Transaction();
+        buyTransaction1.setUserId(userId);
+        buyTransaction1.setSymbol(testSymbol);
+        buyTransaction1.setType(TransactionType.BUY);
+        buyTransaction1.setQuantity(5);
+        buyTransaction1.setPricePerShare(new BigDecimal("100.00"));
+
+        Transaction buyTransaction2 = new Transaction();
+        buyTransaction2.setUserId(userId);
+        buyTransaction2.setSymbol(testSymbol);
+        buyTransaction2.setType(TransactionType.BUY);
+        buyTransaction2.setQuantity(10);
+        buyTransaction2.setPricePerShare(new BigDecimal("120.00"));
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
+                .thenReturn(List.of(buyTransaction1, buyTransaction2));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+
+            assertEquals(new BigDecimal("340.00"), saved.getProfitLoss());
+            return saved;
+        });
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
+
+        assertNotNull(response);
+        assertTrue(response.getMessage().contains("Successfully sold 8 shares of AAPL"));
+
+        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
+        verify(transactionRepository).save(any(Transaction.class));
+    }
+
+    @Test
+    void executeSellOrder_withNoTransactionHistory_setsNullProfitLoss() {
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        Portfolio portfolio = new Portfolio();
+        portfolio.setUserId(1L);
+        portfolio.setSymbol(testSymbol);
+        portfolio.setSharesOwned(10);
+        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
+                .thenReturn(List.of());
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            assertNull(saved.getProfitLoss());
+            return saved;
+        });
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
+
+        assertNotNull(response);
+        assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
+
+        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
+        verify(transactionRepository).save(any(Transaction.class));
+    }
+
+    @Test
+    void executeBuyOrder_doesNotCalculateProfitLoss() {
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(10);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            assertNull(saved.getProfitLoss());
+            return saved;
+        });
+
+        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
+
+        assertNotNull(response);
+        assertTrue(response.getMessage().contains("Successfully bought 10 shares of AAPL"));
+
+        verify(transactionRepository).save(any(Transaction.class));
+        verify(transactionRepository, never()).findByUserIdAndSymbolOrderByExecutedAtAsc(anyLong(), anyString());
+    }
 }

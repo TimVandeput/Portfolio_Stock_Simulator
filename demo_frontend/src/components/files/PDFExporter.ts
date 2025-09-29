@@ -53,7 +53,7 @@ export const exportToPDF = async (
 
     const logoDataUrl = canvas.toDataURL("image/png", 1.0);
     doc.addImage(logoDataUrl, "PNG", 20, 10, logoWidth, logoHeight);
-  } catch (error) {
+  } catch {
     doc.setFontSize(20);
     doc.setTextColor(96, 165, 250);
     doc.text("StockSim", 20, 25);
@@ -68,25 +68,49 @@ export const exportToPDF = async (
   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
   doc.text(`Total Transactions: ${transactions.length}`, 20, 42);
 
-  const tableData = transactions.map((transaction) => [
-    formatDate(transaction.executedAt),
-    transaction.symbol,
-    transaction.symbolName,
-    transaction.type,
-    transaction.quantity.toString(),
-    formatCurrency(transaction.pricePerShare),
-    formatCurrency(transaction.totalAmount),
-  ]);
+  const tableData = transactions.map((transaction) => {
+    const profitLoss = transaction.profitLoss;
+
+    const maxCompanyNameLength = 20;
+    const truncatedCompanyName =
+      transaction.symbolName &&
+      transaction.symbolName.length > maxCompanyNameLength
+        ? transaction.symbolName.substring(0, maxCompanyNameLength) + "..."
+        : transaction.symbolName;
+
+    return [
+      formatDate(transaction.executedAt),
+      transaction.symbol,
+      truncatedCompanyName,
+      transaction.type,
+      transaction.quantity.toString(),
+      formatCurrency(transaction.pricePerShare),
+      formatCurrency(transaction.totalAmount),
+      profitLoss !== null
+        ? `${profitLoss >= 0 ? "+" : ""}${formatCurrency(profitLoss)}`
+        : "—",
+    ];
+  });
 
   autoTable(doc, {
     head: [
-      ["Date", "Symbol", "Company", "Type", "Qty", "Price/Share", "Total"],
+      [
+        "Date",
+        "Symbol",
+        "Company",
+        "Type",
+        "Qty",
+        "Price/Share",
+        "Total",
+        "P&L",
+      ],
     ],
     body: tableData,
     startY: 50,
     styles: {
       fontSize: 8,
       cellPadding: 3,
+      overflow: "linebreak",
     },
     headStyles: {
       fillColor: [96, 165, 250],
@@ -97,13 +121,14 @@ export const exportToPDF = async (
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 20 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 15 },
-      4: { cellWidth: 15 },
-      5: { cellWidth: 25 },
-      6: { cellWidth: 25 },
+      0: { cellWidth: 25 },
+      1: { cellWidth: 18 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 18 },
+      4: { cellWidth: 12 },
+      5: { cellWidth: 22 },
+      6: { cellWidth: 22 },
+      7: { cellWidth: 22 },
     },
     margin: { left: 20, right: 20 },
     didDrawPage: (data) => {
@@ -139,6 +164,11 @@ export const exportToPDF = async (
       0
     );
 
+    const totalProfitLoss = transactions
+      .map((t) => t.profitLoss)
+      .filter((pl) => pl !== null)
+      .reduce((sum, pl) => sum + pl!, 0);
+
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text("Summary", 20, finalY + 20);
@@ -163,6 +193,23 @@ export const exportToPDF = async (
       20,
       finalY + 44
     );
+
+    if (sellTransactions.length > 0) {
+      const profitLossColor =
+        totalProfitLoss >= 0 ? [34, 197, 94] : [239, 68, 68]; // green or red
+      doc.setTextColor(
+        profitLossColor[0],
+        profitLossColor[1],
+        profitLossColor[2]
+      );
+      doc.text(
+        `Total Profit/Loss: ${totalProfitLoss >= 0 ? "+" : ""}${formatCurrency(
+          totalProfitLoss
+        )}`,
+        20,
+        finalY + 51
+      );
+    }
   }
 
   doc.save(`${filename}.pdf`);

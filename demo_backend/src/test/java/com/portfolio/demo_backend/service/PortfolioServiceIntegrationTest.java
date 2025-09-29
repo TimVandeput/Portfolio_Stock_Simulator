@@ -1,11 +1,11 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.portfolio.PortfolioHoldingResponseDTO;
-import com.portfolio.demo_backend.dto.portfolio.PortfolioResponseDTO;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
+import com.portfolio.demo_backend.service.data.UserPortfolioData;
+import com.portfolio.demo_backend.service.data.UserHoldingData;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -50,6 +50,7 @@ class PortfolioServiceIntegrationTest {
     void setUp() {
         testUser = User.builder()
                 .username("testuser")
+                .email("testuser@example.com")
                 .password("encodedpassword")
                 .roles(EnumSet.of(Role.ROLE_USER))
                 .build();
@@ -63,13 +64,14 @@ class PortfolioServiceIntegrationTest {
 
     @Test
     void getUserPortfolio_withEmptyPortfolio_returnsCorrectStructure() {
-        PortfolioResponseDTO portfolio = portfolioService.getUserPortfolio(testUser.getId());
+        UserPortfolioData portfolio = portfolioService.getUserPortfolio(testUser.getId());
 
         assertThat(portfolio).isNotNull();
-        assertThat(portfolio.getHoldings()).isEmpty();
-        assertThat(portfolio.getWalletBalance().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(5000.00));
-        assertThat(portfolio.getWalletBalance().getTotalInvested()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(portfolio.getSummary()).isNotNull();
+        assertThat(portfolio.getPortfolios()).isEmpty();
+        assertThat(portfolio.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(5000.00));
+        assertThat(portfolio.getTotalInvested()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(portfolio.getTotalValue()).isNotNull();
+        assertThat(portfolio.getTotalPL()).isNotNull();
     }
 
     @Test
@@ -88,18 +90,19 @@ class PortfolioServiceIntegrationTest {
         portfolio.setAverageCostBasis(BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
-        PortfolioResponseDTO result = portfolioService.getUserPortfolio(testUser.getId());
+        UserPortfolioData result = portfolioService.getUserPortfolio(testUser.getId());
 
         assertThat(result).isNotNull();
-        assertThat(result.getHoldings()).hasSize(1);
+        assertThat(result.getPortfolios()).hasSize(1);
 
-        PortfolioHoldingResponseDTO holding = result.getHoldings().get(0);
-        assertThat(holding.getSymbol()).isEqualTo("AAPL");
-        assertThat(holding.getQuantity()).isEqualTo(10);
-        assertThat(holding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        assertThat(holding.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
+        Portfolio holding = result.getPortfolios().get(0);
+        assertThat(holding.getSymbol().getSymbol()).isEqualTo("AAPL");
+        assertThat(holding.getSharesOwned()).isEqualTo(10);
+        assertThat(holding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(holding.getAverageCostBasis().multiply(BigDecimal.valueOf(holding.getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
 
-        assertThat(result.getWalletBalance().getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
+        assertThat(result.getTotalInvested()).isEqualByComparingTo(BigDecimal.valueOf(1500.00));
     }
 
     @Test
@@ -118,24 +121,24 @@ class PortfolioServiceIntegrationTest {
         portfolio.setAverageCostBasis(BigDecimal.valueOf(120.00));
         portfolioRepository.save(portfolio);
 
-        PortfolioHoldingResponseDTO holding = portfolioService.getUserHolding(testUser.getId(), "GOOGL");
+        UserHoldingData holding = portfolioService.getUserHolding(testUser.getId(), "GOOGL");
 
         assertThat(holding).isNotNull();
         assertThat(holding.getSymbol()).isEqualTo("GOOGL");
-        assertThat(holding.getQuantity()).isEqualTo(5);
-        assertThat(holding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(120.00));
-        assertThat(holding.getTotalCost()).isEqualByComparingTo(BigDecimal.valueOf(600.00));
+        assertThat(holding.getPortfolio().getSharesOwned()).isEqualTo(5);
+        assertThat(holding.getPortfolio().getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(120.00));
+        assertThat(holding.getPortfolio().getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(holding.getPortfolio().getSharesOwned())))
+                .isEqualByComparingTo(BigDecimal.valueOf(600.00));
     }
 
     @Test
     void getUserHolding_nonExistentSymbol_returnsEmptyHolding() {
-        PortfolioHoldingResponseDTO holding = portfolioService.getUserHolding(testUser.getId(), "NONEXISTENT");
+        UserHoldingData holding = portfolioService.getUserHolding(testUser.getId(), "NONEXISTENT");
 
         assertThat(holding).isNotNull();
         assertThat(holding.getSymbol()).isEqualTo("NONEXISTENT");
-        assertThat(holding.getQuantity()).isEqualTo(0);
-        assertThat(holding.getAvgCostBasis()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(holding.getTotalCost()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(holding.getLastTradeDate()).isNull();
+        assertThat(holding.isHasHolding()).isFalse();
+        assertThat(holding.getPortfolio()).isNull();
     }
 }

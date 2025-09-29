@@ -1,5 +1,6 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.config.JwtProperties;
 import com.portfolio.demo_backend.model.RefreshToken;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
@@ -22,7 +23,9 @@ class RefreshTokenServiceUnitTest {
     @BeforeEach
     void setUp() {
         repo = mock(RefreshTokenRepository.class);
-        service = new RefreshTokenService(repo);
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setRefreshExpiration(604800000L);
+        service = new RefreshTokenService(repo, jwtProperties);
     }
 
     private static User user() {

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { MousePointer2, MousePointerBan } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import HamburgerButton from "@/components/button/HamburgerButton";
@@ -10,60 +9,30 @@ import DesktopNav from "@/components/navigation/DesktopNav";
 import MobileDrawer from "@/components/navigation/MobileDrawer";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutButton from "@/components/button/LogoutButton";
-import { useAuth } from "@/hooks/useAuth";
-import type { NavItem, Role } from "@/types";
-import navItems from "@/lib/constants/navItems";
-
-export function filterNavItemsByRole(
-  items: NavItem[],
-  userRole: Role | null
-): NavItem[] {
-  return items.filter((item) => {
-    if (!item.allowedRoles || item.allowedRoles.length === 0) return true;
-    if (!userRole) return true;
-    return item.allowedRoles.includes(userRole);
-  });
-}
+import CursorTrailButton from "@/components/button/CursorTrailButton";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { useHeaderState } from "@/hooks/useHeaderState";
 
 export default function Header({
-  onLogoutClick,
-  isLoggingOut,
-  cursorTrailEnabled,
-  setCursorTrailEnabled,
-  hideTrailButton,
+  onShowConfirmation,
+  onUpdateConfirmationLoading,
+  onTrailChange,
 }: {
-  onLogoutClick: () => void;
-  isLoggingOut: boolean;
-  cursorTrailEnabled: boolean;
-  setCursorTrailEnabled: (enabled: boolean) => void;
-  hideTrailButton?: boolean;
+  onShowConfirmation: (
+    show: boolean,
+    loggingOut: boolean,
+    onConfirm: () => void,
+    onCancel: () => void
+  ) => void;
+  onUpdateConfirmationLoading?: (loading: boolean) => void;
+  onTrailChange?: (enabled: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "/";
-  const { role } = useAuth();
 
-  const filteredNavItems = filterNavItemsByRole(navItems, role);
-
-  const hideLogout = pathname === "/";
-  const hideNav = pathname === "/home" || hideLogout;
-  const hideHamburger = pathname === "/home" || hideLogout;
-
-  const isDashboard = pathname === "/home";
-  const filteredForView = filteredNavItems.filter(
-    (item) => !(isDashboard && item.hideOnDashboard)
-  );
-
-  const showCenteredTitle = useMemo(
-    () => pathname !== "/" && pathname !== "/home",
-    [pathname]
-  );
-
-  const pageTitle = useMemo(() => {
-    const match = navItems.find((n) => n.href === pathname)?.name;
-    if (match) return match;
-    const slug = pathname.replace(/^\/+/, "");
-    return slug ? slug.replace(/[-_]+/g, " ").toUpperCase() : "";
-  }, [pathname]);
+  const { pageTitle, showCenteredTitle } = usePageTitle(pathname);
+  const { hideLogout, hideNav, hideHamburger, isHomePage, filteredForView } =
+    useHeaderState(pathname);
 
   return (
     <header
@@ -77,7 +46,7 @@ export default function Header({
               <DesktopNav navItems={filteredForView} hideNav={false} />
             </div>
 
-            {pathname === "/" || pathname === "/home" ? (
+            {isHomePage ? (
               <div className="ml-4">
                 <Image
                   src="/logoSS.png"
@@ -117,7 +86,7 @@ export default function Header({
               <HamburgerButton onClick={() => setOpen(true)} />
             </div>
 
-            {pathname === "/" || pathname === "/home" ? (
+            {isHomePage ? (
               <Image
                 src="/logoSS_mobile.png"
                 alt="Stock Simulator mobile logo"
@@ -158,27 +127,11 @@ export default function Header({
         {/* Theme/Trail/Logout */}
         <div className="flex items-center gap-4 pr-4 md:pr-6 justify-end">
           <ThemeToggle />
-          {!hideTrailButton && (
-            <button
-              className="neu-button p-3 rounded-xl font-bold active:translate-y-0.5 active:duration-75"
-              title={
-                cursorTrailEnabled
-                  ? "Disable Cursor Trail"
-                  : "Enable Cursor Trail"
-              }
-              onClick={() => setCursorTrailEnabled(!cursorTrailEnabled)}
-            >
-              {cursorTrailEnabled ? (
-                <MousePointer2 size={20} style={{ color: "orange" }} />
-              ) : (
-                <MousePointerBan size={20} style={{ color: "orange" }} />
-              )}
-            </button>
-          )}
+          <CursorTrailButton onTrailChange={onTrailChange} />
           {!hideLogout && (
             <LogoutButton
-              onLogoutClick={onLogoutClick}
-              isLoggingOut={isLoggingOut}
+              onShowConfirmation={onShowConfirmation}
+              onUpdateConfirmationLoading={onUpdateConfirmationLoading}
             />
           )}
         </div>

@@ -1,4 +1,15 @@
-import type { InputProps } from "@/types";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface InputProps extends BaseComponentProps {
+  type: string;
+  placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  required?: boolean;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+}
 
 export default function NeumorphicInput({
   type,

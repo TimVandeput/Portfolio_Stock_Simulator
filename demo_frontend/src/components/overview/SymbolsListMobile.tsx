@@ -4,7 +4,16 @@ import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 import type { Price } from "@/types/prices";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
-import type { SymbolsListMobileProps, Mode } from "@/types/components";
+import type { BaseComponentProps, Mode } from "@/types/components";
+
+export interface SymbolsListMobileProps extends BaseComponentProps {
+  page: Page<SymbolDTO> | null;
+  mode: Mode;
+  onToggle?: (symbol: SymbolDTO, enabled: boolean) => void;
+  prices?: Record<string, Price>;
+  pulsatingSymbols?: Set<string>;
+  onBuy?: (symbol: SymbolDTO) => void;
+}
 
 export default function SymbolsListMobile({
   page,
@@ -51,11 +60,7 @@ export default function SymbolsListMobile({
           return (
             <li
               key={row.id}
-              className={`neu-card rounded-2xl border shadow-sm p-4 transition-all duration-500 ${
-                isPulsing
-                  ? "bg-amber-100 dark:bg-amber-900/30"
-                  : "bg-[var(--background)] hover:shadow-md"
-              }`}
+              className="neu-card rounded-2xl border shadow-sm p-4 transition-all duration-500 bg-[var(--background)] hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -107,10 +112,14 @@ export default function SymbolsListMobile({
 
                 {isMarket && (
                   <>
-                    <div className="rounded-xl border p-2">
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       <div className="opacity-70">Last</div>
                       <div
-                        className={`font-mono transition-all duration-300 ${
+                        className={`font-mono transition-all duration-500 ${
                           isPulsing
                             ? "text-amber-600 dark:text-amber-400"
                             : "text-amber-500"
@@ -119,10 +128,14 @@ export default function SymbolsListMobile({
                         {p.last !== undefined ? `$${p.last.toFixed(2)}` : "—"}
                       </div>
                     </div>
-                    <div className="rounded-xl border p-2">
+                    <div
+                      className={`rounded-xl border p-2 transition-all duration-500 ${
+                        isPulsing ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                    >
                       <div className="opacity-70">% Chg</div>
                       <div
-                        className={`${pcClass} font-mono transition-all duration-300`}
+                        className={`${pcClass} font-mono transition-all duration-500`}
                       >
                         {p.percentChange !== undefined
                           ? (() => {

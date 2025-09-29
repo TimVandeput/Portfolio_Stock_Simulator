@@ -63,6 +63,7 @@ class TradingServiceIntegrationTest {
     void setUp() {
         testUser = User.builder()
                 .username("trader")
+                .email("trader@example.com")
                 .password("encodedpassword")
                 .build();
         testUser = userRepository.save(testUser);
@@ -179,6 +180,7 @@ class TradingServiceIntegrationTest {
     void getTransactionHistory_emptyForNewUser() {
         User newUser = User.builder()
                 .username("newuser")
+                .email("newuser@example.com")
                 .password("password")
                 .build();
         newUser = userRepository.save(newUser);
@@ -186,5 +188,150 @@ class TradingServiceIntegrationTest {
         List<Transaction> history = tradingService.getTransactionHistory(newUser.getId());
 
         assertThat(history).isEmpty();
+    }
+
+    @Test
+    void executeSellOrder_calculatesSimpleProfitLoss() {
+        BuyOrderRequest buyRequest = new BuyOrderRequest();
+        buyRequest.setSymbol("AAPL");
+        buyRequest.setQuantity(10);
+        buyRequest.setExpectedPrice(BigDecimal.valueOf(100.00));
+
+        YahooQuoteDTO buyQuote = new YahooQuoteDTO("AAPL", 100.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(buyQuote);
+
+        tradingService.executeBuyOrder(testUser.getId(), buyRequest);
+
+        YahooQuoteDTO sellQuote = new YahooQuoteDTO("AAPL", 150.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(sellQuote);
+
+        SellOrderRequest sellRequest = new SellOrderRequest();
+        sellRequest.setSymbol("AAPL");
+        sellRequest.setQuantity(5);
+        sellRequest.setExpectedPrice(BigDecimal.valueOf(150.00));
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(testUser.getId(), sellRequest);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getMessage()).containsIgnoringCase("successfully");
+
+        List<Transaction> transactions = transactionRepository.findByUserIdOrderByExecutedAtDesc(testUser.getId());
+        Transaction sellTransaction = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.SELL)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(sellTransaction.getProfitLoss()).isNotNull();
+        assertThat(sellTransaction.getProfitLoss()).isEqualTo(BigDecimal.valueOf(250.00));
+    }
+
+    @Test
+    void executeSellOrder_calculatesFIFOProfitLossWithMultiplePurchases() {
+        YahooQuoteDTO buyQuote1 = new YahooQuoteDTO("AAPL", 100.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(buyQuote1);
+
+        BuyOrderRequest buyRequest1 = new BuyOrderRequest();
+        buyRequest1.setSymbol("AAPL");
+        buyRequest1.setQuantity(10);
+        buyRequest1.setExpectedPrice(BigDecimal.valueOf(100.00));
+
+        tradingService.executeBuyOrder(testUser.getId(), buyRequest1);
+
+        testWallet.setCashBalance(testWallet.getCashBalance().add(BigDecimal.valueOf(5000.00)));
+        walletRepository.save(testWallet);
+
+        YahooQuoteDTO buyQuote2 = new YahooQuoteDTO("AAPL", 120.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(buyQuote2);
+
+        BuyOrderRequest buyRequest2 = new BuyOrderRequest();
+        buyRequest2.setSymbol("AAPL");
+        buyRequest2.setQuantity(5);
+        buyRequest2.setExpectedPrice(BigDecimal.valueOf(120.00));
+
+        tradingService.executeBuyOrder(testUser.getId(), buyRequest2);
+
+        YahooQuoteDTO sellQuote = new YahooQuoteDTO("AAPL", 150.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(sellQuote);
+
+        SellOrderRequest sellRequest = new SellOrderRequest();
+        sellRequest.setSymbol("AAPL");
+        sellRequest.setQuantity(12);
+        sellRequest.setExpectedPrice(BigDecimal.valueOf(150.00));
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(testUser.getId(), sellRequest);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getMessage()).containsIgnoringCase("successfully");
+
+        List<Transaction> transactions = transactionRepository.findByUserIdOrderByExecutedAtDesc(testUser.getId());
+        Transaction sellTransaction = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.SELL)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(sellTransaction.getProfitLoss()).isNotNull();
+        assertThat(sellTransaction.getProfitLoss()).isEqualTo(BigDecimal.valueOf(560.00));
+    }
+
+    @Test
+    void executeSellOrder_calculatesLossCorrectly() {
+        YahooQuoteDTO buyQuote = new YahooQuoteDTO("AAPL", 150.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(buyQuote);
+
+        BuyOrderRequest buyRequest = new BuyOrderRequest();
+        buyRequest.setSymbol("AAPL");
+        buyRequest.setQuantity(10);
+        buyRequest.setExpectedPrice(BigDecimal.valueOf(150.00));
+
+        tradingService.executeBuyOrder(testUser.getId(), buyRequest);
+
+        YahooQuoteDTO sellQuote = new YahooQuoteDTO("AAPL", 130.00, 2.50, 1.69, "USD", 2400000.0, 147.5, 151.0, 149.0,
+                1200000.0);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(sellQuote);
+
+        SellOrderRequest sellRequest = new SellOrderRequest();
+        sellRequest.setSymbol("AAPL");
+        sellRequest.setQuantity(8);
+        sellRequest.setExpectedPrice(BigDecimal.valueOf(130.00));
+
+        TradeExecutionResponse response = tradingService.executeSellOrder(testUser.getId(), sellRequest);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getMessage()).containsIgnoringCase("successfully");
+
+        List<Transaction> transactions = transactionRepository.findByUserIdOrderByExecutedAtDesc(testUser.getId());
+        Transaction sellTransaction = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.SELL)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(sellTransaction.getProfitLoss()).isNotNull();
+        assertThat(sellTransaction.getProfitLoss()).isEqualTo(BigDecimal.valueOf(-160.00));
+    }
+
+    @Test
+    void executeBuyOrder_doesNotSetProfitLoss() {
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(10);
+        request.setExpectedPrice(BigDecimal.valueOf(150.00));
+
+        TradeExecutionResponse response = tradingService.executeBuyOrder(testUser.getId(), request);
+
+        assertThat(response).isNotNull();
+
+        List<Transaction> transactions = transactionRepository.findByUserIdOrderByExecutedAtDesc(testUser.getId());
+        Transaction buyTransaction = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.BUY)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(buyTransaction.getProfitLoss()).isNull();
     }
 }

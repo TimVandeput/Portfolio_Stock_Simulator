@@ -25,9 +25,6 @@ class AuthServiceTest {
     private UserService userService;
 
     @Mock
-    private PasscodeService passcodeService;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
@@ -40,19 +37,17 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    void register_marksUserAsReal() {
+    void register_createsUserSuccessfully() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("newuser");
+        req.setEmail("test@example.com");
         req.setPassword("Password1");
-        req.setPasscode("letmein");
-
-        doNothing().when(passcodeService).validate(anyString());
 
         User saved = User.builder()
                 .id(10L)
                 .username("newuser")
+                .email("test@example.com")
                 .roles(EnumSet.of(Role.ROLE_USER))
-                .isFake(false)
                 .build();
 
         when(userService.createUser(any())).thenReturn(saved);
@@ -63,7 +58,7 @@ class AuthServiceTest {
         verify(userService).createUser(captor.capture());
 
         User passed = captor.getValue();
-        assertThat(passed.isFake()).isFalse();
+        assertThat(passed.getEmail()).isEqualTo("test@example.com");
         assertThat(resp).isNotNull();
         assertThat(resp.getId()).isEqualTo(10L);
     }

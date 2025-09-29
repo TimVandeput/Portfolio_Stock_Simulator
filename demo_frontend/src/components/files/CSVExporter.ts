@@ -6,7 +6,7 @@ export const exportToCSV = async (
 ) => {
   const csvLines = [];
   csvLines.push(
-    "Date;Symbol;Company Name;Type;Quantity;Price per Share;Total Amount"
+    "Date;Symbol;Company Name;Type;Quantity;Price per Share;Total Amount;P&L"
   );
 
   transactions.forEach((transaction) => {
@@ -19,6 +19,12 @@ export const exportToCSV = async (
     const pricePerShare = transaction.pricePerShare.toFixed(2);
     const totalAmount = transaction.totalAmount.toFixed(2);
 
+    const profitLoss = transaction.profitLoss;
+    const profitLossValue =
+      profitLoss !== null
+        ? `${profitLoss >= 0 ? "+" : ""}${profitLoss.toFixed(2)}`
+        : "—";
+
     const line = [
       `"${date}"`,
       `"${transaction.symbol}"`,
@@ -27,6 +33,7 @@ export const exportToCSV = async (
       transaction.quantity,
       pricePerShare,
       totalAmount,
+      `"${profitLossValue}"`,
     ].join(";");
     csvLines.push(line);
   });

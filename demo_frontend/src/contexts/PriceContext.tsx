@@ -9,10 +9,9 @@ import React, {
   useCallback,
 } from "react";
 import { getAllCurrentPrices } from "@/lib/api/prices";
-import { listSymbols } from "@/lib/api/symbols";
-import { openPriceStream } from "@/lib/api/stream";
 import { getAccessToken } from "@/lib/auth/tokenStorage";
-import type { PriceEvent, StreamController } from "@/types";
+import { usePriceStream } from "@/hooks/usePriceStream";
+import { usePriceAnimation } from "@/hooks/usePriceAnimation";
 import type { Price, Prices, PriceContextType } from "@/types/prices";
 
 const PriceContext = createContext<PriceContextType>({
@@ -26,21 +25,47 @@ const PriceContext = createContext<PriceContextType>({
 
 export function PriceProvider({ children }: { children: React.ReactNode }) {
   const [prices, setPrices] = useState<Prices>({});
-  const [pulsatingSymbols, setPulsatingSymbols] = useState<Set<string>>(
-    new Set()
-  );
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [hasInitialPrices, setHasInitialPrices] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const streamRef = useRef<StreamController | null>(null);
-  const pulseTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const initializationRef = useRef(false);
 
-  // Check if user is authenticated
+  const { pulsatingSymbols, triggerPulse, clearAllPulses, clearPulseTimeouts } =
+    usePriceAnimation();
+
   const isAuthenticated = () => !!getAccessToken();
 
-  // Load initial prices from Yahoo API
+  const handlePriceUpdate = useCallback(
+    (symbol: string, price: number, percentChange?: number) => {
+      setPrices((prev) => {
+        const currentPrice = prev[symbol]?.last;
+
+        if (currentPrice !== price) {
+          console.log(`💥 Price update: ${symbol} ${currentPrice} → ${price}`);
+
+          triggerPulse(symbol);
+
+          return {
+            ...prev,
+            [symbol]: {
+              last: price,
+              percentChange,
+              lastUpdate: Date.now(),
+            },
+          };
+        }
+        return prev;
+      });
+    },
+    [triggerPulse]
+  );
+
+  const { startPriceStream, closeStream, isStreamActive } = usePriceStream({
+    onPriceUpdate: handlePriceUpdate,
+    hasInitialPrices,
+  });
+
   const loadInitialPrices = useCallback(async () => {
     if (isInitialLoading || hasInitialPrices || !isAuthenticated()) return;
 
@@ -86,87 +111,6 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isInitialLoading, hasInitialPrices]);
 
-  // Start real-time price streaming
-  const startPriceStream = useCallback(async () => {
-    if (!hasInitialPrices || !isAuthenticated()) return;
-
-    console.log("🔗 Starting Finnhub price stream...");
-
-    try {
-      // Get symbols for streaming (limited to 50 for free tier)
-      const symbolsPage = await listSymbols({ size: 50 });
-      const symbols = symbolsPage.content.map((s) => s.symbol);
-
-      if (symbols.length === 0) return;
-
-      const stream = openPriceStream(symbols, {
-        onPrice: (priceEvent: PriceEvent) => {
-          const { symbol, price, percentChange } = priceEvent;
-
-          setPrices((prev) => {
-            const currentPrice = prev[symbol]?.last;
-
-            if (currentPrice !== price) {
-              console.log(
-                `💥 Price update: ${symbol} ${currentPrice} → ${price}`
-              );
-
-              // Trigger pulsing animation
-              setPulsatingSymbols((prevPulsing) => {
-                const newPulsing = new Set(prevPulsing);
-                newPulsing.add(symbol);
-                return newPulsing;
-              });
-
-              // Clear existing timeout for this symbol
-              if (pulseTimeoutRef.current[symbol]) {
-                clearTimeout(pulseTimeoutRef.current[symbol]);
-              }
-
-              // Set timeout to stop pulsing
-              pulseTimeoutRef.current[symbol] = setTimeout(() => {
-                setPulsatingSymbols((prevPulsing) => {
-                  const newPulsing = new Set(prevPulsing);
-                  newPulsing.delete(symbol);
-                  return newPulsing;
-                });
-                delete pulseTimeoutRef.current[symbol];
-              }, 1500);
-
-              return {
-                ...prev,
-                [symbol]: {
-                  last: price,
-                  percentChange,
-                  lastUpdate: Date.now(),
-                },
-              };
-            }
-            return prev;
-          });
-        },
-        onOpen: () => {
-          console.log("✅ Price stream connected");
-        },
-        onError: () => {
-          console.error("❌ Price stream error - possibly auth related");
-          // Stream error might be due to token expiry
-          // The stream will attempt to reconnect automatically
-        },
-        onClose: () => {
-          console.log("🔌 Price stream closed");
-        },
-      });
-
-      streamRef.current = stream;
-    } catch (e) {
-      console.error("Failed to start price stream:", e);
-      // If listSymbols fails due to auth, it will be handled by HttpClient
-      // and user will be redirected via useAccessControl
-    }
-  }, [hasInitialPrices]);
-
-  // Initialize prices on mount and listen for auth changes
   useEffect(() => {
     const handleAuthChange = () => {
       if (isAuthenticated() && !hasInitialPrices && !isInitialLoading) {
@@ -175,59 +119,49 @@ export function PriceProvider({ children }: { children: React.ReactNode }) {
       } else if (!isAuthenticated()) {
         // User logged out, clean up
         console.log("🚫 No auth, cleaning up price data...");
-        if (streamRef.current) {
-          streamRef.current.close();
-          streamRef.current = null;
-        }
+        closeStream();
         setPrices({});
         setHasInitialPrices(false);
         setError(null);
-        // Clear all pulse timeouts
-        Object.values(pulseTimeoutRef.current).forEach((timeout) => {
-          clearTimeout(timeout);
-        });
-        pulseTimeoutRef.current = {};
-        setPulsatingSymbols(new Set());
+        clearAllPulses();
       }
     };
 
-    // Initial check
     if (!initializationRef.current) {
       initializationRef.current = true;
       handleAuthChange();
     }
 
-    // Listen for auth changes
     window.addEventListener("authChanged", handleAuthChange);
 
     return () => {
       window.removeEventListener("authChanged", handleAuthChange);
     };
-  }, [loadInitialPrices, hasInitialPrices, isInitialLoading]);
+  }, [
+    loadInitialPrices,
+    hasInitialPrices,
+    isInitialLoading,
+    closeStream,
+    clearAllPulses,
+  ]);
 
-  // Start streaming once initial prices are loaded
   useEffect(() => {
-    if (hasInitialPrices && !streamRef.current) {
+    if (hasInitialPrices && !isStreamActive()) {
       startPriceStream();
     }
 
-    // Cleanup function
     return () => {
-      if (streamRef.current) {
-        console.log("🔌 Closing price stream...");
-        streamRef.current.close();
-        streamRef.current = null;
-      }
-
-      // Clear all pulse timeouts
-      Object.values(pulseTimeoutRef.current).forEach((timeout) => {
-        clearTimeout(timeout);
-      });
-      pulseTimeoutRef.current = {};
+      closeStream();
+      clearPulseTimeouts();
     };
-  }, [hasInitialPrices, startPriceStream]);
+  }, [
+    hasInitialPrices,
+    startPriceStream,
+    closeStream,
+    isStreamActive,
+    clearPulseTimeouts,
+  ]);
 
-  // Refresh function for manual reload
   const refreshPrices = useCallback(async () => {
     setHasInitialPrices(false);
     await loadInitialPrices();

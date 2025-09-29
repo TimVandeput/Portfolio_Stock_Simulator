@@ -1,4 +1,17 @@
-import type { TableHeaderProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface TableColumn {
+  id: string;
+  label: string;
+  description?: string;
+  icon?: string;
+  alignment?: "left" | "center" | "right";
+  width?: string;
+}
+
+export interface TableHeaderProps extends BaseComponentProps {
+  columns: TableColumn[];
+}
 
 export default function TableHeader({
   columns,

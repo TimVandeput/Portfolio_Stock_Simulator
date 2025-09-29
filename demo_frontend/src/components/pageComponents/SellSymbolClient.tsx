@@ -207,6 +207,7 @@ This action cannot be undone.`}
             }}
             confirmDisabled={loading}
             cancelDisabled={loading}
+            buttonType="primary"
           />
         ) : (
           <>

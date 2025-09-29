@@ -3,7 +3,10 @@ package com.portfolio.demo_backend.controller;
 import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
 import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
+import com.portfolio.demo_backend.mapper.SymbolMapper;
+import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.service.SymbolService;
+import com.portfolio.demo_backend.service.data.ImportData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,12 +36,14 @@ public class SymbolController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return service.list(q, enabled, pageable);
+        Page<Symbol> symbols = service.list(q, enabled, pageable);
+        return symbols.map(SymbolMapper::toSymbol);
     }
 
     @PutMapping("/{id}/enabled")
     public SymbolDTO setEnabled(@PathVariable Long id, @RequestBody ToggleBody body) {
-        return service.setEnabled(id, body.enabled);
+        Symbol symbol = service.setEnabled(id, body.enabled);
+        return SymbolMapper.toSymbol(symbol);
     }
 
     public static class ToggleBody {
@@ -47,6 +52,10 @@ public class SymbolController {
 
     @GetMapping("/import/status")
     public ImportStatusDTO status() {
-        return service.importStatus();
+        ImportData data = service.importStatus();
+        return new ImportStatusDTO(
+                data.isRunning(),
+                data.getLastImportedAt() != null ? data.getLastImportedAt().toString() : null,
+                data.getLastSummary());
     }
 }

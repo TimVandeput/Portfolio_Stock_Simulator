@@ -1,6 +1,17 @@
 "use client";
 
-import type { SortDropdownProps, SortOption } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface SortOption {
+  value: string;
+  label: string;
+}
+
+export interface SortDropdownProps extends BaseComponentProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: SortOption[];
+}
 
 export default function SortDropdown({
   value,

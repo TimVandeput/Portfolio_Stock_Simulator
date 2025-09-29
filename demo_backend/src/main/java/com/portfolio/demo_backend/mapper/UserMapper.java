@@ -10,8 +10,8 @@ public class UserMapper {
         return User.builder()
                 .id(dto.getId())
                 .username(dto.getUsername())
+                .email(dto.getEmail())
                 .password(dto.getPassword())
-                .isFake(dto.getIsFake() != null && dto.getIsFake())
                 .build();
     }
 
@@ -19,16 +19,16 @@ public class UserMapper {
         CreateUserDTO dto = new CreateUserDTO();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
         dto.setPassword(null);
-        dto.setIsFake(user.isFake());
         return dto;
     }
 
     public static User fromUpdateDTO(UpdateUserDTO dto) {
         return User.builder()
                 .username(dto.getUsername())
+                .email(dto.getEmail())
                 .password(dto.getPassword())
-                .isFake(dto.getIsFake() != null && dto.getIsFake())
                 .build();
     }
 }

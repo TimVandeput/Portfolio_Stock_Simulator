@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import DynamicIcon from "../ui/DynamicIcon";
 
 interface PasswordInputProps {
   placeholder: string;
@@ -37,7 +37,11 @@ export default function PasswordInput({
         className="password-toggle-button absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
         style={{ color: "var(--text-secondary)" }}
       >
-        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        {showPassword ? (
+          <DynamicIcon iconName="eye-off" size={18} />
+        ) : (
+          <DynamicIcon iconName="eye" size={18} />
+        )}
       </button>
     </div>
   );

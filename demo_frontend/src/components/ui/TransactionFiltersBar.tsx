@@ -2,7 +2,7 @@
 
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import SortDropdown from "@/components/ui/SortDropdown";
-import type { SortOption } from "@/types/components";
+import type { SortOption } from "@/components/ui/SortDropdown";
 
 interface TransactionFiltersBarProps {
   q: string;

@@ -9,7 +9,6 @@ import { getUserId } from "@/lib/auth/tokenStorage";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import StatusMessage from "@/components/status/StatusMessage";
 import MarketStatus from "@/components/status/MarketStatus";
-import Loader from "@/components/ui/Loader";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import TableHeader from "@/components/ui/TableHeader";
 import PortfolioStatsCard from "@/components/cards/PortfolioStatsCard";
@@ -27,6 +26,7 @@ export default function PortfolioClient() {
     totalPortfolioValue: 0,
   });
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [loadingSuccess, setLoadingSuccess] = useState(false);
   const [error, setError] = useState("");
 
   // Process transactions to create detailed holdings with individual purchase tracking
@@ -163,9 +163,11 @@ export default function PortfolioClient() {
             portfolioData.walletBalance.totalValue +
             portfolioData.walletBalance.cashBalance,
         });
+        setLoadingSuccess(true);
         setDataLoaded(true);
       } catch (err) {
         setError(getErrorMessage(err) || "Failed to load portfolio");
+        setLoadingSuccess(false);
         setDataLoaded(true);
       }
     };
@@ -177,251 +179,282 @@ export default function PortfolioClient() {
     router.push(`/portfolio/${symbol}`);
   };
 
-  // Show loading until both data is loaded AND prices are initialized
-  const isLoading = !dataLoaded || !hasInitialPrices;
-
-  if (isLoading) {
-    return (
-      <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
-        <div className="page-card p-4 sm:p-6 rounded-2xl max-w-4xl mx-auto w-full">
-          <Loader />
-        </div>
-      </div>
-    );
-  }
+  // Show loading until portfolio data is loaded - don't wait for prices
+  const isLoading = !dataLoaded;
 
   return (
     <div className="page-container block w-full font-sans px-4 sm:px-6 py-4 sm:py-6 overflow-auto">
       <div className="page-card p-4 sm:p-6 rounded-2xl max-w-4xl mx-auto w-full">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
-          <h1 className="page-title text-2xl sm:text-3xl font-bold hidden sm:block">
-            PORTFOLIO
-          </h1>
-          <div className="flex items-center gap-3">
-            <span className="text-sm opacity-80">
-              Holdings: {processedHoldings.length}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 mb-4">
-          <MarketStatus />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <PortfolioStatsCard
-            title="Total Portfolio"
-            value={`$${portfolioStats.totalPortfolioValue.toFixed(2)}`}
-            iconName="briefcase"
-            ariaLabel="Total value of cash and stocks combined"
-            tooltip="Total value of cash and stocks combined"
-          />
-
-          <PortfolioStatsCard
-            title="Stock Value"
-            value={`$${portfolioStats.totalValue.toFixed(2)}`}
-            iconName="trending-up"
-            ariaLabel="Current market value of all your stock holdings"
-            tooltip="Current market value of all your stock holdings"
-          />
-
-          <PortfolioStatsCard
-            title="Total Gain/Loss"
-            value={`${
-              portfolioStats.totalPnL >= 0 ? "+" : ""
-            }$${portfolioStats.totalPnL.toFixed(2)}`}
-            subValue={`(${
-              portfolioStats.totalPnLPercent >= 0 ? "+" : ""
-            }${portfolioStats.totalPnLPercent.toFixed(2)}%)`}
-            iconName="dollar-sign"
-            valueColor={
-              portfolioStats.totalPnL >= 0
-                ? "text-emerald-500"
-                : "text-rose-500"
-            }
-            ariaLabel="Profit or loss since you bought your stocks"
-            tooltip="Profit or loss since you bought your stocks (Current Value - Purchase Cost)"
-          />
-
-          <PortfolioStatsCard
-            title="Available Cash"
-            value={`$${walletBalance.cashBalance.toFixed(2)}`}
-            iconName="wallet"
-            ariaLabel="Cash available for buying more stocks"
-            tooltip="Cash available for buying more stocks"
-          />
-        </div>
-
-        {error && (
-          <div className="mb-4">
-            <StatusMessage message={error} />
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div
+                className="h-8 w-8 animate-spin rounded-full border-4"
+                style={{
+                  borderColor: "var(--loader-spinner)",
+                  borderTopColor: "transparent",
+                }}
+              />
+              <span className="text-sm opacity-70">Loading portfolio...</span>
+            </div>
           </div>
         )}
 
-        {processedHoldings.length === 0 ? (
-          <EmptyPortfolio onViewMarkets={() => router.push("/market")} />
-        ) : (
-          <div className="space-y-4">
-            <TableHeader
-              columns={[
-                {
-                  id: "stock",
-                  label: "Stock & Quantity",
-                  description: "Symbol and shares owned",
-                  icon: "trending-up",
-                },
-                {
-                  id: "price",
-                  label: "Current Price",
-                  description: "Live market price",
-                  icon: "dollar-sign",
-                  alignment: "center",
-                },
-                {
-                  id: "value",
-                  label: "Market Value",
-                  description: "Current worth (Price × Shares)",
-                  icon: "briefcase",
-                  alignment: "center",
-                },
-                {
-                  id: "actions",
-                  label: "Actions",
-                  description: "Sell your shares",
-                  icon: "activity",
-                  alignment: "right",
-                },
-              ]}
-            />
+        {!isLoading && (
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
+              <h1 className="page-title text-2xl sm:text-3xl font-bold hidden sm:block">
+                PORTFOLIO
+              </h1>
+              <div className="flex items-center gap-3">
+                <span className="text-sm opacity-80">
+                  Holdings: {processedHoldings.length}
+                </span>
+              </div>
+            </div>
 
-            {processedHoldings.map((holding) => {
-              const currentPrice = prices[holding.symbol]?.last ?? 0;
-              const currentValue = currentPrice * holding.totalQuantity;
-              const totalCost = holding.totalCost;
-              const pnl = currentValue - totalCost;
-              const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+            <div className="flex flex-col gap-2 mb-4">
+              <MarketStatus />
+            </div>
 
-              return (
-                <div
-                  key={holding.symbol}
-                  className="neu-card p-4 rounded-xl hover:scale-[1.02] transition-transform"
-                >
-                  {/* Mobile Layout */}
-                  <div className="md:hidden">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                          {holding.symbol}
-                        </h3>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          {holding.totalQuantity} shares @ $
-                          {holding.avgCostBasis.toFixed(2)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleSellClick(holding.symbol)}
-                        className="neu-button px-3 py-2 rounded-lg hover:scale-105 transition-transform text-rose-500 font-medium"
-                      >
-                        Sell
-                      </button>
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <PortfolioStatsCard
+                title="Total Portfolio"
+                value={`$${portfolioStats.totalPortfolioValue.toFixed(2)}`}
+                iconName="briefcase"
+                ariaLabel="Total value of cash and stocks combined"
+                tooltip="Total value of cash and stocks combined"
+              />
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[var(--text-secondary)]">
-                          Current Price
-                        </span>
-                        <span className="font-bold text-[var(--text-primary)]">
-                          ${currentPrice.toFixed(2)}
-                        </span>
-                      </div>
+              <PortfolioStatsCard
+                title="Stock Value"
+                value={`$${portfolioStats.totalValue.toFixed(2)}`}
+                iconName="trending-up"
+                ariaLabel="Current market value of all your stock holdings"
+                tooltip="Current market value of all your stock holdings"
+              />
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[var(--text-secondary)]">
-                          Market Value
-                        </span>
-                        <span className="font-bold text-[var(--text-primary)]">
-                          ${currentValue.toFixed(2)}
-                        </span>
-                      </div>
+              <PortfolioStatsCard
+                title="Total Gain/Loss"
+                value={`${
+                  portfolioStats.totalPnL >= 0 ? "+" : ""
+                }$${portfolioStats.totalPnL.toFixed(2)}`}
+                subValue={`(${
+                  portfolioStats.totalPnLPercent >= 0 ? "+" : ""
+                }${portfolioStats.totalPnLPercent.toFixed(2)}%)`}
+                iconName="dollar-sign"
+                valueColor={
+                  portfolioStats.totalPnL >= 0
+                    ? "text-emerald-500"
+                    : "text-rose-500"
+                }
+                ariaLabel="Profit or loss since you bought your stocks"
+                tooltip="Profit or loss since you bought your stocks (Current Value - Purchase Cost)"
+              />
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[var(--text-secondary)]">
-                          Gain/Loss
-                        </span>
-                        <span
-                          className={`font-bold ${
-                            pnl >= 0 ? "text-emerald-500" : "text-rose-500"
-                          }`}
-                        >
-                          {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)} (
-                          {pnlPercent >= 0 ? "+" : ""}
-                          {pnlPercent.toFixed(2)}%)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+              <PortfolioStatsCard
+                title="Available Cash"
+                value={`$${walletBalance.cashBalance.toFixed(2)}`}
+                iconName="wallet"
+                ariaLabel="Cash available for buying more stocks"
+                tooltip="Cash available for buying more stocks"
+              />
+            </div>
 
-                  {/* Desktop Layout */}
-                  <div className="hidden md:flex md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <div>
-                        <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                          {holding.symbol}
-                        </h3>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                          {holding.totalQuantity} shares
-                        </p>
-                        <p className="text-xs text-[var(--text-secondary)] opacity-70">
-                          Avg cost: ${holding.avgCostBasis.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
+            {error && (
+              <div className="mb-4">
+                <StatusMessage message={error} />
+              </div>
+            )}
 
-                    <div className="flex-1 text-center">
-                      <p className="text-lg font-bold text-[var(--text-primary)]">
-                        ${currentPrice.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)] opacity-70">
-                        Current price
-                      </p>
-                    </div>
-
-                    <div className="flex-1 text-center">
-                      <p className="text-lg font-bold text-[var(--text-primary)]">
-                        ${currentValue.toFixed(2)}
-                      </p>
-                      <p
-                        className={`text-sm font-medium flex items-center justify-center gap-1 ${
-                          pnl >= 0 ? "text-emerald-500" : "text-rose-500"
-                        }`}
-                      >
-                        <DynamicIcon
-                          iconName={pnl >= 0 ? "trending-up" : "trending-down"}
-                          size={12}
-                        />
-                        {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)] opacity-70">
-                        {pnlPercent >= 0 ? "+" : ""}
-                        {pnlPercent.toFixed(2)}% return
-                      </p>
-                    </div>
-
-                    <div className="flex-1 text-right">
-                      <button
-                        onClick={() => handleSellClick(holding.symbol)}
-                        className="neu-button px-4 py-2 rounded-xl hover:scale-105 transition-transform text-rose-500 font-medium flex items-center gap-2 ml-auto"
-                      >
-                        <DynamicIcon iconName="minus-circle" size={16} />
-                        Sell
-                      </button>
-                    </div>
-                  </div>
+            {!loadingSuccess ? (
+              <div className="text-center py-8">
+                <div className="text-lg font-medium text-[var(--text-primary)] mb-2">
+                  Unable to load portfolio data
                 </div>
-              );
-            })}
-          </div>
+                <div className="text-sm text-[var(--text-secondary)] mb-4">
+                  Please check your connection and try again
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="neu-button px-4 py-2 rounded-xl hover:scale-105 transition-transform"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : processedHoldings.length === 0 ? (
+              <EmptyPortfolio onViewMarkets={() => router.push("/market")} />
+            ) : (
+              <div className="space-y-4">
+                <TableHeader
+                  columns={[
+                    {
+                      id: "stock",
+                      label: "Stock & Quantity",
+                      description: "Symbol and shares owned",
+                      icon: "trending-up",
+                    },
+                    {
+                      id: "price",
+                      label: "Current Price",
+                      description: "Live market price",
+                      icon: "dollar-sign",
+                      alignment: "center",
+                    },
+                    {
+                      id: "value",
+                      label: "Market Value",
+                      description: "Current worth (Price × Shares)",
+                      icon: "briefcase",
+                      alignment: "center",
+                    },
+                    {
+                      id: "actions",
+                      label: "Actions",
+                      description: "Sell your shares",
+                      icon: "activity",
+                      alignment: "right",
+                    },
+                  ]}
+                />
+
+                {processedHoldings.map((holding) => {
+                  const currentPrice = prices[holding.symbol]?.last ?? 0;
+                  const currentValue = currentPrice * holding.totalQuantity;
+                  const totalCost = holding.totalCost;
+                  const pnl = currentValue - totalCost;
+                  const pnlPercent =
+                    totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+
+                  return (
+                    <div
+                      key={holding.symbol}
+                      className="neu-card p-4 rounded-xl hover:scale-[1.02] transition-transform"
+                    >
+                      {/* Mobile Layout */}
+                      <div className="md:hidden">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                              {holding.symbol}
+                            </h3>
+                            <p className="text-sm text-[var(--text-secondary)]">
+                              {holding.totalQuantity} shares @ $
+                              {holding.avgCostBasis.toFixed(2)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleSellClick(holding.symbol)}
+                            className="neu-button px-3 py-2 rounded-lg hover:scale-105 transition-transform text-rose-500 font-medium"
+                          >
+                            Sell
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-[var(--text-secondary)]">
+                              Current Price
+                            </span>
+                            <span className="font-bold text-[var(--text-primary)]">
+                              ${currentPrice.toFixed(2)}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-[var(--text-secondary)]">
+                              Market Value
+                            </span>
+                            <span className="font-bold text-[var(--text-primary)]">
+                              ${currentValue.toFixed(2)}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-[var(--text-secondary)]">
+                              Gain/Loss
+                            </span>
+                            <span
+                              className={`font-bold ${
+                                pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                              }`}
+                            >
+                              {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)} (
+                              {pnlPercent >= 0 ? "+" : ""}
+                              {pnlPercent.toFixed(2)}%)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Desktop Layout */}
+                      <div className="hidden md:flex md:items-center md:justify-between gap-4">
+                        <div className="flex-1">
+                          <div>
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                              {holding.symbol}
+                            </h3>
+                            <p className="text-sm text-[var(--text-secondary)]">
+                              {holding.totalQuantity} shares
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)] opacity-70">
+                              Avg cost: ${holding.avgCostBasis.toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 text-center">
+                          <p className="text-lg font-bold text-[var(--text-primary)]">
+                            ${currentPrice.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-[var(--text-secondary)] opacity-70">
+                            Current price
+                          </p>
+                        </div>
+
+                        <div className="flex-1 text-center">
+                          <p className="text-lg font-bold text-[var(--text-primary)]">
+                            ${currentValue.toFixed(2)}
+                          </p>
+                          <p
+                            className={`text-sm font-medium flex items-center justify-center gap-1 ${
+                              pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                            }`}
+                          >
+                            <DynamicIcon
+                              iconName={
+                                pnl >= 0 ? "trending-up" : "trending-down"
+                              }
+                              size={12}
+                            />
+                            {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-[var(--text-secondary)] opacity-70">
+                            {pnlPercent >= 0 ? "+" : ""}
+                            {pnlPercent.toFixed(2)}% return
+                          </p>
+                        </div>
+
+                        <div className="flex-1 text-right">
+                          <button
+                            onClick={() => handleSellClick(holding.symbol)}
+                            className="neu-button px-4 py-2 rounded-xl hover:scale-105 transition-transform text-rose-500 font-medium flex items-center gap-2 ml-auto"
+                          >
+                            <DynamicIcon
+                              iconName="minus-circle"
+                              size={16}
+                              className="text-[var(--text-accent)]"
+                            />
+                            Sell
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -2,7 +2,9 @@ package com.portfolio.demo_backend.controller;
 
 import com.portfolio.demo_backend.dto.wallet.AddCashRequest;
 import com.portfolio.demo_backend.dto.wallet.WalletBalanceResponse;
+import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.service.WalletService;
+import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +30,13 @@ public class WalletController {
 
         walletService.addCashToWallet(userId, request.getAmount(), request.getReason());
 
-        var summary = walletService.getPortfolioSummary(userId);
+        PortfolioSummaryData summaryData = walletService.getPortfolioSummary(userId);
+        var summaryDTO = TradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(), summaryData.getPositions(),
+                summaryData.getCurrentPrices());
+
         return ResponseEntity.ok(new WalletBalanceResponse(
-                summary.getCashBalance(),
-                summary.getTotalMarketValue(),
-                summary.getTotalPortfolioValue()));
+                summaryDTO.getCashBalance(),
+                summaryDTO.getTotalMarketValue(),
+                summaryDTO.getTotalPortfolioValue()));
     }
 }

@@ -1,5 +1,6 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.config.JwtProperties;
 import com.portfolio.demo_backend.model.RefreshToken;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.enums.Role;
@@ -16,12 +17,11 @@ import java.util.Base64;
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
-
-    private final long refreshTtlMs = 7L * 24 * 60 * 60 * 1000;
+    private final JwtProperties jwtProperties;
 
     public RefreshToken create(User user, Role authenticatedAs) {
         String token = randomToken();
-        Instant expires = Instant.now().plusMillis(refreshTtlMs);
+        Instant expires = Instant.now().plusMillis(jwtProperties.getRefreshExpiration());
         RefreshToken rt = RefreshToken.builder()
                 .token(token)
                 .user(user)
@@ -37,6 +37,15 @@ public class RefreshTokenService {
     }
 
     public RefreshToken rotate(RefreshToken old) {
+
+        long timeUntilExpiry = old.getExpiresAt().toEpochMilli() - Instant.now().toEpochMilli();
+        long totalLifetime = jwtProperties.getRefreshExpiration();
+        double remainingPercentage = (double) timeUntilExpiry / totalLifetime;
+
+        if (remainingPercentage > 0.25) {
+            return old;
+        }
+
         old.setRevoked(true);
         refreshTokenRepository.save(old);
         Role auth = old.getAuthenticatedAs();

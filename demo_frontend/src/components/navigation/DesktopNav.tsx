@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavItem } from "@/types";
-import { Menu, X } from "lucide-react";
+import DynamicIcon from "../ui/DynamicIcon";
+import { useDropdownMenu } from "@/hooks/useDropdownMenu";
 
 interface DesktopNavProps {
   navItems: NavItem[];
@@ -13,68 +14,8 @@ interface DesktopNavProps {
 
 export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
   const pathname = usePathname();
-
-  const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const btnRef = useRef<HTMLButtonElement | null>(null);
-  const listRef = useRef<HTMLUListElement | null>(null);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (panelRef.current?.contains(target)) return;
-      if (btnRef.current?.contains(target)) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
-
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!open) return;
-      const items = Array.from(
-        listRef.current?.querySelectorAll<HTMLAnchorElement>(
-          "a[data-menuitem]"
-        ) ?? []
-      );
-      const i = items.findIndex((el) => el === document.activeElement);
-
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
-        btnRef.current?.focus();
-      } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-        e.preventDefault();
-        const next = items[(i + 1 + items.length) % items.length];
-        next?.focus();
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-        e.preventDefault();
-        const prev = items[(i - 1 + items.length) % items.length];
-        prev?.focus();
-      } else if (e.key === "Home") {
-        e.preventDefault();
-        items[0]?.focus();
-      } else if (e.key === "End") {
-        e.preventDefault();
-        items[items.length - 1]?.focus();
-      }
-    },
-    [open]
-  );
-
-  // Focus first item when opening
-  useEffect(() => {
-    if (!open) return;
-    const first =
-      listRef.current?.querySelector<HTMLAnchorElement>("a[data-menuitem]");
-    first?.focus();
-  }, [open]);
+  const { open, setOpen, panelRef, btnRef, listRef, onKeyDown } =
+    useDropdownMenu();
 
   const hidden = hideNav
     ? "pointer-events-none opacity-0 h-0 overflow-hidden"
@@ -91,12 +32,35 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`
-    neu-button neumorphic-button p-3 font-bold inline-flex items-center gap-2
-    ${open ? "rounded-t-xl" : "rounded-xl"}
+    neu-button p-3 font-bold inline-flex items-center gap-2 relative z-50
+    ${
+      open
+        ? "rounded-t-xl border-b border-[var(--border)] menu-open-no-bottom"
+        : "rounded-xl"
+    }
   `}
-        onMouseDown={(e) => e.preventDefault()}
+        style={{
+          transition: "all 0.15s ease",
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.currentTarget.style.transform = "translateY(2px)";
+          e.currentTarget.style.boxShadow = "var(--shadow-neu-inset)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = "";
+          e.currentTarget.style.boxShadow = "";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "";
+          e.currentTarget.style.boxShadow = "";
+        }}
       >
-        {open ? <X size={18} /> : <Menu size={18} />}
+        {open ? (
+          <DynamicIcon iconName="x" size={18} />
+        ) : (
+          <DynamicIcon iconName="menu" size={18} />
+        )}
         Menu
       </button>
 
@@ -107,25 +71,27 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
           aria-label="Main navigation"
           onKeyDown={onKeyDown}
           className="
-            absolute left-0 right-0 top-full
+            absolute left-0 top-full
             z-40
           "
         >
           <div
             className="
-              w-full border-t
               bg-[var(--bg-surface)]
-              shadow-lg
-              px-4 md:px-6 lg:px-8 py-4
-              rounded-b-xl
+              px-8 py-6
+              rounded-b-xl rounded-tr-xl
+              inline-block
+              max-h-[80vh] overflow-y-auto
             "
-            style={{ boxShadow: "var(--shadow-large)" }}
+            style={{
+              boxShadow: "var(--shadow-large)",
+            }}
           >
             <ul
               ref={listRef}
               className="
-                grid gap-3 md:gap-4 lg:gap-4
-                [grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))]
+                flex flex-col gap-3 md:gap-4 lg:gap-4
+                items-stretch
               "
             >
               {navItems.map((item, idx) => {
@@ -136,12 +102,13 @@ export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
                       href={item.href}
                       data-menuitem
                       role="menuitem"
-                      className="no-underline"
+                      className="no-underline block"
                       onClick={() => setOpen(false)}
+                      draggable="false"
                     >
                       <div
                         className={`
-                          rounded-xl px-3 py-2
+                          neu-button rounded-xl px-3 py-2 text-center whitespace-nowrap
                           focus-visible:outline focus-visible:outline-2
                           transition-colors
                           ${idx === 0 ? "mt-4 md:mt-6" : ""}

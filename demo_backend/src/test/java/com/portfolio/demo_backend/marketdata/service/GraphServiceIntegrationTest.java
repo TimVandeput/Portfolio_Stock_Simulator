@@ -72,6 +72,7 @@ class GraphServiceIntegrationTest {
 
         testUser = User.builder()
                 .username("testuser")
+                .email("testuser@example.com")
                 .password("encodedpassword")
                 .roles(EnumSet.of(Role.ROLE_USER))
                 .build();
@@ -157,6 +158,7 @@ class GraphServiceIntegrationTest {
     void getCharts_withDuplicateSymbols_returnsUniqueCharts() throws IOException {
         User anotherUser = User.builder()
                 .username("anotheruser")
+                .email("anotheruser@example.com")
                 .password("encodedpassword")
                 .roles(EnumSet.of(Role.ROLE_USER))
                 .build();

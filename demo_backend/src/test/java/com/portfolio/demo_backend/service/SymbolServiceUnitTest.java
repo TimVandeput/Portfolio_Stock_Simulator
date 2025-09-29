@@ -1,8 +1,7 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.symbol.ImportStatusDTO;
 import com.portfolio.demo_backend.dto.symbol.ImportSummaryDTO;
-import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
+import com.portfolio.demo_backend.service.data.ImportData;
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.marketdata.integration.FinnhubClient;
 import com.portfolio.demo_backend.model.Symbol;
@@ -113,12 +112,12 @@ class SymbolServiceUnitTest {
 
         when(symbolRepository.search(eq("AAPL"), eq(true), any(Pageable.class))).thenReturn(mockPage);
 
-        Page<SymbolDTO> result = symbolService.list("AAPL", true, pageable);
+        Page<Symbol> result = symbolService.list("AAPL", true, pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).symbol).isEqualTo("AAPL");
-        assertThat(result.getContent().get(0).name).isEqualTo("Apple Inc");
-        assertThat(result.getContent().get(0).enabled).isTrue();
+        assertThat(result.getContent().get(0).getSymbol()).isEqualTo("AAPL");
+        assertThat(result.getContent().get(0).getName()).isEqualTo("Apple Inc");
+        assertThat(result.getContent().get(0).isEnabled()).isTrue();
     }
 
     @Test
@@ -128,9 +127,9 @@ class SymbolServiceUnitTest {
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        SymbolDTO result = symbolService.setEnabled(1L, true);
+        Symbol result = symbolService.setEnabled(1L, true);
 
-        assertThat(result.enabled).isTrue();
+        assertThat(result.isEnabled()).isTrue();
         verify(symbolRepository).save(symbol);
         assertThat(symbol.isEnabled()).isTrue();
     }
@@ -142,9 +141,9 @@ class SymbolServiceUnitTest {
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        SymbolDTO result = symbolService.setEnabled(1L, false);
+        Symbol result = symbolService.setEnabled(1L, false);
 
-        assertThat(result.enabled).isFalse();
+        assertThat(result.isEnabled()).isFalse();
         verify(symbolRepository).save(symbol);
         assertThat(symbol.isEnabled()).isFalse();
     }
@@ -160,11 +159,11 @@ class SymbolServiceUnitTest {
 
     @Test
     void importStatus_noImportYet_returnsCorrectStatus() {
-        ImportStatusDTO result = symbolService.importStatus();
+        ImportData result = symbolService.importStatus();
 
-        assertThat(result.running).isFalse();
-        assertThat(result.lastImportedAt).isNull();
-        assertThat(result.lastSummary).isNull();
+        assertThat(result.isRunning()).isFalse();
+        assertThat(result.getLastImportedAt()).isNull();
+        assertThat(result.getLastSummary()).isNull();
     }
 
     @Test

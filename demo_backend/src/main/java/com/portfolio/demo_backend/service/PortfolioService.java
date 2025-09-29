@@ -1,7 +1,5 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.portfolio.PortfolioHoldingResponseDTO;
-import com.portfolio.demo_backend.dto.portfolio.PortfolioResponseDTO;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
@@ -10,6 +8,8 @@ import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
+import com.portfolio.demo_backend.service.data.UserPortfolioData;
+import com.portfolio.demo_backend.service.data.UserHoldingData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class PortfolioService {
     private final UserService userService;
     private final WalletService walletService;
 
-    public PortfolioResponseDTO getUserPortfolio(Long userId) {
+    public UserPortfolioData getUserPortfolio(Long userId) {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("User ID must be a positive number");
         }
@@ -43,21 +43,11 @@ public class PortfolioService {
 
             List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
 
-            List<PortfolioHoldingResponseDTO> holdings = PortfolioMapper.toPortfolioHoldingResponseDTOList(portfolios);
-
             BigDecimal totalInvested = PortfolioMapper.calculateTotalInvested(portfolios);
-
-            PortfolioResponseDTO.WalletBalanceDTO walletBalance = PortfolioMapper.toWalletBalanceDTO(wallet,
-                    totalInvested);
-            if (walletBalance == null) {
-                throw new PortfolioDataException("Failed to calculate wallet balance for user: " + user.getUsername());
-            }
-
             BigDecimal totalValue = wallet.getCashBalance().add(totalInvested);
-            PortfolioResponseDTO.PortfolioSummaryDetailsDTO summary = PortfolioMapper
-                    .toPortfolioSummaryDetailsDTO(totalValue);
+            BigDecimal totalPL = totalValue.subtract(wallet.getCashBalance()).subtract(totalInvested);
 
-            return PortfolioMapper.toPortfolioResponseDTO(holdings, walletBalance, summary);
+            return new UserPortfolioData(portfolios, wallet, totalInvested, totalValue, totalPL);
 
         } catch (UserNotFoundException e) {
             log.error("User not found when retrieving portfolio: userId={}", userId);
@@ -71,7 +61,7 @@ public class PortfolioService {
         }
     }
 
-    public PortfolioHoldingResponseDTO getUserHolding(Long userId, String symbol) {
+    public UserHoldingData getUserHolding(Long userId, String symbol) {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("User ID must be a positive number");
         }
@@ -90,10 +80,10 @@ public class PortfolioService {
 
             if (portfolioOpt.isEmpty()) {
                 log.debug("No holding found for user {} and symbol {}", user.getUsername(), normalizedSymbol);
-                return PortfolioMapper.toEmptyPortfolioHoldingResponseDTO(normalizedSymbol);
+                return new UserHoldingData(null, normalizedSymbol, false);
             }
 
-            return PortfolioMapper.toPortfolioHoldingResponseDTO(portfolioOpt.get());
+            return new UserHoldingData(portfolioOpt.get(), normalizedSymbol, true);
 
         } catch (UserNotFoundException e) {
             log.error("User not found when retrieving holding: userId={}, symbol={}", userId, normalizedSymbol);

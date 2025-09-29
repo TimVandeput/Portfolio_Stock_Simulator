@@ -73,6 +73,7 @@ export default function SymbolsClient() {
   const importRunning = importStatus?.running || false;
   const lastImportedAt = importStatus?.lastImportedAt || null;
   const lastSummary = importStatus?.lastSummary || null;
+  const refreshImportStatus = importStatus?.refresh;
 
   const [importBusy, setImportBusy] = useState(false);
 
@@ -82,12 +83,17 @@ export default function SymbolsClient() {
     try {
       await importSymbols(universe);
       await fetchPage(0);
+      if (refreshImportStatus) {
+        setTimeout(() => {
+          refreshImportStatus();
+        }, 1000);
+      }
     } catch (e) {
       setError(getErrorMessage(e) || "Import failed.");
     } finally {
       setImportBusy(false);
     }
-  }, [universe, fetchPage, setError]);
+  }, [universe, fetchPage, setError, refreshImportStatus]);
 
   const onToggle = useCallback(
     async (row: SymbolDTO, next: boolean) => {

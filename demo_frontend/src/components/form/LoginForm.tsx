@@ -5,19 +5,27 @@ import PasswordInput from "@/components/input/PasswordInput";
 import NeumorphicButton from "@/components/button/NeumorphicButton";
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import StatusMessage from "@/components/status/StatusMessage";
-import RoleSelector from "@/components/button/RoleSelector";
-import type { Role } from "@/types";
-import type { LoginFormProps } from "@/types/components";
+import type { BaseComponentProps } from "@/types/components";
+
+export interface LoginFormProps extends BaseComponentProps {
+  usernameOrEmail: string;
+  setUsernameOrEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  error: string | null;
+  success: string | null;
+  isLoggingIn: boolean;
+  onSubmit: () => void;
+  onFlipToRegister: () => void;
+}
 
 export default function LoginForm({
-  username,
-  setUsername,
+  usernameOrEmail,
+  setUsernameOrEmail,
   password,
   setPassword,
   error,
   success,
-  selectedRole,
-  setSelectedRole,
   isLoggingIn,
   onSubmit,
   onFlipToRegister,
@@ -53,20 +61,15 @@ export default function LoginForm({
       <div className="mt-3 sm:mt-5 flex flex-col flex-1">
         <NeumorphicInput
           type="text"
-          placeholder="Username"
-          value={username}
-          onChange={setUsername}
+          placeholder="Email or Username"
+          value={usernameOrEmail}
+          onChange={setUsernameOrEmail}
           className="my-2"
         />
         <PasswordInput
           placeholder="Password"
           value={password}
           onChange={setPassword}
-          className="my-2"
-        />
-        <RoleSelector
-          selectedRole={selectedRole}
-          onRoleChange={setSelectedRole}
           className="my-2"
         />
 

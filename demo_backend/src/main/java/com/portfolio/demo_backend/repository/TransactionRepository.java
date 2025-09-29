@@ -23,6 +23,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByUserIdAndSymbolOrderByExecutedAtDesc(Long userId, Symbol symbol);
 
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.symbol.symbol = :symbol ORDER BY t.executedAt ASC")
+    List<Transaction> findByUserIdAndSymbolOrderByExecutedAtAsc(@Param("userId") Long userId,
+            @Param("symbol") String symbol);
+
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.executedAt >= :startDate ORDER BY t.executedAt DESC")
     List<Transaction> findRecentTransactions(@Param("userId") Long userId, @Param("startDate") Instant startDate);
 
