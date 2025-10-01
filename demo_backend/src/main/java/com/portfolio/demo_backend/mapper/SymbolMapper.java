@@ -2,6 +2,9 @@ package com.portfolio.demo_backend.mapper;
 
 import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.model.Symbol;
+
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -9,5 +12,5 @@ import org.mapstruct.ReportingPolicy;
 public interface SymbolMapper {
     SymbolDTO toDTO(Symbol e);
 
-    java.util.List<SymbolDTO> toDTOs(java.util.List<Symbol> entities);
+    List<SymbolDTO> toDTOs(List<Symbol> entities);
 }

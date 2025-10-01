@@ -1,6 +1,8 @@
 package com.portfolio.demo_backend.service.data;
 
 import com.portfolio.demo_backend.model.Transaction;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 
@@ -8,8 +10,12 @@ import java.math.BigDecimal;
 
 @Data
 public class TradeExecutionData {
+    @NotNull
+    @Valid
     private final Transaction transaction;
+    @NotNull
     private final BigDecimal newCashBalance;
+    @NotNull
     private final Integer newSharesOwned;
 
     public TradeExecutionData(Transaction transaction, BigDecimal newCashBalance, Integer newSharesOwned) {
