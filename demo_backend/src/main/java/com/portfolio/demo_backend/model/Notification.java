@@ -44,4 +44,8 @@ public class Notification {
         this.createdAt = Instant.now();
         this.read = false;
     }
+
+    public static Notification create(Long senderUserId, Long receiverUserId, String subject, String body) {
+        return new Notification(senderUserId, receiverUserId, subject, body);
+    }
 }
