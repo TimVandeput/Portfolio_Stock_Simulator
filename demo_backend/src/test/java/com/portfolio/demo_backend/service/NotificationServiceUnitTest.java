@@ -3,6 +3,10 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.model.Notification;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.enums.Role;
+import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyException;
+import com.portfolio.demo_backend.exception.notification.EmptyNotificationSubjectException;
+import com.portfolio.demo_backend.exception.notification.NotificationNotFoundException;
+import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.repository.NotificationRepository;
 import com.portfolio.demo_backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +43,7 @@ class NotificationServiceUnitTest {
 
     @Test
     void sendToUser_savesNotification() {
+        when(userRepository.existsById(1L)).thenReturn(true);
         Notification n = new Notification(0L, 1L, "S", "B");
         when(notificationRepository.save(any())).thenReturn(n);
 
@@ -99,5 +104,37 @@ class NotificationServiceUnitTest {
 
         assertThat(n.isRead()).isTrue();
         verify(notificationRepository).save(n);
+    }
+
+    @Test
+    void markAsRead_unknownId_throws() {
+        when(notificationRepository.findById(999L)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> notificationService.markAsRead(999L))
+                .isInstanceOf(NotificationNotFoundException.class);
+    }
+
+    @Test
+    void sendToUser_unknownReceiver_throwsUserNotFound() {
+        when(userRepository.existsById(123L)).thenReturn(false);
+
+        assertThatThrownBy(() -> notificationService.sendToUser(0L, 123L, "S", "B"))
+                .isInstanceOf(UserNotFoundException.class);
+        verify(notificationRepository, never()).save(any());
+    }
+
+    @Test
+    void sendToUser_blankSubject_throwsInvalidContent() {
+        when(userRepository.existsById(1L)).thenReturn(true);
+
+        assertThatThrownBy(() -> notificationService.sendToUser(0L, 1L, "  ", "B"))
+                .isInstanceOf(EmptyNotificationSubjectException.class);
+    }
+
+    @Test
+    void sendToRole_blankBody_throwsInvalidContent() {
+        assertThatThrownBy(() -> notificationService.sendToRole(0L, Role.ROLE_USER, "S", ""))
+                .isInstanceOf(EmptyNotificationBodyException.class);
+        verifyNoInteractions(userRepository, notificationRepository);
     }
 }
