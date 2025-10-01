@@ -6,29 +6,55 @@ import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.model.Wallet;
-
-import static com.portfolio.demo_backend.model.enums.TransactionType.BUY;
+import org.mapstruct.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class TradingMapper {
+import static com.portfolio.demo_backend.model.enums.TransactionType.BUY;
 
-    public static PortfolioHoldingDTO toPortfolioHoldingDTO(Portfolio portfolio, BigDecimal currentPrice) {
-        PortfolioHoldingDTO dto = new PortfolioHoldingDTO();
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface TradingMapper {
 
-        dto.setSymbol(portfolio.getSymbol().getSymbol());
-        dto.setShares(portfolio.getSharesOwned());
-        dto.setAverageCost(portfolio.getAverageCostBasis());
-        dto.setCurrentPrice(currentPrice);
+    @Mapping(target = "symbol", source = "transaction.symbol.symbol")
+    @Mapping(target = "quantity", source = "transaction.quantity")
+    @Mapping(target = "executionPrice", source = "transaction.pricePerShare")
+    @Mapping(target = "totalAmount", source = "transaction.totalAmount")
+    @Mapping(target = "transactionType", source = "transaction.type")
+    @Mapping(target = "executedAt", source = "transaction.executedAt")
+    @Mapping(target = "newCashBalance", source = "newCashBalance")
+    @Mapping(target = "newSharesOwned", source = "newSharesOwned")
+    TradeExecutionResponse toTradeExecutionResponse(Transaction transaction, BigDecimal newCashBalance,
+            Integer newSharesOwned);
 
+    @AfterMapping
+    default void fillTradeMessage(Transaction transaction, @MappingTarget TradeExecutionResponse target) {
+        target.setMessage(String.format("Successfully %s %d shares of %s at $%.2f per share",
+                transaction.getType() == BUY ? "bought" : "sold",
+                transaction.getQuantity(),
+                transaction.getSymbol().getSymbol(),
+                transaction.getPricePerShare()));
+    }
+
+    @Mapping(target = "symbol", source = "portfolio.symbol.symbol")
+    @Mapping(target = "shares", source = "portfolio.sharesOwned")
+    @Mapping(target = "averageCost", source = "portfolio.averageCostBasis")
+    @Mapping(target = "currentPrice", source = "currentPrice")
+    @Mapping(target = "marketValue", ignore = true)
+    @Mapping(target = "unrealizedGainLoss", ignore = true)
+    @Mapping(target = "unrealizedGainLossPercent", ignore = true)
+    PortfolioHoldingDTO toPortfolioHoldingDTO(Portfolio portfolio, BigDecimal currentPrice);
+
+    @AfterMapping
+    default void computeHoldingDerived(Portfolio portfolio, BigDecimal currentPrice,
+            @MappingTarget PortfolioHoldingDTO dto) {
         BigDecimal marketValue = currentPrice.multiply(BigDecimal.valueOf(portfolio.getSharesOwned()));
         dto.setMarketValue(marketValue);
 
-        BigDecimal costBasis = portfolio.getAverageCostBasis().multiply(BigDecimal.valueOf(portfolio.getSharesOwned()));
+        BigDecimal costBasis = portfolio.getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(portfolio.getSharesOwned()));
 
         BigDecimal unrealizedGainLoss = marketValue.subtract(costBasis);
         dto.setUnrealizedGainLoss(unrealizedGainLoss);
@@ -41,25 +67,52 @@ public class TradingMapper {
         } else {
             dto.setUnrealizedGainLossPercent(BigDecimal.ZERO);
         }
-
-        return dto;
     }
 
-    public static PortfolioSummaryDTO toPortfolioSummaryDTO(Wallet wallet, List<Portfolio> portfolios,
-            Map<String, BigDecimal> currentPrices) {
-        PortfolioSummaryDTO summary = new PortfolioSummaryDTO();
+    @Mapping(target = "symbol", source = "portfolio.symbol.symbol")
+    @Mapping(target = "shares", source = "portfolio.sharesOwned")
+    @Mapping(target = "averageCost", source = "portfolio.averageCostBasis")
+    @Mapping(target = "currentPrice", expression = "java(currentPrices.getOrDefault(portfolio.getSymbol().getSymbol(), java.math.BigDecimal.ZERO))")
+    @Mapping(target = "marketValue", ignore = true)
+    @Mapping(target = "unrealizedGainLoss", ignore = true)
+    @Mapping(target = "unrealizedGainLossPercent", ignore = true)
+    PortfolioHoldingDTO toPortfolioHoldingDTO(Portfolio portfolio, @Context Map<String, BigDecimal> currentPrices);
 
-        summary.setCashBalance(wallet.getCashBalance());
+    List<PortfolioHoldingDTO> toPortfolioHoldingDTOs(List<Portfolio> portfolios,
+            @Context Map<String, BigDecimal> currentPrices);
 
-        List<PortfolioHoldingDTO> holdings = portfolios.stream()
-                .map(portfolio -> {
-                    String symbol = portfolio.getSymbol().getSymbol();
-                    BigDecimal currentPrice = currentPrices.getOrDefault(symbol, BigDecimal.ZERO);
-                    return toPortfolioHoldingDTO(portfolio, currentPrice);
-                })
-                .collect(Collectors.toList());
+    @AfterMapping
+    default void computeHoldingDerived(Portfolio portfolio,
+            @Context Map<String, BigDecimal> currentPrices,
+            @MappingTarget PortfolioHoldingDTO dto) {
+        BigDecimal current = dto.getCurrentPrice();
+        if (current == null) {
+            current = currentPrices.getOrDefault(
+                    portfolio.getSymbol() != null ? portfolio.getSymbol().getSymbol() : null,
+                    BigDecimal.ZERO);
+        }
+        computeHoldingDerived(portfolio, current, dto);
+    }
 
-        summary.setHoldings(holdings);
+    @Mapping(target = "cashBalance", source = "wallet.cashBalance")
+    @Mapping(target = "holdings", expression = "java(toPortfolioHoldingDTOs(portfolios, currentPrices))")
+    @Mapping(target = "totalMarketValue", ignore = true)
+    @Mapping(target = "totalPortfolioValue", ignore = true)
+    @Mapping(target = "totalUnrealizedGainLoss", ignore = true)
+    @Mapping(target = "totalUnrealizedGainLossPercent", ignore = true)
+    PortfolioSummaryDTO toPortfolioSummaryDTO(Wallet wallet, List<Portfolio> portfolios,
+            @Context Map<String, BigDecimal> currentPrices);
+
+    @AfterMapping
+    default void computeSummaryDerived(@MappingTarget PortfolioSummaryDTO summary) {
+        List<PortfolioHoldingDTO> holdings = summary.getHoldings();
+        if (holdings == null) {
+            summary.setTotalMarketValue(BigDecimal.ZERO);
+            summary.setTotalPortfolioValue(summary.getCashBalance());
+            summary.setTotalUnrealizedGainLoss(BigDecimal.ZERO);
+            summary.setTotalUnrealizedGainLossPercent(BigDecimal.ZERO);
+            return;
+        }
 
         BigDecimal totalMarketValue = holdings.stream()
                 .map(PortfolioHoldingDTO::getMarketValue)
@@ -70,44 +123,21 @@ public class TradingMapper {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         summary.setTotalMarketValue(totalMarketValue);
-        summary.setTotalPortfolioValue(wallet.getCashBalance().add(totalMarketValue));
+        BigDecimal cash = summary.getCashBalance() != null ? summary.getCashBalance() : BigDecimal.ZERO;
+        summary.setTotalPortfolioValue(cash.add(totalMarketValue));
         summary.setTotalUnrealizedGainLoss(totalUnrealizedGainLoss);
 
         BigDecimal totalCostBasis = holdings.stream()
-                .map(holding -> holding.getAverageCost().multiply(BigDecimal.valueOf(holding.getShares())))
+                .map(h -> h.getAverageCost().multiply(BigDecimal.valueOf(h.getShares())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalCostBasis.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal totalUnrealizedGainLossPercent = totalUnrealizedGainLoss
+            BigDecimal pct = totalUnrealizedGainLoss
                     .divide(totalCostBasis, 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-            summary.setTotalUnrealizedGainLossPercent(totalUnrealizedGainLossPercent);
+            summary.setTotalUnrealizedGainLossPercent(pct);
         } else {
             summary.setTotalUnrealizedGainLossPercent(BigDecimal.ZERO);
         }
-
-        return summary;
-    }
-
-    public static TradeExecutionResponse toTradeExecutionResponse(Transaction transaction, BigDecimal newCashBalance,
-            Integer newSharesOwned) {
-        TradeExecutionResponse response = new TradeExecutionResponse();
-
-        response.setSymbol(transaction.getSymbol().getSymbol());
-        response.setQuantity(transaction.getQuantity());
-        response.setExecutionPrice(transaction.getPricePerShare());
-        response.setTotalAmount(transaction.getTotalAmount());
-        response.setTransactionType(transaction.getType());
-        response.setExecutedAt(transaction.getExecutedAt());
-        response.setNewCashBalance(newCashBalance);
-        response.setNewSharesOwned(newSharesOwned);
-
-        response.setMessage(String.format("Successfully %s %d shares of %s at $%.2f per share",
-                transaction.getType() == BUY ? "bought" : "sold",
-                transaction.getQuantity(),
-                transaction.getSymbol().getSymbol(),
-                transaction.getPricePerShare()));
-
-        return response;
     }
 }

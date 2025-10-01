@@ -5,6 +5,7 @@ import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.model.Transaction;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
+import org.mapstruct.factory.Mappers;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ class TransactionMapperUnitTest {
 
     private Transaction transaction;
     private Symbol symbol;
+    private TransactionMapper mapper = Mappers.getMapper(TransactionMapper.class);
 
     @BeforeEach
     void setUp() {
@@ -39,7 +41,7 @@ class TransactionMapperUnitTest {
 
     @Test
     void toDTO_validTransaction_returnsCorrectDTO() {
-        TransactionDTO result = TransactionMapper.toDTO(transaction);
+        TransactionDTO result = mapper.toDTO(transaction);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
@@ -54,7 +56,7 @@ class TransactionMapperUnitTest {
 
     @Test
     void toDTO_nullTransaction_returnsNull() {
-        TransactionDTO result = TransactionMapper.toDTO(null);
+        TransactionDTO result = mapper.toDTO(null);
 
         assertThat(result).isNull();
     }
@@ -63,7 +65,7 @@ class TransactionMapperUnitTest {
     void toDTO_transactionWithNullSymbol_returnsNullSymbol() {
         transaction.setSymbol(null);
 
-        TransactionDTO result = TransactionMapper.toDTO(transaction);
+        TransactionDTO result = mapper.toDTO(transaction);
 
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isNull();
@@ -84,7 +86,7 @@ class TransactionMapperUnitTest {
 
         List<Transaction> transactions = Arrays.asList(transaction, transaction2);
 
-        List<TransactionDTO> result = TransactionMapper.toDTOList(transactions);
+        List<TransactionDTO> result = mapper.toDTOs(transactions);
 
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
@@ -102,14 +104,14 @@ class TransactionMapperUnitTest {
 
     @Test
     void toDTOList_nullList_returnsNull() {
-        List<TransactionDTO> result = TransactionMapper.toDTOList(null);
+        List<TransactionDTO> result = mapper.toDTOs(null);
 
         assertThat(result).isNull();
     }
 
     @Test
     void toDTOList_emptyList_returnsEmptyList() {
-        List<TransactionDTO> result = TransactionMapper.toDTOList(Collections.emptyList());
+        List<TransactionDTO> result = mapper.toDTOs(Collections.emptyList());
 
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();

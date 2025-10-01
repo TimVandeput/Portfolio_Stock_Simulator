@@ -8,6 +8,7 @@ import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.exception.trading.*;
+import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -47,6 +48,9 @@ class TradingServiceUnitTest {
     @Mock
     private WalletService walletService;
 
+    @Mock
+    private TradingMapper tradingMapper;
+
     @InjectMocks
     private TradingService tradingService;
 
@@ -75,8 +79,33 @@ class TradingServiceUnitTest {
         testSymbol.setEnabled(true);
     }
 
+    private void stubTradeExecutionResponse() {
+        when(tradingMapper.toTradeExecutionResponse(any(Transaction.class), any(BigDecimal.class), anyInt()))
+                .thenAnswer(invocation -> {
+                    Transaction tx = invocation.getArgument(0);
+                    BigDecimal newCash = invocation.getArgument(1);
+                    Integer shares = invocation.getArgument(2);
+                    TradeExecutionResponse resp = new TradeExecutionResponse();
+                    if (tx.getSymbol() != null) {
+                        resp.setSymbol(tx.getSymbol().getSymbol());
+                    }
+                    resp.setQuantity(tx.getQuantity());
+                    resp.setExecutionPrice(tx.getPricePerShare());
+                    resp.setTotalAmount(tx.getTotalAmount());
+                    resp.setTransactionType(tx.getType());
+                    resp.setExecutedAt(tx.getExecutedAt());
+                    resp.setNewCashBalance(newCash);
+                    resp.setNewSharesOwned(shares);
+                    String verb = tx.getType() == TransactionType.BUY ? "bought" : "sold";
+                    String sym = tx.getSymbol() != null ? tx.getSymbol().getSymbol() : "";
+                    resp.setMessage("Successfully " + verb + " " + tx.getQuantity() + " shares of " + sym);
+                    return resp;
+                });
+    }
+
     @Test
     void executeBuyOrder_withSufficientFunds_completesSuccessfully() {
+        stubTradeExecutionResponse();
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(10);
@@ -128,6 +157,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withSufficientShares_completesSuccessfully() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -220,6 +250,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withTransactionHistory_calculatesCorrectProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -264,6 +295,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withMultipleBuyTransactions_usesFIFOForProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(8);
@@ -315,6 +347,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withNoTransactionHistory_setsNullProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -351,6 +384,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeBuyOrder_doesNotCalculateProfitLoss() {
+        stubTradeExecutionResponse();
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(10);

@@ -10,6 +10,7 @@ import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
+import com.portfolio.demo_backend.service.data.TradeExecutionData;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
@@ -35,9 +36,10 @@ public class TradingService {
     private final PriceService priceService;
     private final UserService userService;
     private final WalletService walletService;
+    private final TradingMapper tradingMapper;
 
     @Transactional
-    public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
+    public TradeExecutionData executeBuy(Long userId, BuyOrderRequest request) {
         User user = userService.getUserById(userId);
         String username = user.getUsername();
 
@@ -65,12 +67,13 @@ public class TradingService {
         log.info("Buy order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
+        return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
     }
 
     @Transactional
-    public TradeExecutionResponse executeSellOrder(Long userId, SellOrderRequest request) {
+    public TradeExecutionData executeSell(Long userId,
+            SellOrderRequest request) {
         User user = userService.getUserById(userId);
         String username = user.getUsername();
 
@@ -104,8 +107,22 @@ public class TradingService {
         log.info("Sell order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
+        return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
+    }
+
+    @Transactional
+    public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
+        TradeExecutionData data = executeBuy(userId, request);
+        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
+                data.getNewSharesOwned());
+    }
+
+    @Transactional
+    public TradeExecutionResponse executeSellOrder(Long userId, SellOrderRequest request) {
+        TradeExecutionData data = executeSell(userId, request);
+        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
+                data.getNewSharesOwned());
     }
 
     public List<Transaction> getTransactionHistory(Long userId) {

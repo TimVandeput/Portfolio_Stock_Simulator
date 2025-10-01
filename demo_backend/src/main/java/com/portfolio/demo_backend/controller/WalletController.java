@@ -18,6 +18,7 @@ public class WalletController {
 
     private final WalletService walletService;
     private final WalletMapper walletMapper;
+    private final TradingMapper tradingMapper;
 
     @GetMapping("/{userId}/balance")
     public ResponseEntity<WalletBalanceResponse> getWalletBalance(@PathVariable Long userId) {
@@ -33,7 +34,7 @@ public class WalletController {
         walletService.addCashToWallet(userId, request.getAmount(), request.getReason());
 
         PortfolioSummaryData summaryData = walletService.getPortfolioSummary(userId);
-        var summaryDTO = TradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(), summaryData.getPositions(),
+        var summaryDTO = tradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(), summaryData.getPositions(),
                 summaryData.getCurrentPrices());
 
         return ResponseEntity.ok(walletMapper.toWalletBalanceResponse(summaryDTO));

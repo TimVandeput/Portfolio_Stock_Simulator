@@ -10,6 +10,7 @@ import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -20,6 +21,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TradingMapperTest {
+
+    private final TradingMapper mapper = Mappers.getMapper(TradingMapper.class);
 
     @Test
     void toPortfolioHoldingDTO_withProfitablePosition_calculatesCorrectly() {
@@ -32,7 +35,7 @@ class TradingMapperTest {
         portfolio.setAverageCostBasis(new BigDecimal("150.00"));
         BigDecimal currentPrice = new BigDecimal("160.00");
 
-        PortfolioHoldingDTO dto = TradingMapper.toPortfolioHoldingDTO(portfolio, currentPrice);
+        PortfolioHoldingDTO dto = mapper.toPortfolioHoldingDTO(portfolio, currentPrice);
 
         assertEquals("AAPL", dto.getSymbol());
         assertEquals(100, dto.getShares());
@@ -69,7 +72,7 @@ class TradingMapperTest {
         currentPrices.put("AAPL", new BigDecimal("160.00"));
         currentPrices.put("GOOGL", new BigDecimal("130.00"));
 
-        PortfolioSummaryDTO summary = TradingMapper.toPortfolioSummaryDTO(
+        PortfolioSummaryDTO summary = mapper.toPortfolioSummaryDTO(
                 wallet, Arrays.asList(portfolio1, portfolio2), currentPrices);
 
         assertEquals(new BigDecimal("2000.00"), summary.getCashBalance());
@@ -96,7 +99,7 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("1212.50");
         Integer newSharesOwned = 150;
 
-        TradeExecutionResponse response = TradingMapper.toTradeExecutionResponse(
+        TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
         assertEquals("AAPL", response.getSymbol());
@@ -126,7 +129,7 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("8375.00");
         Integer newSharesOwned = 25;
 
-        TradeExecutionResponse response = TradingMapper.toTradeExecutionResponse(
+        TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
         assertEquals(TransactionType.SELL, response.getTransactionType());
