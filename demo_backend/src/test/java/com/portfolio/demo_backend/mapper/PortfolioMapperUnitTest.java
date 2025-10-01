@@ -18,6 +18,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.portfolio.demo_backend.service.util.PortfolioCalculations;
 
 class PortfolioMapperUnitTest {
 
@@ -196,21 +197,21 @@ class PortfolioMapperUnitTest {
     void calculateTotalInvested_validPortfolios_returnsCorrectTotal() {
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio);
 
-        BigDecimal result = PortfolioMapper.calculateTotalInvested(portfolios);
+        BigDecimal result = PortfolioCalculations.calculateTotalInvested(portfolios);
 
         assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(2100.00));
     }
 
     @Test
     void calculateTotalInvested_nullList_returnsZero() {
-        BigDecimal result = PortfolioMapper.calculateTotalInvested(null);
+        BigDecimal result = PortfolioCalculations.calculateTotalInvested(null);
 
         assertThat(result).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
     void calculateTotalInvested_emptyList_returnsZero() {
-        BigDecimal result = PortfolioMapper.calculateTotalInvested(Collections.emptyList());
+        BigDecimal result = PortfolioCalculations.calculateTotalInvested(Collections.emptyList());
 
         assertThat(result).isEqualByComparingTo(BigDecimal.ZERO);
     }

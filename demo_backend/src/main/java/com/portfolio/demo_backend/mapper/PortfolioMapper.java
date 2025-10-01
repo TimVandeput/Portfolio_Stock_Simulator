@@ -77,13 +77,4 @@ public class PortfolioMapper {
         return new PortfolioResponseDTO(holdings, walletBalance, summary);
     }
 
-    public static BigDecimal calculateTotalInvested(List<Portfolio> portfolios) {
-        if (portfolios == null || portfolios.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        return portfolios.stream()
-                .map(p -> p.getAverageCostBasis().multiply(BigDecimal.valueOf(p.getSharesOwned())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

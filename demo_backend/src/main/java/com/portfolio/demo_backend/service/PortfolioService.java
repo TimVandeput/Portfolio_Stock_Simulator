@@ -3,7 +3,7 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
-import com.portfolio.demo_backend.mapper.PortfolioMapper;
+import com.portfolio.demo_backend.service.util.PortfolioCalculations;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
@@ -43,7 +43,7 @@ public class PortfolioService {
 
             List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
 
-            BigDecimal totalInvested = PortfolioMapper.calculateTotalInvested(portfolios);
+            BigDecimal totalInvested = PortfolioCalculations.calculateTotalInvested(portfolios);
             BigDecimal totalValue = wallet.getCashBalance().add(totalInvested);
             BigDecimal totalPL = totalValue.subtract(wallet.getCashBalance()).subtract(totalInvested);
 
