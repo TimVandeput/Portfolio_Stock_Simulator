@@ -1,7 +1,7 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.dto.auth.RegisterRequest;
-import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
+import com.portfolio.demo_backend.service.data.RegistrationData;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.enums.Role;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class AuthServiceTest {
 
         when(userService.createUser(any(User.class))).thenReturn(saved);
 
-        RegistrationResponse resp = authService.register(req);
+        RegistrationData resp = authService.register(req);
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userService).createUser(captor.capture());
@@ -60,6 +60,6 @@ class AuthServiceTest {
         User passed = captor.getValue();
         assertThat(passed.getEmail()).isEqualTo("test@example.com");
         assertThat(resp).isNotNull();
-        assertThat(resp.getId()).isEqualTo(10L);
+        assertThat(resp.id()).isEqualTo(10L);
     }
 }

@@ -5,6 +5,7 @@ import com.portfolio.demo_backend.dto.auth.LoginRequest;
 import com.portfolio.demo_backend.dto.auth.RefreshRequest;
 import com.portfolio.demo_backend.dto.auth.RegisterRequest;
 import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
+import com.portfolio.demo_backend.mapper.AuthMapper;
 import com.portfolio.demo_backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -15,24 +16,29 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService auth;
+    private final AuthMapper authMapper;
 
-    public AuthController(AuthService auth) {
+    public AuthController(AuthService auth, AuthMapper authMapper) {
         this.auth = auth;
+        this.authMapper = authMapper;
     }
 
     @PostMapping("/register")
     public ResponseEntity<RegistrationResponse> register(@Valid @RequestBody RegisterRequest req) {
-        return ResponseEntity.ok(auth.register(req));
+        var data = auth.register(req);
+        return ResponseEntity.ok(authMapper.toRegistrationResponse(data));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
-        return ResponseEntity.ok(auth.login(req));
+        var data = auth.login(req);
+        return ResponseEntity.ok(authMapper.toAuthResponse(data));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest req) {
-        return ResponseEntity.ok(auth.refresh(req));
+        var data = auth.refresh(req);
+        return ResponseEntity.ok(authMapper.toAuthResponse(data));
     }
 
     @PostMapping("/logout")

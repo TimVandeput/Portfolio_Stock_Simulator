@@ -1,10 +1,10 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.auth.AuthResponse;
+import com.portfolio.demo_backend.service.data.AuthTokensData;
 import com.portfolio.demo_backend.dto.auth.LoginRequest;
 import com.portfolio.demo_backend.dto.auth.RefreshRequest;
 import com.portfolio.demo_backend.dto.auth.RegisterRequest;
-import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
+import com.portfolio.demo_backend.service.data.RegistrationData;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.model.RefreshToken;
@@ -69,16 +69,16 @@ class AuthServiceUnitTest {
         when(userService.createUser(userCaptor.capture()))
                 .thenReturn(user("tim", "tim@example.com", EnumSet.of(Role.ROLE_USER), "$2a..."));
 
-        RegistrationResponse out = authService.register(req);
+        RegistrationData out = authService.register(req);
 
         User createdArg = userCaptor.getValue();
         assertThat(createdArg.getUsername()).isEqualTo("tim");
         assertThat(createdArg.getEmail()).isEqualTo("tim@example.com");
         assertThat(createdArg.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
 
-        assertThat(out.getId()).isEqualTo(42L);
-        assertThat(out.getUsername()).isEqualTo("tim");
-        assertThat(out.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
+        assertThat(out.id()).isEqualTo(42L);
+        assertThat(out.username()).isEqualTo("tim");
+        assertThat(out.roles()).containsExactlyInAnyOrder(Role.ROLE_USER);
     }
 
     @Test
@@ -94,14 +94,14 @@ class AuthServiceUnitTest {
         when(refreshTokenService.create(u)).thenReturn(
                 RefreshToken.builder().token("refresh-1").user(u).build());
 
-        AuthResponse out = authService.login(req);
+        AuthTokensData out = authService.login(req);
 
-        assertThat(out.getAccessToken()).isEqualTo("jwt-access");
-        assertThat(out.getRefreshToken()).isEqualTo("refresh-1");
-        assertThat(out.getTokenType()).isEqualTo("Bearer");
-        assertThat(out.getUsername()).isEqualTo("alice");
-        assertThat(out.getRoles()).contains(Role.ROLE_USER);
-        assertThat(out.getAuthenticatedAs()).isEqualTo(Role.ROLE_USER);
+        assertThat(out.accessToken()).isEqualTo("jwt-access");
+        assertThat(out.refreshToken()).isEqualTo("refresh-1");
+        assertThat(out.tokenType()).isEqualTo("Bearer");
+        assertThat(out.username()).isEqualTo("alice");
+        assertThat(out.roles()).contains(Role.ROLE_USER);
+        assertThat(out.authenticatedAs()).isEqualTo(Role.ROLE_USER);
     }
 
     @Test
@@ -144,12 +144,12 @@ class AuthServiceUnitTest {
         when(refreshTokenService.rotate(old)).thenReturn(fresh);
         when(jwtService.generateAccessToken("dave", 42L, Role.ROLE_USER)).thenReturn("access-new");
 
-        AuthResponse out = authService.refresh(req);
+        AuthTokensData out = authService.refresh(req);
 
-        assertThat(out.getAccessToken()).isEqualTo("access-new");
-        assertThat(out.getRefreshToken()).isEqualTo("new");
-        assertThat(out.getAuthenticatedAs()).isEqualTo(Role.ROLE_USER);
-        assertThat(out.getUsername()).isEqualTo("dave");
+        assertThat(out.accessToken()).isEqualTo("access-new");
+        assertThat(out.refreshToken()).isEqualTo("new");
+        assertThat(out.authenticatedAs()).isEqualTo(Role.ROLE_USER);
+        assertThat(out.username()).isEqualTo("dave");
         verify(refreshTokenService).rotate(old);
     }
 

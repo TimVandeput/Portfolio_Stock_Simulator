@@ -1,10 +1,8 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.auth.AuthResponse;
 import com.portfolio.demo_backend.dto.auth.LoginRequest;
 import com.portfolio.demo_backend.dto.auth.RefreshRequest;
 import com.portfolio.demo_backend.dto.auth.RegisterRequest;
-import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.model.RefreshToken;
@@ -12,6 +10,8 @@ import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.repository.UserRepository;
 import com.portfolio.demo_backend.security.JwtService;
+import com.portfolio.demo_backend.service.data.AuthTokensData;
+import com.portfolio.demo_backend.service.data.RegistrationData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
-    public RegistrationResponse register(RegisterRequest req) {
+    public RegistrationData register(RegisterRequest req) {
         User created = userService.createUser(
                 User.builder()
                         .username(req.getUsername().trim())
@@ -37,10 +37,10 @@ public class AuthService {
                         .roles(EnumSet.of(Role.ROLE_USER))
                         .build());
 
-        return new RegistrationResponse(created.getId(), created.getUsername(), created.getRoles());
+        return new RegistrationData(created.getId(), created.getUsername(), created.getRoles());
     }
 
-    public AuthResponse login(LoginRequest req) {
+    public AuthTokensData login(LoginRequest req) {
         User user = userRepository.findByUsernameOrEmail(req.getUsernameOrEmail())
                 .orElseThrow(InvalidCredentialsException::new);
 
@@ -54,11 +54,11 @@ public class AuthService {
         RefreshToken refresh = refreshTokenService.create(user);
         refreshTokenService.setAuthenticatedAs(refresh.getToken(), userRole);
 
-        return new AuthResponse(access, refresh.getToken(), "Bearer",
+        return new AuthTokensData(access, refresh.getToken(), "Bearer",
                 user.getUsername(), user.getRoles(), userRole);
     }
 
-    public AuthResponse refresh(RefreshRequest req) {
+    public AuthTokensData refresh(RefreshRequest req) {
         final RefreshToken old;
         try {
             old = refreshTokenService.validateUsable(req.getRefreshToken());
@@ -69,7 +69,7 @@ public class AuthService {
         Role authenticatedAs = fresh.getAuthenticatedAs() != null ? fresh.getAuthenticatedAs() : Role.ROLE_USER;
         String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(),
                 authenticatedAs);
-        return new AuthResponse(access, fresh.getToken(), "Bearer",
+        return new AuthTokensData(access, fresh.getToken(), "Bearer",
                 fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
     }
 
