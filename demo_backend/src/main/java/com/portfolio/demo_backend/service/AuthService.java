@@ -55,7 +55,7 @@ public class AuthService {
         refreshTokenService.setAuthenticatedAs(refresh.getToken(), userRole);
 
         return new AuthTokensData(access, refresh.getToken(), "Bearer",
-                user.getUsername(), user.getRoles(), userRole);
+                user.getId(), user.getUsername(), user.getRoles(), userRole);
     }
 
     public AuthTokensData refresh(RefreshRequest req) {
@@ -70,7 +70,7 @@ public class AuthService {
         String access = jwtService.generateAccessToken(fresh.getUser().getUsername(), fresh.getUser().getId(),
                 authenticatedAs);
         return new AuthTokensData(access, fresh.getToken(), "Bearer",
-                fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
+                fresh.getUser().getId(), fresh.getUser().getUsername(), fresh.getUser().getRoles(), authenticatedAs);
     }
 
     public void logout(RefreshRequest req) {

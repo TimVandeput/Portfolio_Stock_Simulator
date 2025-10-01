@@ -8,6 +8,7 @@ public record AuthTokensData(
         String accessToken,
         String refreshToken,
         String tokenType,
+        Long userId,
         String username,
         Set<Role> roles,
         Role authenticatedAs) {
