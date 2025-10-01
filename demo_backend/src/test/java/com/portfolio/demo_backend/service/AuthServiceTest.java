@@ -50,7 +50,7 @@ class AuthServiceTest {
                 .roles(EnumSet.of(Role.ROLE_USER))
                 .build();
 
-        when(userService.createUser(any())).thenReturn(saved);
+        when(userService.createUser(any(User.class))).thenReturn(saved);
 
         RegistrationResponse resp = authService.register(req);
 

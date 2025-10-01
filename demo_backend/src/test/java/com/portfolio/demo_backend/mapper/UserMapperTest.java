@@ -2,11 +2,14 @@ package com.portfolio.demo_backend.mapper;
 
 import com.portfolio.demo_backend.dto.user.CreateUserDTO;
 import com.portfolio.demo_backend.model.User;
+import org.mapstruct.factory.Mappers;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UserMapperTest {
+
+    private final UserMapper mapper = Mappers.getMapper(UserMapper.class);
 
     @Test
     void toEntity_mapsFieldsCorrectly() {
@@ -16,7 +19,7 @@ class UserMapperTest {
         dto.setEmail("demo@example.com");
         dto.setPassword("password123");
 
-        User user = UserMapper.toEntity(dto);
+        User user = mapper.toEntity(dto);
 
         assertThat(user).isNotNull();
         assertThat(user.getUsername()).isEqualTo("demo");
@@ -33,7 +36,7 @@ class UserMapperTest {
                 .password("secret")
                 .build();
 
-        CreateUserDTO dto = UserMapper.toDTO(user);
+        CreateUserDTO dto = mapper.toDTO(user);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getUsername()).isEqualTo("realuser");
