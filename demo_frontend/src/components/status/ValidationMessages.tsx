@@ -10,6 +10,7 @@ export interface ValidationMessagesProps extends BaseComponentProps {
   lastPrice: number;
   success?: string;
   loading?: boolean;
+  mode?: "buy" | "sell";
 }
 
 export default function ValidationMessages({
@@ -19,6 +20,7 @@ export default function ValidationMessages({
   lastPrice,
   success,
   loading,
+  mode = "buy",
 }: ValidationMessagesProps) {
   return (
     <>
@@ -29,7 +31,7 @@ export default function ValidationMessages({
         !loading && (
           <div className="flex items-center gap-2 text-sm text-rose-500">
             <DynamicIcon iconName="alertcircle" size={16} />
-            Insufficient funds
+            {mode === "sell" ? "Insufficient shares" : "Insufficient funds"}
           </div>
         )}
 
