@@ -8,6 +8,7 @@ import com.portfolio.demo_backend.exception.notification.NotificationNotFoundExc
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.notification.EmptyNotificationSubjectException;
 import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyException;
+import com.portfolio.demo_backend.mapper.NotificationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final NotificationMapper notificationMapper;
 
     @Transactional
     public Notification sendToUser(Long senderUserId, Long receiverUserId, String subject, String body) {
@@ -33,7 +35,7 @@ public class NotificationService {
         if (body == null || body.isBlank()) {
             throw new EmptyNotificationBodyException();
         }
-        Notification n = new Notification(senderUserId, receiverUserId, subject, body);
+        Notification n = notificationMapper.toEntity(senderUserId, receiverUserId, subject, body);
         return notificationRepository.save(n);
     }
 
@@ -48,7 +50,7 @@ public class NotificationService {
         java.util.List<com.portfolio.demo_backend.model.User> users = userRepository.findByRole(role);
         List<Notification> created = new ArrayList<>();
         for (com.portfolio.demo_backend.model.User u : users) {
-            Notification per = new Notification(senderUserId, u.getId(), subject, body);
+            Notification per = notificationMapper.toEntity(senderUserId, u.getId(), subject, body);
             created.add(notificationRepository.save(per));
         }
 
@@ -66,7 +68,7 @@ public class NotificationService {
         java.util.List<com.portfolio.demo_backend.model.User> users = userRepository.findAll();
         List<Notification> created = new ArrayList<>();
         for (com.portfolio.demo_backend.model.User u : users) {
-            Notification per = new Notification(senderUserId, u.getId(), subject, body);
+            Notification per = notificationMapper.toEntity(senderUserId, u.getId(), subject, body);
             created.add(notificationRepository.save(per));
         }
         return created;
