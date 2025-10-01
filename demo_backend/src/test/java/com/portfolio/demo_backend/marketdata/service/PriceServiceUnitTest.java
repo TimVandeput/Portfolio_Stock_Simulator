@@ -2,6 +2,7 @@ package com.portfolio.demo_backend.marketdata.service;
 
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
+import com.portfolio.demo_backend.marketdata.mapper.MarketDataMapper;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
 import com.portfolio.demo_backend.model.Symbol;
@@ -29,6 +30,9 @@ class PriceServiceUnitTest {
     @Mock
     private SymbolRepository symbolRepository;
 
+    @Mock
+    private MarketDataMapper marketDataMapper;
+
     @InjectMocks
     private PriceService priceService;
 
@@ -44,6 +48,11 @@ class PriceServiceUnitTest {
         RapidApiClient.Quote quote2 = createQuote("MSFT", 300.0, -5.0, -1.64);
 
         when(rapidApiClient.getQuotes(List.of("AAPL", "MSFT"))).thenReturn(List.of(quote1, quote2));
+
+        YahooQuoteDTO dto1 = createYahooQuoteDTO("AAPL", 150.0, 2.5, 1.69);
+        YahooQuoteDTO dto2 = createYahooQuoteDTO("MSFT", 300.0, -5.0, -1.64);
+        when(marketDataMapper.toYahooQuoteDTO(quote1)).thenReturn(dto1);
+        when(marketDataMapper.toYahooQuoteDTO(quote2)).thenReturn(dto2);
 
         Map<String, YahooQuoteDTO> result = priceService.getAllCurrentPrices();
 
@@ -119,6 +128,9 @@ class PriceServiceUnitTest {
 
         RapidApiClient.Quote quote = createQuote("AAPL", 150.0, 2.5, 1.69);
         when(rapidApiClient.getQuote("AAPL")).thenReturn(quote);
+
+        YahooQuoteDTO expectedDto = createYahooQuoteDTO("AAPL", 150.0, 2.5, 1.69);
+        when(marketDataMapper.toYahooQuoteDTO(quote)).thenReturn(expectedDto);
 
         YahooQuoteDTO result = priceService.getCurrentPrice("AAPL");
 
@@ -219,5 +231,18 @@ class PriceServiceUnitTest {
         quote.dayLow = price - 5.0;
         quote.previousClose = price - change;
         return quote;
+    }
+
+    private YahooQuoteDTO createYahooQuoteDTO(String symbol, Double price, Double change, Double changePercent) {
+        YahooQuoteDTO dto = new YahooQuoteDTO();
+        dto.setSymbol(symbol);
+        dto.setPrice(price);
+        dto.setChange(change);
+        dto.setChangePercent(changePercent);
+        dto.setCurrency("USD");
+        dto.setDayHigh(price + 5.0);
+        dto.setDayLow(price - 5.0);
+        dto.setPreviousClose(price - change);
+        return dto;
     }
 }

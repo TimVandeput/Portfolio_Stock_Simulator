@@ -1,6 +1,14 @@
 package com.portfolio.demo_backend.marketdata.dto;
 
-public record PriceEvent(String type, String symbol, double price, Double percentChange, long ts) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record PriceEvent(
+        @NotBlank String type,
+        @NotBlank String symbol,
+        @NotNull Double price,
+        Double percentChange,
+        @NotNull Long ts) {
     public static PriceEvent price(String symbol, double price, Double percentChange) {
         return new PriceEvent("price", symbol, price, percentChange, System.currentTimeMillis());
     }
