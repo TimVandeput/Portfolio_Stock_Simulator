@@ -22,6 +22,7 @@ import java.io.IOException;
 public class SymbolController {
 
     private final SymbolService service;
+    private final SymbolMapper symbolMapper;
 
     @PostMapping("/import")
     public ResponseEntity<ImportSummaryDTO> importSymbols(
@@ -37,13 +38,13 @@ public class SymbolController {
             @RequestParam(defaultValue = "25") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Symbol> symbols = service.list(q, enabled, pageable);
-        return symbols.map(SymbolMapper::toSymbol);
+        return symbols.map(symbolMapper::toDTO);
     }
 
     @PutMapping("/{id}/enabled")
     public SymbolDTO setEnabled(@PathVariable Long id, @RequestBody ToggleBody body) {
         Symbol symbol = service.setEnabled(id, body.enabled);
-        return SymbolMapper.toSymbol(symbol);
+        return symbolMapper.toDTO(symbol);
     }
 
     public static class ToggleBody {
