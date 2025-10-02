@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { getGraphsForUserPortfolio } from "@/lib/api/graphs";
 import { getUserId } from "@/lib/auth/tokenStorage";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
@@ -10,6 +11,7 @@ import TimeRangeSelector from "@/components/graph/TimeRangeSelector";
 import type { GraphData } from "@/lib/api/graphs";
 
 export default function GraphClient() {
+  const router = useRouter();
   const [graphs, setGraphs] = useState<GraphData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -94,7 +96,7 @@ export default function GraphClient() {
               You need to own some stocks to see graphs.
             </p>
             <button
-              onClick={() => (window.location.href = "/market")}
+              onClick={() => router.push("/market")}
               className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:opacity-80 transition-opacity"
             >
               Browse Markets
