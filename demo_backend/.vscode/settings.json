@@ -25,5 +25,19 @@
     { "name": "JavaSE-21", "path": "C\\\\Program Files\\\\Microsoft\\\\jdk-21" }
   ],
   // Downgrade noisy classpath issues in editor (Maven build stays authoritative)
-  "java.errors.incompleteClasspath.severity": "ignore"
+  "java.errors.incompleteClasspath.severity": "ignore",
+
+  // Formatting settings to prevent tab/space issues
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "editor.detectIndentation": false,
+  "java.format.enabled": true,
+  "java.format.onType.enabled": false,
+
+  // File specific settings
+  "[java]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false
+  }
 }

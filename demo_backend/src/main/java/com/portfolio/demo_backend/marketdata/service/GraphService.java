@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class GraphService {
         for (String symbol : symbols) {
             try {
                 ChartData chartData = getChartDataForSymbol(symbol, range);
-                if (chartData != null) {
+                if (!ObjectUtils.isEmpty(chartData)) {
                     allCharts.add(chartData.chartResponse());
                     log.debug("Successfully fetched chart data for symbol: {} with range: {}", symbol, range);
                 } else {
@@ -89,7 +90,8 @@ public class GraphService {
 
         try (Response response = http.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                String responseBody = response.body() != null ? response.body().string() : "No response body";
+                String responseBody = !ObjectUtils.isEmpty(response.body()) ? response.body().string()
+                        : "No response body";
                 log.error("RapidAPI chart request failed for symbol {} with range {}: {} - {}", symbol, range,
                         response.code(),
                         responseBody);

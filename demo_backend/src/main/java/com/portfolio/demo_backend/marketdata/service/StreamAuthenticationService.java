@@ -5,6 +5,8 @@ import com.portfolio.demo_backend.marketdata.service.data.StreamAuthData;
 import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -15,13 +17,13 @@ public class StreamAuthenticationService {
     private final JwtService jwtService;
 
     public String validateToken(String token) {
-        if (token == null || token.trim().isEmpty()) {
+        if (!StringUtils.hasText(token)) {
             throw new StreamAuthenticationException("Token is required");
         }
 
         try {
             String username = jwtService.extractUsername(token);
-            if (username == null || username.trim().isEmpty()) {
+            if (!StringUtils.hasText(username)) {
                 throw new StreamAuthenticationException("Invalid token");
             }
             return username;
@@ -38,7 +40,7 @@ public class StreamAuthenticationService {
     }
 
     public boolean isValidStreamAuth(StreamAuthData authData) {
-        if (authData == null) {
+        if (ObjectUtils.isEmpty(authData)) {
             return false;
         }
 

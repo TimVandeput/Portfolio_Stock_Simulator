@@ -11,6 +11,7 @@ import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class PriceService {
         log.info("Fetching current price for symbol: {}", symbol);
 
         Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
-        if (symbolEntity == null) {
+        if (ObjectUtils.isEmpty(symbolEntity)) {
             log.warn("Symbol {} not found in database", symbol);
             return null;
         }
@@ -89,7 +90,7 @@ public class PriceService {
 
         try {
             RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
-            if (quote == null) {
+            if (ObjectUtils.isEmpty(quote)) {
                 log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
                 return null;
             }
@@ -112,14 +113,14 @@ public class PriceService {
         log.info("Fetching price data for symbol: {}", symbol);
 
         Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
-        if (symbolEntity == null || !symbolEntity.isEnabled()) {
+        if (ObjectUtils.isEmpty(symbolEntity) || !symbolEntity.isEnabled()) {
             log.warn("Symbol {} not found or disabled", symbol);
             return null;
         }
 
         try {
             RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
-            if (quote == null) {
+            if (ObjectUtils.isEmpty(quote)) {
                 log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
                 return null;
             }

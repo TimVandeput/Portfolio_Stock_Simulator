@@ -16,6 +16,8 @@ import com.portfolio.demo_backend.repository.WalletRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import java.util.EnumSet;
 
 import java.util.List;
@@ -57,7 +59,7 @@ public class UserService {
 
         validateAndEncodePassword(user);
 
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+        if (ObjectUtils.isEmpty(user.getRoles())) {
             user.setRoles(EnumSet.of(Role.ROLE_USER));
         } else {
             user.setRoles(EnumSet.copyOf(user.getRoles()));
@@ -85,7 +87,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (updatedUser.getUsername() != null) {
+        if (StringUtils.hasText(updatedUser.getUsername())) {
             String newUsername = updatedUser.getUsername().trim();
             if (!newUsername.equals(user.getUsername())
                     && userRepository.findByUsername(newUsername).isPresent()) {
@@ -94,7 +96,7 @@ public class UserService {
             user.setUsername(newUsername);
         }
 
-        if (updatedUser.getEmail() != null) {
+        if (StringUtils.hasText(updatedUser.getEmail())) {
             String newEmail = updatedUser.getEmail().trim().toLowerCase();
             if (!newEmail.equals(user.getEmail())
                     && userRepository.findByEmail(newEmail).isPresent()) {
@@ -103,7 +105,7 @@ public class UserService {
             user.setEmail(newEmail);
         }
 
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+        if (StringUtils.hasText(updatedUser.getPassword())) {
             validateAndEncodePassword(updatedUser);
             user.setPassword(updatedUser.getPassword());
         }

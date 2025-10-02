@@ -62,6 +62,8 @@ class SymbolServiceUnitTest {
                 .of(createSymbolItem("AAPL", "Apple Inc", "XNAS", "USD", "Common Stock"));
         when(finnhubClient.listSymbolsByExchange("US")).thenReturn(mockSymbols);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.count()).thenReturn(0L);
+        when(symbolRepository.findAll()).thenReturn(List.of());
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> {
             try {
                 Thread.sleep(100);

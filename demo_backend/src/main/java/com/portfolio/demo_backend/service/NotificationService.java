@@ -11,6 +11,7 @@ import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyEx
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,10 @@ public class NotificationService {
         if (!userRepository.existsById(receiverUserId)) {
             throw new UserNotFoundException(receiverUserId);
         }
-        if (subject == null || subject.isBlank()) {
+        if (!StringUtils.hasText(subject)) {
             throw new EmptyNotificationSubjectException();
         }
-        if (body == null || body.isBlank()) {
+        if (!StringUtils.hasText(body)) {
             throw new EmptyNotificationBodyException();
         }
         Notification n = Notification.create(senderUserId, receiverUserId, subject, body);
@@ -39,10 +40,10 @@ public class NotificationService {
 
     @Transactional
     public List<Notification> sendToRole(Long senderUserId, Role role, String subject, String body) {
-        if (subject == null || subject.isBlank()) {
+        if (!StringUtils.hasText(subject)) {
             throw new EmptyNotificationSubjectException();
         }
-        if (body == null || body.isBlank()) {
+        if (!StringUtils.hasText(body)) {
             throw new EmptyNotificationBodyException();
         }
         java.util.List<com.portfolio.demo_backend.model.User> users = userRepository.findByRole(role);
@@ -57,10 +58,10 @@ public class NotificationService {
 
     @Transactional
     public List<Notification> sendToAllUsers(Long senderUserId, String subject, String body) {
-        if (subject == null || subject.isBlank()) {
+        if (!StringUtils.hasText(subject)) {
             throw new EmptyNotificationSubjectException();
         }
-        if (body == null || body.isBlank()) {
+        if (!StringUtils.hasText(body)) {
             throw new EmptyNotificationBodyException();
         }
         java.util.List<com.portfolio.demo_backend.model.User> users = userRepository.findAll();

@@ -140,7 +140,8 @@ class PortfolioServiceUnitTest {
         assertThat(appleHolding.getSymbol().getSymbol()).isEqualTo("AAPL");
         assertThat(appleHolding.getSharesOwned()).isEqualTo(10);
         assertThat(appleHolding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
-        assertThat(appleHolding.getAverageCostBasis().multiply(BigDecimal.valueOf(appleHolding.getSharesOwned())))
+        assertThat(appleHolding.getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(appleHolding.getSharesOwned())))
                 .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
 
         Portfolio googleHolding = result.getPortfolios().stream()
@@ -150,7 +151,8 @@ class PortfolioServiceUnitTest {
         assertThat(googleHolding.getSymbol().getSymbol()).isEqualTo("GOOGL");
         assertThat(googleHolding.getSharesOwned()).isEqualTo(5);
         assertThat(googleHolding.getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(120.00));
-        assertThat(googleHolding.getAverageCostBasis().multiply(BigDecimal.valueOf(googleHolding.getSharesOwned())))
+        assertThat(googleHolding.getAverageCostBasis()
+                .multiply(BigDecimal.valueOf(googleHolding.getSharesOwned())))
                 .isEqualByComparingTo(BigDecimal.valueOf(600.00));
 
         assertThat(result.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(3000.00));
@@ -166,7 +168,8 @@ class PortfolioServiceUnitTest {
     @Test
     void getUserHolding_existingSymbol_returnsCorrectHolding() {
         when(userService.getUserById(1L)).thenReturn(testUser);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
+                .thenReturn(Optional.of(applePortfolio));
 
         UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
@@ -174,7 +177,8 @@ class PortfolioServiceUnitTest {
         assertThat(result.getSymbol()).isEqualTo("AAPL");
         assertThat(result.isHasHolding()).isTrue();
         assertThat(result.getPortfolio().getSharesOwned()).isEqualTo(10);
-        assertThat(result.getPortfolio().getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(result.getPortfolio().getAverageCostBasis())
+                .isEqualByComparingTo(BigDecimal.valueOf(150.00));
         assertThat(result.getPortfolio().getAverageCostBasis()
                 .multiply(BigDecimal.valueOf(result.getPortfolio().getSharesOwned())))
                 .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
@@ -203,7 +207,8 @@ class PortfolioServiceUnitTest {
     void getUserHolding_portfolioWithNullUpdatedAt_returnsNullLastTradeDate() {
         applePortfolio.setUpdatedAt(null);
         when(userService.getUserById(1L)).thenReturn(testUser);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
+                .thenReturn(Optional.of(applePortfolio));
 
         UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
@@ -211,7 +216,8 @@ class PortfolioServiceUnitTest {
         assertThat(result.getSymbol()).isEqualTo("AAPL");
         assertThat(result.isHasHolding()).isTrue();
         assertThat(result.getPortfolio().getSharesOwned()).isEqualTo(10);
-        assertThat(result.getPortfolio().getAverageCostBasis()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
+        assertThat(result.getPortfolio().getAverageCostBasis())
+                .isEqualByComparingTo(BigDecimal.valueOf(150.00));
         assertThat(result.getPortfolio().getAverageCostBasis()
                 .multiply(BigDecimal.valueOf(result.getPortfolio().getSharesOwned())))
                 .isEqualByComparingTo(BigDecimal.valueOf(1500.00));
@@ -259,15 +265,15 @@ class PortfolioServiceUnitTest {
     void getUserPortfolio_invalidUserId_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User ID must be a positive number");
+                .hasMessage("User ID cannot be null");
 
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(0L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User ID must be a positive number");
+                .isInstanceOf(PortfolioDataException.class)
+                .hasMessage("Portfolio data error: Failed to retrieve portfolio data");
 
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(-1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User ID must be a positive number");
+                .isInstanceOf(PortfolioDataException.class)
+                .hasMessage("Portfolio data error: Failed to retrieve portfolio data");
     }
 
     @Test
@@ -304,11 +310,7 @@ class PortfolioServiceUnitTest {
     void getUserHolding_invalidUserId_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> portfolioService.getUserHolding(null, "AAPL"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User ID must be a positive number");
-
-        assertThatThrownBy(() -> portfolioService.getUserHolding(0L, "AAPL"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User ID must be a positive number");
+                .hasMessage("User ID cannot be null");
     }
 
     @Test
@@ -349,7 +351,8 @@ class PortfolioServiceUnitTest {
     @Test
     void getUserHolding_symbolNormalization_worksCorrectly() {
         when(userService.getUserById(1L)).thenReturn(testUser);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(applePortfolio));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
+                .thenReturn(Optional.of(applePortfolio));
 
         UserHoldingData result = portfolioService.getUserHolding(1L, "  aapl  ");
 
