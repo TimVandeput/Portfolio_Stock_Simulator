@@ -1,3 +1,4 @@
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type { RefreshRequest, AuthResponse } from "@/types";
 import type { ErrorResponse, HttpClientOptions } from "@/types/api";
 import {
@@ -19,54 +20,58 @@ export class ApiError extends Error {
 }
 
 export class HttpClient {
-  private baseUrl: string;
+  private client: AxiosInstance;
 
   constructor(opts?: HttpClientOptions) {
-    this.baseUrl = opts?.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+    const baseUrl = opts?.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
+    this.client = axios.create({
+      baseURL: baseUrl,
+      timeout: 30000,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    this.client.interceptors.request.use((config) => {
+      const token = getAccessToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+
     if (typeof window !== "undefined") {
       loadTokensFromStorage();
     }
   }
 
-  private authHeader(): Record<string, string> {
-    const access = getAccessToken();
-    return access ? { Authorization: `Bearer ${access}` } : {};
-  }
-
-  private async handle<T>(
-    res: Response,
-    retried = false,
-    original: () => Promise<T>
+  private async handleRequest<T>(
+    requestFn: () => Promise<AxiosResponse<T>>,
+    retried = false
   ): Promise<T> {
-    if (res.ok) {
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        return (await res.json()) as T;
-      }
-      return undefined as T;
-    }
-
-    let body: ErrorResponse = {};
     try {
-      body = await res.json();
-    } catch {
-      /* ignore */
-    }
+      const response = await requestFn();
+      return response.data;
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status || 500;
+        const body = (err.response?.data as ErrorResponse) || {};
 
-    const hasRefresh = !!getRefreshToken();
-    if (
-      !retried &&
-      (res.status === 401 || (res.status === 403 && hasRefresh))
-    ) {
-      const refreshed = await this.tryRefresh();
-      if (refreshed) {
-        return original();
+        const hasRefresh = !!getRefreshToken();
+        if (!retried && (status === 401 || (status === 403 && hasRefresh))) {
+          const refreshed = await this.tryRefresh();
+          if (refreshed) {
+            return this.handleRequest(requestFn, true);
+          }
+        }
+
+        const message =
+          body?.message || body?.error || err.message || "Request failed";
+        throw new ApiError(status, message, body);
       }
+      throw err;
     }
-
-    const message =
-      body?.message || body?.error || res.statusText || "Request failed";
-    throw new ApiError(res.status, message, body);
   }
 
   private async tryRefresh(): Promise<boolean> {
@@ -76,33 +81,16 @@ export class HttpClient {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/api/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: existing } as RefreshRequest),
-      });
-
-      const text = await res.text();
-      let parsed: any = null;
-      try {
-        parsed = text ? JSON.parse(text) : null;
-      } catch (e) {
-        parsed = text;
-      }
-
-      if (!res.ok) {
-        console.log("🔄 Session expired. Clearing tokens...");
-        clearTokens();
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("authChanged"));
+      const response = await axios.post<AuthResponse>(
+        `${this.client.defaults.baseURL}/api/auth/refresh`,
+        { refreshToken: existing } as RefreshRequest,
+        {
+          headers: { "Content-Type": "application/json" },
+          timeout: 30000,
         }
-        return false;
-      }
+      );
 
-      const data = (
-        typeof parsed === "object" ? parsed : JSON.parse(text)
-      ) as AuthResponse;
+      const data = response.data;
 
       let userIdFromToken = null;
       try {
@@ -135,51 +123,18 @@ export class HttpClient {
   }
 
   async get<T>(path: string): Promise<T> {
-    const doFetch = () => {
-      return fetch(`${this.baseUrl}${path}`, {
-        headers: { ...this.authHeader() },
-      }).then((res) => {
-        return this.handle<T>(res, false, () => this.get<T>(path));
-      });
-    };
-    return doFetch();
+    return this.handleRequest(() => this.client.get<T>(path));
   }
 
   async post<T>(path: string, body?: unknown): Promise<T> {
-    const doFetch = () => {
-      return fetch(`${this.baseUrl}${path}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...this.authHeader() },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-      }).then((res) => {
-        return this.handle<T>(res, false, () => this.post<T>(path, body));
-      });
-    };
-    return doFetch();
+    return this.handleRequest(() => this.client.post<T>(path, body));
   }
 
   async put<T>(path: string, body?: unknown): Promise<T> {
-    const doFetch = () => {
-      return fetch(`${this.baseUrl}${path}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...this.authHeader() },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-      }).then((res) => {
-        return this.handle<T>(res, false, () => this.put<T>(path, body));
-      });
-    };
-    return doFetch();
+    return this.handleRequest(() => this.client.put<T>(path, body));
   }
 
   async delete<T = void>(path: string): Promise<T> {
-    const doFetch = () => {
-      return fetch(`${this.baseUrl}${path}`, {
-        method: "DELETE",
-        headers: { ...this.authHeader() },
-      }).then((res) => {
-        return this.handle<T>(res, false, () => this.delete<T>(path));
-      });
-    };
-    return doFetch();
+    return this.handleRequest(() => this.client.delete<T>(path));
   }
 }
