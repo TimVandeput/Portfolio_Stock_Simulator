@@ -38,6 +38,7 @@ public class TradingService {
     private final UserService userService;
     private final WalletService walletService;
     private final TradingMapper tradingMapper;
+    private final NotificationService notificationService;
 
     @Transactional
     public TradeExecutionData executeBuy(Long userId, BuyOrderRequest request) {
@@ -67,6 +68,9 @@ public class TradingService {
 
         log.info("Buy order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
+
+        sendTradeNotification(userId, "buy", request.getSymbol(), request.getQuantity(), currentPrice, totalAmount,
+                null);
 
         return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
@@ -107,6 +111,9 @@ public class TradingService {
 
         log.info("Sell order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
+
+        sendTradeNotification(userId, "sell", request.getSymbol(), request.getQuantity(), currentPrice, totalProceeds,
+                profitLoss);
 
         return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
@@ -235,5 +242,52 @@ public class TradingService {
 
         BigDecimal sellValue = sellPrice.multiply(BigDecimal.valueOf(sellQuantity));
         return sellValue.subtract(totalCostBasis);
+    }
+
+    private void sendTradeNotification(Long userId, String tradeType, String symbol, Integer quantity,
+            BigDecimal pricePerShare, BigDecimal totalAmount, BigDecimal profitLoss) {
+        try {
+            Long systemUserId = getSystemUserId();
+            String action = tradeType.equalsIgnoreCase("buy") ? "purchased" : "sold";
+            String emoji = tradeType.equalsIgnoreCase("buy") ? "📈" : "📉";
+
+            String subject = String.format("%s Trade Executed - %s", emoji, symbol.toUpperCase());
+
+            StringBuilder bodyBuilder = new StringBuilder();
+            bodyBuilder.append(String.format("Your %s order has been successfully executed! %s<br><br>",
+                    tradeType.toLowerCase(), emoji));
+            bodyBuilder.append("<strong>Trade Details:</strong><br>");
+            bodyBuilder.append(String.format("• Symbol: <strong>%s</strong><br>", symbol.toUpperCase()));
+            bodyBuilder.append(String.format("• Action: %s<br>", action));
+            bodyBuilder.append(String.format("• Quantity: %,d shares<br>", quantity));
+            bodyBuilder.append(String.format("• Price per Share: $%.2f<br>", pricePerShare));
+            bodyBuilder.append(String.format("• Total Amount: $%.2f<br>", totalAmount));
+
+            if (profitLoss != null) {
+                String profitColor = profitLoss.compareTo(BigDecimal.ZERO) >= 0 ? "green" : "red";
+                String profitSymbol = profitLoss.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
+                bodyBuilder.append(String.format("• <span style='color: %s'>Profit/Loss: %s$%.2f</span><br>",
+                        profitColor, profitSymbol, profitLoss));
+            }
+
+            bodyBuilder.append(
+                    "<br>You can view your updated portfolio in your <a href='/portfolio'>Portfolio</a>.<br><br>");
+            bodyBuilder.append("Happy trading! 🚀<br><br>");
+            bodyBuilder.append("Best regards,<br>");
+            bodyBuilder.append("<strong>Stock Simulator Team</strong>");
+
+            notificationService.sendToUser(systemUserId, userId, subject, bodyBuilder.toString());
+        } catch (Exception e) {
+            log.error("Failed to send trade notification for user {} after {} trade of {}: {}",
+                    userId, tradeType, symbol, e.getMessage());
+        }
+    }
+
+    private Long getSystemUserId() {
+        return userService.getAllUsers().stream()
+                .filter(user -> user.getRoles().contains(com.portfolio.demo_backend.model.enums.Role.ROLE_ADMIN))
+                .findFirst()
+                .map(User::getId)
+                .orElse(1L);
     }
 }
