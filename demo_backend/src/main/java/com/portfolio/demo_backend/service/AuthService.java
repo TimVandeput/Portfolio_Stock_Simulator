@@ -27,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final NotificationService notificationService;
 
     public RegistrationData register(RegisterRequest req) {
         User created = userService.createUser(
@@ -36,6 +37,8 @@ public class AuthService {
                         .password(req.getPassword())
                         .roles(EnumSet.of(Role.ROLE_USER))
                         .build());
+
+        sendWelcomeNotification(created);
 
         return new RegistrationData(created.getId(), created.getUsername(), created.getRoles());
     }
@@ -75,5 +78,37 @@ public class AuthService {
 
     public void logout(RefreshRequest req) {
         refreshTokenService.revoke(req.getRefreshToken());
+    }
+
+    private void sendWelcomeNotification(User user) {
+        String welcomeSubject = "Welcome to Portfolio Stock Simulator! 🎉";
+        String welcomeBody = String.format(
+                "Hi %s! Welcome to our platform! 🎉<br><br>" +
+                        "We're excited to have you on board. Here are some great places to get started:<br><br>" +
+                        "📈 <a href='/market'>Explore the Market</a> - Discover and buy your first stocks<br>" +
+                        "💼 <a href='/dashboard'>Your Dashboard</a> - View your portfolio and performance<br>" +
+                        "💰 <a href='/trading'>Start Trading</a> - Make your first trades<br>" +
+                        "ℹ️ <a href='/about'>Learn About Us</a> - Understand how our platform works<br>" +
+                        "❓ <a href='/help'>Need Help?</a> - Find answers to common questions<br><br>" +
+                        "Happy trading! 🚀<br><br>" +
+                        "Best regards,<br>" +
+                        "<strong>Stock Simulator Team</strong>",
+                user.getUsername());
+
+        try {
+            Long systemUserId = getOrCreateSystemUser();
+            notificationService.sendToUser(systemUserId, user.getId(), welcomeSubject, welcomeBody);
+        } catch (Exception e) {
+            System.err.println(
+                    "Failed to send welcome notification to user " + user.getUsername() + ": " + e.getMessage());
+        }
+    }
+
+    private Long getOrCreateSystemUser() {
+        return userRepository.findByRole(Role.ROLE_ADMIN)
+                .stream()
+                .findFirst()
+                .map(User::getId)
+                .orElse(1L);
     }
 }

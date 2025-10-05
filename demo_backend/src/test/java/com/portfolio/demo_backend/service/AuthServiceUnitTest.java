@@ -45,7 +45,7 @@ class AuthServiceUnitTest {
         jwtService = mock(JwtService.class);
         refreshTokenService = mock(RefreshTokenService.class);
         authService = new AuthService(
-                userService, userRepository, passwordEncoder, jwtService, refreshTokenService);
+                userService, userRepository, passwordEncoder, jwtService, refreshTokenService, null);
     }
 
     private static User user(String username, String email, Set<Role> roles, String hashedPwd) {

@@ -10,14 +10,18 @@ import lombok.Data;
 public class NotificationResponse {
     @NotNull
     private Long id;
-    @NotNull
-    private Long senderUserId;
+
+    private String senderName;
+
     @NotNull
     private Long receiverUserId;
     @NotBlank
     private String subject;
     @NotBlank
     private String body;
+
+    private String preview;
+
     @NotNull
     private Instant createdAt;
     @NotNull

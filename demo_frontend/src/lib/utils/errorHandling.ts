@@ -1,7 +1,12 @@
+import { ApiError } from "@/lib/api/http";
+
 export function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
 
-  // Map common network errors to user-friendly messages
   if (
     message.includes("NetworkError when attempting to fetch") ||
     message.includes("Failed to fetch") ||

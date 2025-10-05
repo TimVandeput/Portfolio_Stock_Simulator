@@ -66,8 +66,28 @@ export class HttpClient {
           }
         }
 
-        const message =
-          body?.message || body?.error || err.message || "Request failed";
+        let message = body?.message || body?.error;
+
+        if (!message && body && typeof body === "object") {
+          const fieldErrors = Object.entries(body)
+            .filter(
+              ([key, value]) =>
+                key !== "message" &&
+                key !== "error" &&
+                typeof value === "string" &&
+                value.trim().length > 0
+            )
+            .map(([, value]) => value as string);
+
+          if (fieldErrors.length > 0) {
+            message = fieldErrors[0];
+          }
+        }
+
+        if (!message) {
+          message = err.message || "Request failed";
+        }
+
         throw new ApiError(status, message, body);
       }
       throw err;

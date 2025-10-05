@@ -34,6 +34,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
+@org.springframework.core.annotation.Order(2)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
