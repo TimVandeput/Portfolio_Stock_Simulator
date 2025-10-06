@@ -496,8 +496,7 @@ body {
 /* DASHBOARD-ONLY STYLES */
 .dashboard-page-container {
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
