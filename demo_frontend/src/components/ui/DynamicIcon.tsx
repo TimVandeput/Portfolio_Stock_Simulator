@@ -34,6 +34,14 @@ import {
   RotateCcw,
   RefreshCw,
   MousePointer,
+  PieChart,
+  Database,
+  BarChart3,
+  User,
+  AlertTriangle,
+  Clock,
+  Shield,
+  BookOpen,
 } from "lucide-react";
 
 interface DynamicIconProps {
@@ -95,6 +103,18 @@ const iconMap: Record<
   "rotate-ccw": RotateCcw,
   refreshcw: RefreshCw,
   "refresh-cw": RefreshCw,
+  "pie-chart": PieChart,
+  piechart: PieChart,
+  database: Database,
+  "bar-chart": BarChart3,
+  barchart: BarChart3,
+  user: User,
+  "alert-triangle": AlertTriangle,
+  alerttriangle: AlertTriangle,
+  clock: Clock,
+  shield: Shield,
+  "book-open": BookOpen,
+  bookopen: BookOpen,
 };
 
 const DynamicIcon = memo(
