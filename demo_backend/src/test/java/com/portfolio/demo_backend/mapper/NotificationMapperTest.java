@@ -1,0 +1,210 @@
+package com.portfolio.demo_backend.mapper;
+
+import com.portfolio.demo_backend.dto.notification.NotificationResponse;
+import com.portfolio.demo_backend.model.Notification;
+import com.portfolio.demo_backend.model.User;
+import com.portfolio.demo_backend.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class NotificationMapperTest {
+
+    @Mock
+    private UserService userService;
+
+    private NotificationMapper notificationMapper;
+
+    @BeforeEach
+    void setUp() {
+        notificationMapper = new NotificationMapperImpl();
+        ReflectionTestUtils.setField(notificationMapper, "userService", userService);
+    }
+
+    @Test
+    void toDTO_mapsAllFieldsCorrectly() {
+        User sender = new User();
+        sender.setId(1L);
+        sender.setUsername("john_doe");
+        when(userService.getUserById(1L)).thenReturn(sender);
+
+        Notification notification = new Notification();
+        notification.setId(123L);
+        notification.setSenderUserId(1L);
+        notification.setReceiverUserId(456L);
+        notification.setSubject("Test Subject");
+        notification.setBody(
+                "This is a test notification with some content that should be truncated if it's too long for the preview.");
+        notification.setCreatedAt(Instant.parse("2025-10-06T10:15:30.00Z"));
+        notification.setRead(false);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(123L);
+        assertThat(result.getSenderName()).isEqualTo("john_doe");
+        assertThat(result.getReceiverUserId()).isEqualTo(456L);
+        assertThat(result.getSubject()).isEqualTo("Test Subject");
+        assertThat(result.getBody()).isEqualTo(
+                "This is a test notification with some content that should be truncated if it's too long for the preview.");
+        assertThat(result.getPreview()).isEqualTo(
+                "This is a test notification with some content that should be truncated if it's too long for the p...");
+        assertThat(result.getCreatedAt()).isEqualTo(Instant.parse("2025-10-06T10:15:30.00Z"));
+        assertThat(result.isRead()).isFalse();
+
+        verify(userService).getUserById(1L);
+    }
+
+    @Test
+    void toDTO_nullSenderUserId_returnsSystemSender() {
+        Notification notification = new Notification();
+        notification.setId(123L);
+        notification.setSenderUserId(null);
+        notification.setReceiverUserId(456L);
+        notification.setSubject("System Notification");
+        notification.setBody("System message");
+        notification.setCreatedAt(Instant.now());
+        notification.setRead(true);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result.getSenderName()).isEqualTo("System");
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void toDTO_userServiceThrowsException_returnsUnknownUser() {
+        when(userService.getUserById(999L)).thenThrow(new RuntimeException("User not found"));
+
+        Notification notification = new Notification();
+        notification.setId(123L);
+        notification.setSenderUserId(999L);
+        notification.setReceiverUserId(456L);
+        notification.setSubject("Test");
+        notification.setBody("Test");
+        notification.setCreatedAt(Instant.now());
+        notification.setRead(false);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result.getSenderName()).isEqualTo("Unknown User");
+        verify(userService).getUserById(999L);
+    }
+
+    @Test
+    void toDTO_bodyWithHtmlTags_previewCleansHtml() {
+        User sender = new User();
+        sender.setUsername("admin");
+        when(userService.getUserById(1L)).thenReturn(sender);
+
+        Notification notification = new Notification();
+        notification.setId(1L);
+        notification.setSenderUserId(1L);
+        notification.setReceiverUserId(2L);
+        notification.setSubject("HTML Test");
+        notification.setBody(
+                "Welcome to our platform! <br><br>Here are some links:<br>• <a href='/dashboard'>Dashboard</a><br>• <strong>Important!</strong>");
+        notification.setCreatedAt(Instant.now());
+        notification.setRead(false);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result.getBody()).contains("<br>").contains("<a href").contains("<strong>");
+        assertThat(result.getPreview())
+                .isEqualTo("Welcome to our platform! Here are some links:• Dashboard• Important!");
+        assertThat(result.getPreview()).doesNotContain("<").doesNotContain(">");
+    }
+
+    @Test
+    void toDTO_shortBody_previewEqualsBody() {
+        User sender = new User();
+        sender.setUsername("user1");
+        when(userService.getUserById(1L)).thenReturn(sender);
+
+        Notification notification = new Notification();
+        notification.setId(1L);
+        notification.setSenderUserId(1L);
+        notification.setReceiverUserId(2L);
+        notification.setSubject("Short");
+        notification.setBody("Short message");
+        notification.setCreatedAt(Instant.now());
+        notification.setRead(false);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result.getPreview()).isEqualTo("Short message");
+        assertThat(result.getPreview()).doesNotContain("...");
+    }
+
+    @Test
+    void toDTO_emptyBody_emptyPreview() {
+        User sender = new User();
+        sender.setUsername("user1");
+        when(userService.getUserById(1L)).thenReturn(sender);
+
+        Notification notification = new Notification();
+        notification.setId(1L);
+        notification.setSenderUserId(1L);
+        notification.setReceiverUserId(2L);
+        notification.setSubject("Empty Body");
+        notification.setBody("");
+        notification.setCreatedAt(Instant.now());
+        notification.setRead(false);
+
+        NotificationResponse result = notificationMapper.toDTO(notification);
+
+        assertThat(result.getPreview()).isEmpty();
+    }
+
+    @Test
+    void toDTOList_mapsAllNotifications() {
+        User sender1 = new User();
+        sender1.setUsername("user1");
+        User sender2 = new User();
+        sender2.setUsername("user2");
+
+        when(userService.getUserById(1L)).thenReturn(sender1);
+        when(userService.getUserById(2L)).thenReturn(sender2);
+
+        Notification notification1 = new Notification();
+        notification1.setId(1L);
+        notification1.setSenderUserId(1L);
+        notification1.setReceiverUserId(3L);
+        notification1.setSubject("First");
+        notification1.setBody("First notification");
+        notification1.setCreatedAt(Instant.now());
+        notification1.setRead(false);
+
+        Notification notification2 = new Notification();
+        notification2.setId(2L);
+        notification2.setSenderUserId(2L);
+        notification2.setReceiverUserId(3L);
+        notification2.setSubject("Second");
+        notification2.setBody("Second notification");
+        notification2.setCreatedAt(Instant.now());
+        notification2.setRead(true);
+
+        List<Notification> notifications = List.of(notification1, notification2);
+
+        List<NotificationResponse> result = notificationMapper.toDTOList(notifications);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSenderName()).isEqualTo("user1");
+        assertThat(result.get(0).getSubject()).isEqualTo("First");
+        assertThat(result.get(1).getSenderName()).isEqualTo("user2");
+        assertThat(result.get(1).getSubject()).isEqualTo("Second");
+
+        verify(userService).getUserById(1L);
+        verify(userService).getUserById(2L);
+    }
+}

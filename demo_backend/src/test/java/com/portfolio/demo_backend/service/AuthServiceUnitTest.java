@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +35,7 @@ class AuthServiceUnitTest {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private RefreshTokenService refreshTokenService;
+    private NotificationService notificationService;
 
     private AuthService authService;
 
@@ -44,8 +46,9 @@ class AuthServiceUnitTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtService = mock(JwtService.class);
         refreshTokenService = mock(RefreshTokenService.class);
+        notificationService = mock(NotificationService.class);
         authService = new AuthService(
-                userService, userRepository, passwordEncoder, jwtService, refreshTokenService, null);
+                userService, userRepository, passwordEncoder, jwtService, refreshTokenService, notificationService);
     }
 
     private static User user(String username, String email, Set<Role> roles, String hashedPwd) {
@@ -173,5 +176,81 @@ class AuthServiceUnitTest {
         authService.logout(req);
 
         verify(refreshTokenService).revoke("bye");
+    }
+
+    @Test
+    void register_sendsWelcomeNotification() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of(
+                user("admin", "admin@test.com", EnumSet.of(Role.ROLE_ADMIN), "adminpwd")));
+
+        RegistrationData result = authService.register(req);
+
+        assertThat(result.id()).isEqualTo(123L);
+        assertThat(result.username()).isEqualTo("newuser");
+
+        verify(notificationService).sendToUser(
+                anyLong(),
+                eq(123L),
+                eq("Welcome to Portfolio Stock Simulator! 🎉"),
+                argThat(body -> body.contains("Hi newuser! Welcome to our platform!") &&
+                        body.contains("<a href='/market'>Explore the Market</a>") &&
+                        body.contains("<a href='/dashboard'>Your Dashboard</a>") &&
+                        body.contains("Stock Simulator Team")));
+    }
+
+    @Test
+    void register_notificationFails_stillRegistersUser() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of());
+
+        doThrow(new RuntimeException("Notification failed")).when(notificationService)
+                .sendToUser(anyLong(), anyLong(), anyString(), anyString());
+
+        RegistrationData result = assertDoesNotThrow(() -> authService.register(req));
+
+        assertThat(result.id()).isEqualTo(123L);
+        assertThat(result.username()).isEqualTo("newuser");
+
+        verify(userService).createUser(any(User.class));
+        verify(notificationService).sendToUser(anyLong(), anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void register_noAdminUsers_usesDefaultSystemUser() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of()); // No admin users
+
+        authService.register(req);
+
+        verify(notificationService).sendToUser(
+                eq(1L),
+                eq(123L),
+                anyString(),
+                anyString());
     }
 }

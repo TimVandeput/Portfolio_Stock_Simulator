@@ -67,4 +67,37 @@ class NotificationServiceIntegrationTest {
                 .findByReceiverUserIdAndReadFalseOrderByCreatedAtDesc(u1.getId());
         assertThat(unread).extracting(Notification::getSubject).containsExactly("unread");
     }
+
+    @Test
+    void notificationMapper_integrationWithUserService() {
+        User sender = User.builder()
+                .username("sender_user")
+                .email("sender@test.com")
+                .password("password")
+                .roles(EnumSet.of(Role.ROLE_USER))
+                .build();
+        User receiver = User.builder()
+                .username("receiver_user")
+                .email("receiver@test.com")
+                .password("password")
+                .roles(EnumSet.of(Role.ROLE_USER))
+                .build();
+
+        userRepository.save(sender);
+        userRepository.save(receiver);
+
+        Notification notification = notificationService.sendToUser(
+                sender.getId(),
+                receiver.getId(),
+                "Integration Test",
+                "This is a test notification with <strong>HTML</strong> content that should be longer than 100 characters to test the preview functionality properly.");
+
+        assertThat(notification).isNotNull();
+        assertThat(notification.getSenderUserId()).isEqualTo(sender.getId());
+        assertThat(notification.getReceiverUserId()).isEqualTo(receiver.getId());
+        assertThat(notification.getSubject()).isEqualTo("Integration Test");
+        assertThat(notification.getBody()).contains("<strong>HTML</strong>");
+        assertThat(notification.isRead()).isFalse();
+    }
+
 }
