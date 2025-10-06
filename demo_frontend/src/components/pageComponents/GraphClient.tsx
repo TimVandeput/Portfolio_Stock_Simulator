@@ -49,7 +49,7 @@ export default function GraphClient() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
-              PORTFOLIO GRAPHS
+              PORTFOLIO ANALYTICS
             </h1>
             <p className="text-sm opacity-80">
               Interactive graphs for your portfolio holdings
@@ -80,7 +80,7 @@ export default function GraphClient() {
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
               <span className="text-[var(--text-secondary)]">
-                Loading graphs...
+                Loading analytics...
               </span>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function GraphClient() {
               No Holdings Found
             </h3>
             <p className="text-[var(--text-secondary)] mb-6">
-              You need to own some stocks to see graphs.
+              You need to own some stocks to see analytics.
             </p>
             <button
               onClick={() => router.push("/market")}

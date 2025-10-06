@@ -27,7 +27,7 @@ export const navItems: NavItem[] = [
     allowedRoles: ["ROLE_USER"],
   },
   {
-    name: "GRAPHS",
+    name: "ANALYTICS",
     href: "/graphs",
     icon: "trending-up",
     allowedRoles: ["ROLE_USER"],
