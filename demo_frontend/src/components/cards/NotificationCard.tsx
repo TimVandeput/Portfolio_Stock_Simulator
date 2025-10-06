@@ -105,20 +105,6 @@ export default function NotificationCard({
             >
               <HTMLContentRenderer htmlContent={notification.body} />
             </div>
-            {!notification.read && (
-              <div className="flex justify-end mt-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMarkAsRead(notification.id);
-                  }}
-                  className="flex items-center gap-1 text-xs text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors"
-                >
-                  <DynamicIcon iconName="check" size={12} />
-                  Mark as read
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
