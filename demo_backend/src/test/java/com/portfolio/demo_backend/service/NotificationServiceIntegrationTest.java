@@ -25,79 +25,79 @@ import static org.assertj.core.api.Assertions.*;
 @Transactional
 class NotificationServiceIntegrationTest {
 
-        @Autowired
-        NotificationService notificationService;
+    @Autowired
+    NotificationService notificationService;
 
-        @Autowired
-        UserRepository userRepository;
+    @Autowired
+    UserRepository userRepository;
 
-        @Autowired
-        NotificationRepository notificationRepository;
+    @Autowired
+    NotificationRepository notificationRepository;
 
-        /**
-         * Given two users and a sent notification
-         * When fetching notifications for the receiver
-         * Then results are persisted and ordered by createdAt desc
-         */
-        @Test
-        void sendAndFetch_notificationsPersistedAndOrdered() {
-                User u1 = User.builder().username("nuser1").email("u1@x.com").password("p")
-                                .roles(EnumSet.of(Role.ROLE_USER))
-                                .build();
-                User u2 = User.builder().username("nadmin").email("a@x.com").password("p")
-                                .roles(EnumSet.of(Role.ROLE_ADMIN))
-                                .build();
-                userRepository.save(u1);
-                userRepository.save(u2);
+    /**
+     * Given two users and a sent notification
+     * When fetching notifications for the receiver
+     * Then results are persisted and ordered by createdAt desc
+     */
+    @Test
+    void sendAndFetch_notificationsPersistedAndOrdered() {
+        User u1 = User.builder().username("nuser1").email("u1@x.com").password("p")
+                .roles(EnumSet.of(Role.ROLE_USER))
+                .build();
+        User u2 = User.builder().username("nadmin").email("a@x.com").password("p")
+                .roles(EnumSet.of(Role.ROLE_ADMIN))
+                .build();
+        userRepository.save(u1);
+        userRepository.save(u2);
 
-                notificationService.sendToUser(0L, u1.getId(), "sub1", "body1");
+        notificationService.sendToUser(0L, u1.getId(), "sub1", "body1");
 
-                // When
-                List<Notification> fetched = notificationService.getNotificationsForUser(u1.getId());
-                // Then
-                assertThat(fetched).isNotEmpty();
-                for (int i = 1; i < fetched.size(); i++) {
-                        assertThat(fetched.get(i - 1).getCreatedAt()).isAfterOrEqualTo(fetched.get(i).getCreatedAt());
-                }
+        // When
+        List<Notification> fetched = notificationService.getNotificationsForUser(u1.getId());
+        // Then
+        assertThat(fetched).isNotEmpty();
+        for (int i = 1; i < fetched.size(); i++) {
+            assertThat(fetched.get(i - 1).getCreatedAt()).isAfterOrEqualTo(fetched.get(i).getCreatedAt());
         }
+    }
 
-        /**
-         * Given sender and receiver users
-         * When sending a notification
-         * Then persisted fields reflect sender, receiver, subject, and body
-         */
-        @Test
-        void notificationMapper_integrationWithUserService() {
-                User sender = User.builder()
-                                .username("sender_user")
-                                .email("sender@test.com")
-                                .password("password")
-                                .roles(EnumSet.of(Role.ROLE_USER))
-                                .build();
-                User receiver = User.builder()
-                                .username("receiver_user")
-                                .email("receiver@test.com")
-                                .password("password")
-                                .roles(EnumSet.of(Role.ROLE_USER))
-                                .build();
+    /**
+     * Given sender and receiver users
+     * When sending a notification
+     * Then persisted fields reflect sender, receiver, subject, and body
+     */
+    @Test
+    void notificationMapper_integrationWithUserService() {
+        User sender = User.builder()
+                .username("sender_user")
+                .email("sender@test.com")
+                .password("password")
+                .roles(EnumSet.of(Role.ROLE_USER))
+                .build();
+        User receiver = User.builder()
+                .username("receiver_user")
+                .email("receiver@test.com")
+                .password("password")
+                .roles(EnumSet.of(Role.ROLE_USER))
+                .build();
 
-                userRepository.save(sender);
-                userRepository.save(receiver);
+        userRepository.save(sender);
+        userRepository.save(receiver);
 
-                // When
-                Notification notification = notificationService.sendToUser(
-                                sender.getId(),
-                                receiver.getId(),
-                                "Integration Test",
-                                "This is a test notification with <strong>HTML</strong> content that should be longer than 100 characters to test the preview functionality properly.");
+        // When
+        Notification notification = notificationService.sendToUser(
+                sender.getId(),
+                receiver.getId(),
+                "Integration Test",
+                "This is a test notification with <strong>HTML</strong> content that should be longer than 100 characters to test the preview functionality properly.");
 
-                // Then
-                assertThat(notification).isNotNull();
-                assertThat(notification.getSenderUserId()).isEqualTo(sender.getId());
-                assertThat(notification.getReceiverUserId()).isEqualTo(receiver.getId());
-                assertThat(notification.getSubject()).isEqualTo("Integration Test");
-                assertThat(notification.getBody()).contains("<strong>HTML</strong>");
-                assertThat(notification.isRead()).isFalse();
-        }
+        // Then
+        assertThat(notification).isNotNull();
+        assertThat(notification.getSenderUserId()).isEqualTo(sender.getId());
+        assertThat(notification.getReceiverUserId()).isEqualTo(receiver.getId());
+        assertThat(notification.getSubject()).isEqualTo("Integration Test");
+        assertThat(notification.getBody()).contains("<strong>HTML</strong>");
+        assertThat(notification.isRead()).isFalse();
+    }
 
 }
