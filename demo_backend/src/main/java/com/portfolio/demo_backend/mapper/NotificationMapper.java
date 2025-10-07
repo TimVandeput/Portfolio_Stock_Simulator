@@ -25,7 +25,8 @@ public abstract class NotificationMapper {
     protected UserService userService;
 
     /**
-     * Maps a {@link Notification} entity to a response DTO. Sender name is resolved from the user service.
+     * Maps a {@link Notification} entity to a response DTO. Sender name is resolved
+     * from the user service.
      * Also produces a short plain-text preview from the HTML body.
      */
     @Mapping(target = "id", source = "id")
@@ -44,7 +45,8 @@ public abstract class NotificationMapper {
     public abstract List<NotificationResponse> toDTOList(List<Notification> notifications);
 
     /**
-     * Resolves a sender username from an ID. Returns fallback labels when missing/unknown.
+     * Resolves a sender username from an ID. Returns fallback labels when
+     * missing/unknown.
      */
     @Named("mapSenderName")
     protected String mapSenderName(Long senderUserId) {

@@ -22,7 +22,8 @@ import java.util.List;
 public interface PortfolioDtoMapper {
 
     /**
-     * Maps a position to a holding DTO. totalCost is computed in an @AfterMapping hook.
+     * Maps a position to a holding DTO. totalCost is computed in an @AfterMapping
+     * hook.
      */
     @Mapping(target = "symbol", source = "symbol.symbol")
     @Mapping(target = "quantity", source = "sharesOwned")
@@ -76,7 +77,8 @@ public interface PortfolioDtoMapper {
     }
 
     /**
-     * Builds a summary details DTO based on total value. Other fields are placeholders.
+     * Builds a summary details DTO based on total value. Other fields are
+     * placeholders.
      */
     default PortfolioResponseDTO.PortfolioSummaryDetailsDTO toPortfolioSummaryDetailsDTO(BigDecimal totalValue) {
         return new PortfolioResponseDTO.PortfolioSummaryDetailsDTO(
