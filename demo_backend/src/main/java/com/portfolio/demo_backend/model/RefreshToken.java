@@ -8,6 +8,11 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
+/**
+ * Refresh token associated with a {@link User} for renewing access tokens.
+ * Tracks expiry, revocation state and the role context the token was issued
+ * for.
+ */
 @Entity
 @Table(name = "refresh_tokens", indexes = {
         @Index(name = "idx_refresh_token_token", columnList = "token", unique = true)
