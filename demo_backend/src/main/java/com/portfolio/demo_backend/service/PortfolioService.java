@@ -66,8 +66,11 @@ public class PortfolioService {
 
             List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
 
+            // Sum of cost basis across positions
             BigDecimal totalInvested = PortfolioCalculations.calculateTotalInvested(portfolios);
+            // Here "total value" is modeled as cash + invested cost (not MTM P/L)
             BigDecimal totalValue = wallet.getCashBalance().add(totalInvested);
+            // P/L placeholder: since we don't have MTM, this intentionally nets to zero
             BigDecimal totalPL = totalValue.subtract(wallet.getCashBalance()).subtract(totalInvested);
 
             return new UserPortfolioData(portfolios, wallet, totalInvested, totalValue, totalPL);
@@ -79,6 +82,7 @@ public class PortfolioService {
             log.error("Wallet not found when retrieving portfolio: userId={}", userId);
             throw e;
         } catch (Exception e) {
+            // Convert any unexpected runtime to a domain exception with context
             log.error("Unexpected error while retrieving portfolio for userId={}: {}", userId, e.getMessage(), e);
             throw new PortfolioDataException("Failed to retrieve portfolio data", e);
         }

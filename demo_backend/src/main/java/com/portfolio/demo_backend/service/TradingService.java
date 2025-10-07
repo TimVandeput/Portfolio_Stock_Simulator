@@ -74,6 +74,7 @@ public class TradingService {
         log.info("Executing buy order for user: {}, symbol: {}, quantity: {}",
                 username, request.getSymbol(), request.getQuantity());
 
+        // Snapshot current market price for cost calculation
         BigDecimal currentPrice = getCurrentPrice(request.getSymbol());
         BigDecimal totalAmount = currentPrice.multiply(BigDecimal.valueOf(request.getQuantity()));
 
@@ -83,10 +84,12 @@ public class TradingService {
         }
 
         BigDecimal newBalance = wallet.getCashBalance().subtract(totalAmount);
+        // Persist wallet debit atomically within the transaction
         walletService.updateWalletBalance(userId, newBalance);
 
         Symbol symbol = getSymbolEntity(request.getSymbol());
         Portfolio portfolio = getOrCreatePortfolio(userId, request.getSymbol(), symbol);
+        // Adjust average cost basis based on previous position + new cost
         updatePortfolioForBuy(portfolio, request.getQuantity(), totalAmount);
 
         Transaction transaction = createTransaction(userId, symbol, TransactionType.BUY,
@@ -139,16 +142,19 @@ public class TradingService {
                     request.getQuantity());
         }
 
+        // Gross proceeds before fees (none modeled)
         BigDecimal totalProceeds = currentPrice.multiply(BigDecimal.valueOf(request.getQuantity()));
 
         Wallet wallet = walletService.getUserWallet(userId, username);
         BigDecimal newBalance = wallet.getCashBalance().add(totalProceeds);
         walletService.updateWalletBalance(userId, newBalance);
 
+        // Reduce position; delete row entirely when reaching zero
         updatePortfolioForSell(portfolio, request.getQuantity());
 
         Symbol symbol = getSymbolEntity(request.getSymbol());
 
+        // Estimate realized P/L using FIFO over historical BUY transactions
         BigDecimal profitLoss = calculateProfitLoss(userId, request.getSymbol(), request.getQuantity(), currentPrice);
 
         Transaction transaction = createTransaction(userId, symbol, TransactionType.SELL,
@@ -235,16 +241,18 @@ public class TradingService {
     /**
      * Updates the portfolio for a BUY by adjusting shares and recalculating average
      * cost basis.
-     * Persists the updated portfolio.
+     * Persists the updated portfolio. 
      *
-     * @param portfolio   portfolio to update
+     * @param portfolio   portfolio to update  
      * @param quantity    number of shares purchased
      * @param totalAmount total cost (pricePerShare * quantity)
      */
     private void updatePortfolioForBuy(Portfolio portfolio, int quantity, BigDecimal totalAmount) {
+        // total cost of previous shares + new purchase cost
         BigDecimal totalCost = portfolio.getAverageCostBasis().multiply(BigDecimal.valueOf(portfolio.getSharesOwned()))
                 .add(totalAmount);
         int newShares = portfolio.getSharesOwned() + quantity;
+        // 4dp for average cost basis to limit drift
         BigDecimal newAverageCost = totalCost.divide(BigDecimal.valueOf(newShares), 4, RoundingMode.HALF_UP);
 
         portfolio.setSharesOwned(newShares);

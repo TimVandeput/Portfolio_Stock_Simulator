@@ -97,6 +97,7 @@ public class FinnhubStreamService {
                 log.info("Finnhub WebSocket opened successfully");
                 reconnectAttempts.set(0);
                 try {
+                    // Re-subscribe to any symbols that were added before reconnect
                     for (String sym : listeners.keySet()) {
                         String msg = "{\"type\":\"subscribe\",\"symbol\":\"" + sym + "\"}";
                         log.debug("Subscribing to symbol: {}", sym);
@@ -134,8 +135,10 @@ public class FinnhubStreamService {
                 }
 
                 int attempt = reconnectAttempts.getAndIncrement();
-                long base = 1000L;
+                long base = 1000L; // base backoff = 1s
+                // Exponential backoff with cap at 60s and a max shift of 2^10
                 long delay = Math.min(60000L, base * (1L << Math.min(attempt, 10)));
+                // Add jitter to avoid thundering herd on server
                 delay += jitter.nextInt(1000);
 
                 new java.util.Timer().schedule(new java.util.TimerTask() {
@@ -171,6 +174,7 @@ public class FinnhubStreamService {
      */
     public void subscribe(String symbol) {
         log.debug("Adding subscription for symbol: {}", symbol);
+        // Ensure we have a thread-safe list for listeners of this symbol
         listeners.computeIfAbsent(symbol, k -> new CopyOnWriteArrayList<>());
         if (!ObjectUtils.isEmpty(ws)) {
             String msg = "{\"type\":\"subscribe\",\"symbol\":\"" + symbol + "\"}";
@@ -196,6 +200,7 @@ public class FinnhubStreamService {
             if (ls.isEmpty()) {
                 listeners.remove(symbol);
                 if (!ObjectUtils.isEmpty(ws)) {
+                    // Only send WS-level unsubscribe when no local listeners remain
                     String msg = "{\"type\":\"unsubscribe\",\"symbol\":\"" + symbol + "\"}";
                     ws.send(msg);
                 }
@@ -252,6 +257,7 @@ public class FinnhubStreamService {
     private void handle(String json) {
         try {
             JsonNode root = mapper.readTree(json);
+            // Ignore non-trade messages (e.g., ping, info)
             if (!root.has("type") || !"trade".equals(root.get("type").asText()))
                 return;
             JsonNode data = root.get("data");
@@ -267,13 +273,16 @@ public class FinnhubStreamService {
                 try {
                     price = p.asDouble();
                 } catch (Exception e) {
+                    // Defensive: skip if price is not a number
                     continue;
                 }
 
+                // Seed the "open" price with the first observed trade of the day
                 dailyOpenPrices.computeIfAbsent(sym, k -> price);
 
                 lastPrices.put(sym, price);
 
+                // Compute percent change if we have both open and current
                 Double percentChange = getPercentChange(sym);
 
                 log.debug("Price update for {}: {} ({}%)", sym, price, percentChange);

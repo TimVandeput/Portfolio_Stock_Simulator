@@ -54,6 +54,7 @@ public class PriceService {
         log.info("Found {} enabled symbols, fetching quotes from RapidAPI", symbolNames.size());
 
         if (symbolNames.isEmpty()) {
+            // Fast-path: nothing to fetch
             log.warn("No enabled symbols found in database");
             return new HashMap<>();
         }
@@ -64,12 +65,14 @@ public class PriceService {
 
             Map<String, YahooQuoteDTO> result = new HashMap<>();
             for (RapidApiClient.Quote quote : quotes) {
+                // Map provider quote to our DTO; omit nulls defensively
                 YahooQuoteDTO dto = marketDataMapper.toYahooQuoteDTO(quote);
                 result.put(quote.symbol, dto);
             }
 
             int missingQuotes = symbolNames.size() - quotes.size();
             if (missingQuotes > 0) {
+                // Provider sometimes omits symbols; log for observability
                 log.warn("Missing {} quotes from RapidAPI response", missingQuotes);
             }
 
@@ -81,6 +84,7 @@ public class PriceService {
             log.error("Market data unavailable while fetching all current prices: {}", e.getMessage());
             throw e;
         } catch (IOException e) {
+            // Wrap checked IO into domain exception with provider context
             log.error("IO error while fetching all current prices: {}", e.getMessage(), e);
             throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
                     "Failed to fetch price data: " + e.getMessage());
@@ -100,11 +104,13 @@ public class PriceService {
 
         Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
         if (ObjectUtils.isEmpty(symbolEntity)) {
+            // Unknown symbol in our DB
             log.warn("Symbol {} not found in database", symbol);
             return null;
         }
 
         if (!symbolEntity.isEnabled()) {
+            // Disabled symbols are filtered out at source
             log.warn("Symbol {} is disabled", symbol);
             return null;
         }
@@ -112,6 +118,7 @@ public class PriceService {
         try {
             RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
             if (ObjectUtils.isEmpty(quote)) {
+                // Provider returned no data for this symbol
                 log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
                 return null;
             }
@@ -124,6 +131,7 @@ public class PriceService {
             log.error("Market data unavailable while fetching price for symbol {}: {}", symbol, e.getMessage());
             throw e;
         } catch (IOException e) {
+            // Normalize IO to domain exception conveying provider name
             log.error("IO error while fetching price for symbol {}: {}", symbol, e.getMessage(), e);
             throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
                     "Failed to fetch price data for " + symbol + ": " + e.getMessage());
@@ -145,6 +153,7 @@ public class PriceService {
         try {
             RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
             if (ObjectUtils.isEmpty(quote)) {
+                // Provider returned no data for this symbol
                 log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
                 return null;
             }

@@ -102,6 +102,7 @@ public class GraphService {
 
         String intervalParam = getIntervalForRange(range);
 
+        // Build Yahoo chart URL with explicit interval/range and deterministic params
         String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=" + intervalParam + "&symbol="
                 + symbol
                 + "&range=" + range
@@ -122,6 +123,7 @@ public class GraphService {
                         response.code(),
                         responseBody);
 
+                // Map common HTTP errors to actionable IOException messages
                 if (response.code() == 403) {
                     throw new IOException(
                             "RapidAPI authentication/authorization failed - 403 Forbidden. Check your subscription.");
@@ -141,6 +143,7 @@ public class GraphService {
 
             String responseBody = response.body().string();
             log.debug("RapidAPI chart response for symbol {} with range {}: {}", symbol, range,
+                    // Truncate for logs to avoid overwhelming the output
                     responseBody.substring(0, Math.min(200, responseBody.length())) + "...");
 
             @SuppressWarnings("unchecked")

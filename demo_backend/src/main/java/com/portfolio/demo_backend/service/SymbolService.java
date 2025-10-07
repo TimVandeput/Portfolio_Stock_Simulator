@@ -100,13 +100,14 @@ public class SymbolService {
      */
     private List<NormItem> selectAndFilterSymbols(List<SymbolItem> allSymbols, String universe) {
         final Set<String> allowedMics = allowedMicsFor(universe);
-        final int remainingCapacity = calculateRemainingCapacity();
+        final int remainingCapacity = calculateRemainingCapacity(); // global cap enforcement
 
         Set<String> existingSymbols = getExistingSymbolsForUniverse(allowedMics);
 
         return allSymbols.stream()
                 .filter(Objects::nonNull)
                 .filter(this::isValidSymbolItem)
+                // Keep only symbols whose exchange MIC is allowed for the selected universe
                 .filter(it -> isAllowedExchange(it, allowedMics))
                 .map(it -> new NormItem(norm(it.symbol), it))
                 .filter(ni -> StringUtils.hasText(ni.sym))
@@ -114,6 +115,7 @@ public class SymbolService {
                         Collectors.toMap(
                                 ni -> ni.sym,
                                 ni -> ni,
+                                // On duplicates prefer first occurrence deterministically
                                 (a, b) -> a,
                                 LinkedHashMap::new),
                         m -> {
@@ -129,8 +131,10 @@ public class SymbolService {
                                 }
                             }
 
+                            // Always include updates for existing symbols
                             result.addAll(existingUpdates);
 
+                            // Only admit up to remaining capacity for truly new symbols
                             newSymbols.stream()
                                     .sorted(Comparator.comparing(ni -> ni.sym))
                                     .limit(remainingCapacity)
