@@ -27,34 +27,40 @@ public class TradingController {
 
     private final TradingService tradingService;
     private final WalletService walletService;
+    private final TransactionMapper transactionMapper;
+    private final TradingMapper tradingMapper;
 
     @PostMapping("/{userId}/buy")
     public ResponseEntity<TradeExecutionResponse> executeBuyOrder(
             @PathVariable Long userId,
             @Valid @RequestBody BuyOrderRequest request) {
-        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
-        return ResponseEntity.ok(response);
+        var data = tradingService.executeBuy(userId, request);
+        TradeExecutionResponse dto = tradingMapper.toTradeExecutionResponse(
+                data.getTransaction(), data.getNewCashBalance(), data.getNewSharesOwned());
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/{userId}/sell")
     public ResponseEntity<TradeExecutionResponse> executeSellOrder(
             @PathVariable Long userId,
             @Valid @RequestBody SellOrderRequest request) {
-        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
-        return ResponseEntity.ok(response);
+        var data = tradingService.executeSell(userId, request);
+        TradeExecutionResponse dto = tradingMapper.toTradeExecutionResponse(
+                data.getTransaction(), data.getNewCashBalance(), data.getNewSharesOwned());
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{userId}/portfolio")
     public ResponseEntity<PortfolioSummaryDTO> getPortfolioSummary(@PathVariable Long userId) {
         PortfolioSummaryData summaryData = walletService.getPortfolioSummary(userId);
-        PortfolioSummaryDTO summary = TradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(),
+        PortfolioSummaryDTO summary = tradingMapper.toPortfolioSummaryDTO(summaryData.getWallet(),
                 summaryData.getPositions(), summaryData.getCurrentPrices());
         return ResponseEntity.ok(summary);
     }
 
     @GetMapping("/{userId}/history")
     public ResponseEntity<List<TransactionDTO>> getTransactionHistory(@PathVariable Long userId) {
-        List<TransactionDTO> history = TransactionMapper.toDTOList(tradingService.getTransactionHistory(userId));
+        List<TransactionDTO> history = transactionMapper.toDTOs(tradingService.getTransactionHistory(userId));
         return ResponseEntity.ok(history);
     }
 }

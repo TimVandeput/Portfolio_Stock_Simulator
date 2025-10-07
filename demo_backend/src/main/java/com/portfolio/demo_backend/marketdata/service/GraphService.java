@@ -2,12 +2,14 @@ package com.portfolio.demo_backend.marketdata.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.demo_backend.config.RapidApiProperties;
+import com.portfolio.demo_backend.marketdata.service.data.ChartData;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,9 +52,9 @@ public class GraphService {
 
         for (String symbol : symbols) {
             try {
-                Map<String, Object> chartData = getChartForSymbol(symbol, range);
-                if (chartData != null) {
-                    allCharts.add(chartData);
+                ChartData chartData = getChartDataForSymbol(symbol, range);
+                if (!ObjectUtils.isEmpty(chartData)) {
+                    allCharts.add(chartData.chartResponse());
                     log.debug("Successfully fetched chart data for symbol: {} with range: {}", symbol, range);
                 } else {
                     log.warn("No chart data returned for symbol: {} with range: {}", symbol, range);
@@ -69,12 +71,13 @@ public class GraphService {
         return allCharts;
     }
 
-    private Map<String, Object> getChartForSymbol(String symbol, String range) throws IOException {
+    private ChartData getChartDataForSymbol(String symbol, String range) throws IOException {
         log.debug("Fetching chart data for symbol: {} with range: {}", symbol, range);
 
-        String interval = getIntervalForRange(range);
+        String intervalParam = getIntervalForRange(range);
 
-        String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=" + interval + "&symbol=" + symbol
+        String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=" + intervalParam + "&symbol="
+                + symbol
                 + "&range=" + range
                 + "&region=US&includePrePost=false&useYfid=true&includeAdjustedClose=true&events=capitalGain%2Cdiv%2Csplit";
 
@@ -87,7 +90,8 @@ public class GraphService {
 
         try (Response response = http.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                String responseBody = response.body() != null ? response.body().string() : "No response body";
+                String responseBody = !ObjectUtils.isEmpty(response.body()) ? response.body().string()
+                        : "No response body";
                 log.error("RapidAPI chart request failed for symbol {} with range {}: {} - {}", symbol, range,
                         response.code(),
                         responseBody);
@@ -114,11 +118,11 @@ public class GraphService {
                     responseBody.substring(0, Math.min(200, responseBody.length())) + "...");
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> chartData = mapper.readValue(responseBody, Map.class);
+            Map<String, Object> chartResponse = mapper.readValue(responseBody, Map.class);
 
-            chartData.put("symbol", symbol);
+            chartResponse.put("symbol", symbol);
 
-            return chartData;
+            return ChartData.of(symbol, range, intervalParam, chartResponse);
         }
     }
 

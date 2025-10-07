@@ -2,7 +2,7 @@ package com.portfolio.demo_backend.controller;
 
 import com.portfolio.demo_backend.dto.portfolio.PortfolioHoldingResponseDTO;
 import com.portfolio.demo_backend.dto.portfolio.PortfolioResponseDTO;
-import com.portfolio.demo_backend.mapper.PortfolioMapper;
+import com.portfolio.demo_backend.mapper.PortfolioDtoMapper;
 import com.portfolio.demo_backend.service.PortfolioService;
 import com.portfolio.demo_backend.service.data.UserPortfolioData;
 import com.portfolio.demo_backend.service.data.UserHoldingData;
@@ -16,19 +16,20 @@ import org.springframework.web.bind.annotation.*;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final PortfolioDtoMapper portfolioDtoMapper;
 
     @GetMapping("/{userId}")
     public ResponseEntity<PortfolioResponseDTO> getUserPortfolio(@PathVariable Long userId) {
         UserPortfolioData portfolioData = portfolioService.getUserPortfolio(userId);
 
-        var holdings = PortfolioMapper.toPortfolioHoldingResponseDTOList(portfolioData.getPortfolios());
+        var holdings = portfolioDtoMapper.toHoldings(portfolioData.getPortfolios());
 
-        var walletBalance = PortfolioMapper.toWalletBalanceDTO(portfolioData.getWallet(),
+        var walletBalance = portfolioDtoMapper.toWalletBalanceDTO(portfolioData.getWallet(),
                 portfolioData.getTotalInvested());
 
-        var summary = PortfolioMapper.toPortfolioSummaryDetailsDTO(portfolioData.getTotalValue());
+        var summary = portfolioDtoMapper.toPortfolioSummaryDetailsDTO(portfolioData.getTotalValue());
 
-        PortfolioResponseDTO portfolio = PortfolioMapper.toPortfolioResponseDTO(holdings, walletBalance, summary);
+        PortfolioResponseDTO portfolio = portfolioDtoMapper.toPortfolioResponseDTO(holdings, walletBalance, summary);
         return ResponseEntity.ok(portfolio);
     }
 
@@ -38,12 +39,9 @@ public class PortfolioController {
             @PathVariable String symbol) {
         UserHoldingData holdingData = portfolioService.getUserHolding(userId, symbol);
 
-        PortfolioHoldingResponseDTO holding;
-        if (holdingData.isHasHolding()) {
-            holding = PortfolioMapper.toPortfolioHoldingResponseDTO(holdingData.getPortfolio());
-        } else {
-            holding = PortfolioMapper.toEmptyPortfolioHoldingResponseDTO(holdingData.getSymbol());
-        }
+        PortfolioHoldingResponseDTO holding = holdingData.isHasHolding()
+                ? portfolioDtoMapper.toHolding(holdingData.getPortfolio())
+                : portfolioDtoMapper.toEmptyHolding(holdingData.getSymbol());
 
         return ResponseEntity.ok(holding);
     }

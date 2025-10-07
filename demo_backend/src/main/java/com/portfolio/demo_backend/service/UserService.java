@@ -4,6 +4,9 @@ import com.portfolio.demo_backend.exception.user.EmailAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.user.WeakPasswordException;
+import com.portfolio.demo_backend.mapper.UserMapper;
+import com.portfolio.demo_backend.dto.user.CreateUserDTO;
+import com.portfolio.demo_backend.dto.user.UpdateUserDTO;
 import com.portfolio.demo_backend.model.enums.Role;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
@@ -13,6 +16,8 @@ import com.portfolio.demo_backend.repository.WalletRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import java.util.EnumSet;
 
 import java.util.List;
@@ -24,14 +29,22 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final WalletRepository walletRepository;
+    private final UserMapper userMapper;
 
     private static final Pattern PWD_RULE = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{8,128}$");
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            WalletRepository walletRepository) {
+            WalletRepository walletRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.walletRepository = walletRepository;
+        this.userMapper = userMapper;
+    }
+
+    @Transactional
+    public User createUser(CreateUserDTO dto) {
+        User user = userMapper.toEntity(dto);
+        return createUser(user);
     }
 
     @Transactional
@@ -46,7 +59,7 @@ public class UserService {
 
         validateAndEncodePassword(user);
 
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+        if (ObjectUtils.isEmpty(user.getRoles())) {
             user.setRoles(EnumSet.of(Role.ROLE_USER));
         } else {
             user.setRoles(EnumSet.copyOf(user.getRoles()));
@@ -74,7 +87,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (updatedUser.getUsername() != null) {
+        if (StringUtils.hasText(updatedUser.getUsername())) {
             String newUsername = updatedUser.getUsername().trim();
             if (!newUsername.equals(user.getUsername())
                     && userRepository.findByUsername(newUsername).isPresent()) {
@@ -83,7 +96,7 @@ public class UserService {
             user.setUsername(newUsername);
         }
 
-        if (updatedUser.getEmail() != null) {
+        if (StringUtils.hasText(updatedUser.getEmail())) {
             String newEmail = updatedUser.getEmail().trim().toLowerCase();
             if (!newEmail.equals(user.getEmail())
                     && userRepository.findByEmail(newEmail).isPresent()) {
@@ -92,12 +105,17 @@ public class UserService {
             user.setEmail(newEmail);
         }
 
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+        if (StringUtils.hasText(updatedUser.getPassword())) {
             validateAndEncodePassword(updatedUser);
             user.setPassword(updatedUser.getPassword());
         }
 
         return userRepository.save(user);
+    }
+
+    public User updateUser(Long id, UpdateUserDTO dto) {
+        User patch = userMapper.fromUpdateDTO(dto);
+        return updateUser(id, patch);
     }
 
     public void deleteUser(Long id) {

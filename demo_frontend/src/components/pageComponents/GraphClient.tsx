@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { getGraphsForUserPortfolio } from "@/lib/api/graphs";
 import { getUserId } from "@/lib/auth/tokenStorage";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
@@ -10,6 +11,7 @@ import TimeRangeSelector from "@/components/graph/TimeRangeSelector";
 import type { GraphData } from "@/lib/api/graphs";
 
 export default function GraphClient() {
+  const router = useRouter();
   const [graphs, setGraphs] = useState<GraphData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,7 +49,7 @@ export default function GraphClient() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="page-title text-2xl sm:text-3xl font-bold">
-              PORTFOLIO GRAPHS
+              PORTFOLIO ANALYTICS
             </h1>
             <p className="text-sm opacity-80">
               Interactive graphs for your portfolio holdings
@@ -78,7 +80,7 @@ export default function GraphClient() {
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
               <span className="text-[var(--text-secondary)]">
-                Loading graphs...
+                Loading analytics...
               </span>
             </div>
           </div>
@@ -91,10 +93,10 @@ export default function GraphClient() {
               No Holdings Found
             </h3>
             <p className="text-[var(--text-secondary)] mb-6">
-              You need to own some stocks to see graphs.
+              You need to own some stocks to see analytics.
             </p>
             <button
-              onClick={() => (window.location.href = "/market")}
+              onClick={() => router.push("/market")}
               className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:opacity-80 transition-opacity"
             >
               Browse Markets

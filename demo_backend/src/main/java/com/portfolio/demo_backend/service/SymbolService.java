@@ -10,6 +10,8 @@ import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -65,7 +67,7 @@ public class SymbolService {
                 .filter(this::isValidSymbolItem)
                 .filter(it -> isAllowedExchange(it, allowedMics))
                 .map(it -> new NormItem(norm(it.symbol), it))
-                .filter(ni -> ni.sym != null && !ni.sym.isBlank())
+                .filter(ni -> StringUtils.hasText(ni.sym))
                 .collect(Collectors.collectingAndThen(
                         Collectors.toMap(
                                 ni -> ni.sym,
@@ -98,8 +100,7 @@ public class SymbolService {
 
     private boolean isValidSymbolItem(SymbolItem item) {
         // Basic validation
-        if (item.symbol == null || item.symbol.isBlank() ||
-                item.description == null || item.description.isBlank()) {
+        if (!StringUtils.hasText(item.symbol) || !StringUtils.hasText(item.description)) {
             return false;
         }
 
@@ -143,7 +144,7 @@ public class SymbolService {
     }
 
     private boolean isAllowedExchange(SymbolItem item, Set<String> allowedMics) {
-        if (item.mic == null) {
+        if (ObjectUtils.isEmpty(item.mic)) {
             return true;
         }
         return allowedMics.isEmpty() || allowedMics.contains(item.mic);
@@ -206,7 +207,7 @@ public class SymbolService {
     }
 
     private String emptyToNull(String s) {
-        return (s == null || s.isBlank()) ? null : s;
+        return StringUtils.hasText(s) ? s : null;
     }
 
     private Pageable ensureSort(Pageable p) {
@@ -245,7 +246,7 @@ public class SymbolService {
     }
 
     private Set<String> allowedMicsFor(String universe) {
-        if (universe == null)
+        if (!StringUtils.hasText(universe))
             return Set.of("XNAS", "XNYS");
         switch (universe.toUpperCase(Locale.ROOT)) {
             case "NDX":

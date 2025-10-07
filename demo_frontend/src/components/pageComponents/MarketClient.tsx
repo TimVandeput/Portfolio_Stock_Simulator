@@ -160,8 +160,12 @@ export default function MarketClient() {
         </div>
 
         <div className="min-h-[28px]">
-          {error && <StatusMessage message={error} />}
-          {priceError && <StatusMessage message={priceError} />}
+          {(error || priceError) && (
+            <StatusMessage
+              message={(error || priceError) as string}
+              type="error"
+            />
+          )}
           {isInitialLoading && (
             <div className="text-xs opacity-60 mb-2 flex items-center gap-2">
               <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-[var(--accent)]"></div>

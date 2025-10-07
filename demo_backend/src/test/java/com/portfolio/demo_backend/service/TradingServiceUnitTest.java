@@ -8,6 +8,7 @@ import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
 import com.portfolio.demo_backend.exception.trading.*;
+import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -47,6 +48,12 @@ class TradingServiceUnitTest {
     @Mock
     private WalletService walletService;
 
+    @Mock
+    private TradingMapper tradingMapper;
+
+    @Mock
+    private NotificationService notificationService;
+
     @InjectMocks
     private TradingService tradingService;
 
@@ -75,8 +82,33 @@ class TradingServiceUnitTest {
         testSymbol.setEnabled(true);
     }
 
+    private void stubTradeExecutionResponse() {
+        when(tradingMapper.toTradeExecutionResponse(any(Transaction.class), any(BigDecimal.class), anyInt()))
+                .thenAnswer(invocation -> {
+                    Transaction tx = invocation.getArgument(0);
+                    BigDecimal newCash = invocation.getArgument(1);
+                    Integer shares = invocation.getArgument(2);
+                    TradeExecutionResponse resp = new TradeExecutionResponse();
+                    if (tx.getSymbol() != null) {
+                        resp.setSymbol(tx.getSymbol().getSymbol());
+                    }
+                    resp.setQuantity(tx.getQuantity());
+                    resp.setExecutionPrice(tx.getPricePerShare());
+                    resp.setTotalAmount(tx.getTotalAmount());
+                    resp.setTransactionType(tx.getType());
+                    resp.setExecutedAt(tx.getExecutedAt());
+                    resp.setNewCashBalance(newCash);
+                    resp.setNewSharesOwned(shares);
+                    String verb = tx.getType() == TransactionType.BUY ? "bought" : "sold";
+                    String sym = tx.getSymbol() != null ? tx.getSymbol().getSymbol() : "";
+                    resp.setMessage("Successfully " + verb + " " + tx.getQuantity() + " shares of " + sym);
+                    return resp;
+                });
+    }
+
     @Test
     void executeBuyOrder_withSufficientFunds_completesSuccessfully() {
+        stubTradeExecutionResponse();
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(10);
@@ -128,6 +160,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withSufficientShares_completesSuccessfully() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -220,6 +253,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withTransactionHistory_calculatesCorrectProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -264,6 +298,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withMultipleBuyTransactions_usesFIFOForProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(8);
@@ -315,6 +350,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeSellOrder_withNoTransactionHistory_setsNullProfitLoss() {
+        stubTradeExecutionResponse();
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
@@ -351,6 +387,7 @@ class TradingServiceUnitTest {
 
     @Test
     void executeBuyOrder_doesNotCalculateProfitLoss() {
+        stubTradeExecutionResponse();
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(10);
@@ -375,5 +412,111 @@ class TradingServiceUnitTest {
 
         verify(transactionRepository).save(any(Transaction.class));
         verify(transactionRepository, never()).findByUserIdAndSymbolOrderByExecutedAtAsc(anyLong(), anyString());
+    }
+
+    @Test
+    void executeBuy_sendsTradeNotification() {
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(10);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getAllUsers()).thenReturn(List.of(testUser)); // For getSystemUserId()
+
+        tradingService.executeBuy(userId, request);
+
+        verify(notificationService).sendToUser(
+                eq(1L),
+                eq(1L),
+                eq("📈 Trade Executed - AAPL"),
+                argThat(body -> body.contains("buy order has been successfully executed") &&
+                        body.contains("Symbol: <strong>AAPL</strong>") &&
+                        body.contains("Quantity: 10 shares") &&
+                        body.contains("Price per Share: $150") &&
+                        body.contains("Total Amount: $1500") &&
+                        body.contains("<a href='/portfolio'>Portfolio</a>")));
+    }
+
+    @Test
+    void executeSell_sendsTradeNotificationWithProfitLoss() {
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+        request.setExpectedPrice(new BigDecimal("160.0"));
+        Long userId = 1L;
+
+        Portfolio existingPortfolio = new Portfolio();
+        existingPortfolio.setUserId(userId);
+        existingPortfolio.setSymbol(testSymbol);
+        existingPortfolio.setSharesOwned(10);
+        existingPortfolio.setAverageCostBasis(new BigDecimal("140.0"));
+
+        Transaction buyTransaction = new Transaction();
+        buyTransaction.setUserId(userId);
+        buyTransaction.setSymbol(testSymbol);
+        buyTransaction.setType(TransactionType.BUY);
+        buyTransaction.setQuantity(10);
+        buyTransaction.setPricePerShare(new BigDecimal("140.0"));
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        YahooQuoteDTO sellQuote = new YahooQuoteDTO();
+        sellQuote.setSymbol("AAPL");
+        sellQuote.setPrice(160.0);
+        sellQuote.setChange(10.0);
+        sellQuote.setChangePercent(6.67);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(sellQuote);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(existingPortfolio));
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(1L, "AAPL"))
+                .thenReturn(List.of(buyTransaction));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getAllUsers()).thenReturn(List.of(testUser)); // For getSystemUserId()
+
+        tradingService.executeSell(userId, request);
+
+        verify(notificationService).sendToUser(
+                eq(1L),
+                eq(1L),
+                eq("📉 Trade Executed - AAPL"),
+                argThat(body -> body.contains("sell order has been successfully executed") &&
+                        body.contains("Symbol: <strong>AAPL</strong>") &&
+                        body.contains("Quantity: 5 shares") &&
+                        body.contains("Price per Share: $160") &&
+                        body.contains("Total Amount: $800") &&
+                        body.contains("Profit/Loss: +$100") &&
+                        body.contains("<a href='/portfolio'>Portfolio</a>")));
+    }
+
+    @Test
+    void executeBuy_notificationFails_doesNotThrowException() {
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(10);
+        request.setExpectedPrice(new BigDecimal("150.0"));
+        Long userId = 1L;
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getAllUsers()).thenReturn(List.of(testUser));
+
+        doThrow(new RuntimeException("Notification failed")).when(notificationService)
+                .sendToUser(anyLong(), anyLong(), anyString(), anyString());
+
+        assertDoesNotThrow(() -> tradingService.executeBuy(userId, request));
+
+        verify(transactionRepository).save(any(Transaction.class));
+        verify(notificationService).sendToUser(anyLong(), anyLong(), anyString(), anyString());
     }
 }

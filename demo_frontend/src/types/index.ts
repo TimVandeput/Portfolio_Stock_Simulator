@@ -13,3 +13,4 @@ export * from "./api";
 export * from "./trading";
 export * from "./wallet";
 export * from "./portfolio";
+export * from "./notification";
