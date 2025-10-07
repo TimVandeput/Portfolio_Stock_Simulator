@@ -69,9 +69,19 @@ App starts on `http://localhost:$env:SERVER_PORT` (default 8000).
 
 The build is set to include private members and relax doclint so docs still generate even with warnings.
 
+PowerShell (quote -D properties to avoid PS argument parsing quirks):
+
 ```powershell
-./mvnw.cmd -DskipTests -Dmaven.javadoc.failOnError=false -Ddoclint=none javadoc:javadoc javadoc:test-javadoc
+./mvnw.cmd -DskipTests "-Dmaven.javadoc.failOnError=false" "-DadditionalJOptions=-Xdoclint:none" javadoc:javadoc javadoc:test-javadoc
 ```
+
+CMD (Command Prompt) variant:
+
+```bat
+mvnw.cmd -DskipTests -Dmaven.javadoc.failOnError=false -DadditionalJOptions=-Xdoclint:none javadoc:javadoc javadoc:test-javadoc
+```
+
+Note: If you copy/paste from docs and see an error like "Unknown lifecycle phase '.javadoc.failOnError=false'", retype the dashes (use regular `-`, not an en-dash) or keep the `-D...` properties in quotes in PowerShell.
 
 Outputs:
 
