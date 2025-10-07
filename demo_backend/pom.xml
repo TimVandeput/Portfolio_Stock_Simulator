@@ -182,7 +182,9 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <!-- Group packages into logical sections in the generated Javadoc -->
+          <additionalJOptions>
+            <additionalJOption>-private</additionalJOption>
+          </additionalJOptions>
           <groups>
             <group>
               <title>Services</title>
