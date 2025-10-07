@@ -6,6 +6,13 @@ import com.portfolio.demo_backend.service.data.AuthTokensData;
 import com.portfolio.demo_backend.service.data.RegistrationData;
 import org.mapstruct.Mapper;
 
+/**
+ * Authentication-related mapper.
+ *
+ * Maps registration and token domain models to API response DTOs. Implemented
+ * using default methods to avoid annotation-processor edge cases while still
+ * exposing a Spring-managed mapper bean.
+ */
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
 

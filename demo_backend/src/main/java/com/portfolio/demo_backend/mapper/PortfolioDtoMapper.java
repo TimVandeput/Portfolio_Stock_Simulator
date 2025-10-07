@@ -12,6 +12,12 @@ import org.mapstruct.MappingTarget;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Portfolio mapping utilities.
+ *
+ * Flattens portfolio entities into API DTOs and computes derived values like
+ * totalCost and wallet balances.
+ */
 @Mapper(componentModel = "spring")
 public interface PortfolioDtoMapper {
 

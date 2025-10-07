@@ -8,6 +8,12 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
+/**
+ * Symbol mapping functions.
+ *
+ * Converts Symbol entities into their API DTO representation and supports bulk
+ * list mapping.
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SymbolMapper {
     /**

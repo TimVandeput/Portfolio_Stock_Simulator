@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Market data endpoints for chart time-series per portfolio symbols.
+ */
 @RestController
 @RequestMapping("/api/market/charts")
 @RequiredArgsConstructor
 @Slf4j
-/**
- * Market data endpoints for chart time-series per portfolio symbols.
- */
 public class GraphController {
 
     private final GraphService graphService;

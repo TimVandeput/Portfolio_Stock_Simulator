@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Market data endpoints for retrieving current prices.
+ */
 @RestController
 @RequestMapping("/api/prices")
 @RequiredArgsConstructor
 @Slf4j
-/**
- * Market data endpoints for retrieving current prices.
- */
 public class PriceController {
 
     private final PriceService priceService;

@@ -16,14 +16,15 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-@Slf4j
-@RestController
-@RequestMapping("/api/stream")
-@RequiredArgsConstructor
 /**
  * Server-Sent Events (SSE) endpoint to stream live price updates to clients
  * after token validation.
  */
+@Slf4j
+@RestController
+@RequestMapping("/api/stream")
+@RequiredArgsConstructor
+
 public class PriceStreamController {
 
     private final FinnhubStreamService finnhub;

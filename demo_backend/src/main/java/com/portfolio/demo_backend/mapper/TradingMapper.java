@@ -8,6 +8,12 @@ import java.math.BigDecimal;
 
 import static com.portfolio.demo_backend.model.enums.TransactionType.BUY;
 
+/**
+ * Trading mapper.
+ *
+ * Builds user-facing trade execution responses from persisted Transaction
+ * entities plus runtime computed values (new balances/holdings).
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TradingMapper {
     /**

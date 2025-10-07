@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RestController
-@RequestMapping("/api/symbols")
-@RequiredArgsConstructor
 /**
  * Symbol management endpoints for importing symbols and listing/toggling them.
  */
+@RestController
+@RequestMapping("/api/symbols")
+@RequiredArgsConstructor
+
 public class SymbolController {
 
     private final SymbolService service;

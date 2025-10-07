@@ -8,6 +8,12 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
+/**
+ * Transaction mapping functions.
+ *
+ * Flattens nested symbol data into TransactionDTO for API responses and
+ * supports bulk list mapping.
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TransactionMapper {
     /**

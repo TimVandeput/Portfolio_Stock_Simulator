@@ -12,6 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
+/**
+ * Maps Notification entities to API-friendly response objects.
+ *
+ * Resolves sender usernames and generates a short plain-text preview from the
+ * HTML body for list views.
+ */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class NotificationMapper {
 

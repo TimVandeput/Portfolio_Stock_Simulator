@@ -6,12 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/api/wallet")
-@RequiredArgsConstructor
 /**
  * Wallet endpoints to retrieve balances.
  */
+@RestController
+@RequestMapping("/api/wallet")
+@RequiredArgsConstructor
+
 public class WalletController {
 
     private final WalletService walletService;

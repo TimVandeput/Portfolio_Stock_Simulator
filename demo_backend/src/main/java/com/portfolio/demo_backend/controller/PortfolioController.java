@@ -10,12 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/api/portfolio")
-@RequiredArgsConstructor
 /**
  * Portfolio read-only endpoints for aggregated portfolio views and holdings.
  */
+@RestController
+@RequestMapping("/api/portfolio")
+@RequiredArgsConstructor
+
 public class PortfolioController {
 
     private final PortfolioService portfolioService;

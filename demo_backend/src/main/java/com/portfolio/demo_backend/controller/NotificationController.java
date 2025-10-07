@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/notifications")
-@RequiredArgsConstructor
 /**
  * Notification endpoints for retrieving and updating user notifications.
  */
+@RestController
+@RequestMapping("/api/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;

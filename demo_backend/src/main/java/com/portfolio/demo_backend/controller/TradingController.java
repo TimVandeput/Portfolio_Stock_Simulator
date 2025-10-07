@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * Trading endpoints to place buy/sell orders and fetch transaction history.
+ */
 @RestController
 @RequestMapping("/api/trades")
 @RequiredArgsConstructor
 @Validated
-/**
- * Trading endpoints to place buy/sell orders and fetch transaction history.
- */
+
 public class TradingController {
 
     private final TradingService tradingService;

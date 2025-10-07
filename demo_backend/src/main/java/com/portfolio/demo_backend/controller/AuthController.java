@@ -11,13 +11,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/api/auth")
 /**
  * Authentication endpoints for registration, login, token refresh and logout.
  *
  * Base path: /api/auth
  */
+@RestController
+@RequestMapping("/api/auth")
+
 public class AuthController {
 
     private final AuthService auth;
@@ -53,7 +54,8 @@ public class AuthController {
     }
 
     /**
-     * Exchange a valid refresh token for a new access token (and rotated refresh token).
+     * Exchange a valid refresh token for a new access token (and rotated refresh
+     * token).
      *
      * @param req request containing the refresh token
      * @return refreshed token bundle
