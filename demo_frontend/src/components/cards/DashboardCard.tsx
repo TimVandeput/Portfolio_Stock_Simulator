@@ -56,7 +56,7 @@ export default function DashboardCard({
             "Overview of all transactions • Export options • Trade history analysis",
           gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
         };
-      case "GRAPHS":
+      case "ANALYTICS":
         return {
           ...baseContent,
           title: "Analytics",
