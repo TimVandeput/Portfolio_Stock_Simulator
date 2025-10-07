@@ -13,10 +13,16 @@ import java.util.Map;
 @RequestMapping("/api/prices")
 @RequiredArgsConstructor
 @Slf4j
+/**
+ * Market data endpoints for retrieving current prices.
+ */
 public class PriceController {
 
     private final PriceService priceService;
 
+    /**
+     * Fetch current prices for all enabled symbols.
+     */
     @GetMapping("/current")
     public ResponseEntity<Map<String, YahooQuoteDTO>> getAllCurrentPrices() {
         log.info("Fetching current prices for all enabled symbols");

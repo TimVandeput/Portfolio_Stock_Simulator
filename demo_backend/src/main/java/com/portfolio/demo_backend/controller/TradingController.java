@@ -20,12 +20,18 @@ import java.util.List;
 @RequestMapping("/api/trades")
 @RequiredArgsConstructor
 @Validated
+/**
+ * Trading endpoints to place buy/sell orders and fetch transaction history.
+ */
 public class TradingController {
 
     private final TradingService tradingService;
     private final TransactionMapper transactionMapper;
     private final TradingMapper tradingMapper;
 
+    /**
+     * Execute a buy order for the given user.
+     */
     @PostMapping("/{userId}/buy")
     public ResponseEntity<TradeExecutionResponse> executeBuyOrder(
             @PathVariable Long userId,
@@ -36,6 +42,9 @@ public class TradingController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Execute a sell order for the given user.
+     */
     @PostMapping("/{userId}/sell")
     public ResponseEntity<TradeExecutionResponse> executeSellOrder(
             @PathVariable Long userId,
@@ -46,6 +55,9 @@ public class TradingController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Retrieve the user's transaction history ordered by most recent first.
+     */
     @GetMapping("/{userId}/history")
     public ResponseEntity<List<TransactionDTO>> getTransactionHistory(@PathVariable Long userId) {
         List<TransactionDTO> history = transactionMapper.toDTOs(tradingService.getTransactionHistory(userId));

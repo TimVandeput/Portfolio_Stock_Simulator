@@ -13,11 +13,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/portfolio")
 @RequiredArgsConstructor
+/**
+ * Portfolio read-only endpoints for aggregated portfolio views and holdings.
+ */
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
     private final PortfolioDtoMapper portfolioDtoMapper;
 
+    /**
+     * Get an aggregated portfolio view for the user, including holdings, wallet
+     * snapshot and summary metrics.
+     */
     @GetMapping("/{userId}")
     public ResponseEntity<PortfolioResponseDTO> getUserPortfolio(@PathVariable Long userId) {
         UserPortfolioData portfolioData = portfolioService.getUserPortfolio(userId);
@@ -33,6 +40,10 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolio);
     }
 
+    /**
+     * Get a single holding for the given user and symbol. Returns an empty
+     * placeholder DTO if no holding exists.
+     */
     @GetMapping("/{userId}/holdings/{symbol}")
     public ResponseEntity<PortfolioHoldingResponseDTO> getUserHolding(
             @PathVariable Long userId,

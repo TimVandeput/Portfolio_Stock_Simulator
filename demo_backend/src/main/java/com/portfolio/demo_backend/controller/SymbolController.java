@@ -19,17 +19,26 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/symbols")
 @RequiredArgsConstructor
+/**
+ * Symbol management endpoints for importing symbols and listing/toggling them.
+ */
 public class SymbolController {
 
     private final SymbolService service;
     private final SymbolMapper symbolMapper;
 
+    /**
+     * Trigger a symbols import for the specified universe.
+     */
     @PostMapping("/import")
     public ResponseEntity<ImportSummaryDTO> importSymbols(
             @RequestParam(defaultValue = "NDX") String universe) throws IOException {
         return ResponseEntity.ok(service.importUniverse(universe));
     }
 
+    /**
+     * Search and paginate symbols by optional query and enabled flag.
+     */
     @GetMapping
     public Page<SymbolDTO> list(
             @RequestParam(required = false) String q,
@@ -41,6 +50,9 @@ public class SymbolController {
         return symbols.map(symbolMapper::toDTO);
     }
 
+    /**
+     * Toggle symbol enabled state.
+     */
     @PutMapping("/{id}/enabled")
     public SymbolDTO setEnabled(@PathVariable Long id, @RequestBody ToggleBody body) {
         Symbol symbol = service.setEnabled(id, body.enabled);
@@ -51,6 +63,9 @@ public class SymbolController {
         public boolean enabled;
     }
 
+    /**
+     * Get current import status and last summary.
+     */
     @GetMapping("/import/status")
     public ImportStatusDTO status() {
         ImportData data = service.importStatus();
