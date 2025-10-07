@@ -13,7 +13,6 @@
 
   <groupId>com.portfolio</groupId>
   <artifactId>demo-backend</artifactId> 
-          <show>private</show>
   <version>0.0.1-SNAPSHOT</version>
   <name>demo-backend</name>
   <description>Demo project for Spring Boot</description>
@@ -28,10 +27,6 @@
     <!-- ===== MapStruct (mappers) ===== -->
     <dependency>
       <groupId>org.mapstruct</groupId>
-            <group>
-              <title>DTOs &amp; Data</title>
-              <packages>com.portfolio.demo_backend.dto*:com.portfolio.demo_backend.*.dto*:com.portfolio.demo_backend.service.data:com.portfolio.demo_backend.marketdata.service.data</packages>
-            </group>
       <artifactId>mapstruct</artifactId>
       <version>${mapstruct.version}</version>
     </dependency>
@@ -109,7 +104,7 @@
     </dependency>
 
     <!-- ===== Actuator ===== -->
-    <dependency>
+    <dependency> 
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
