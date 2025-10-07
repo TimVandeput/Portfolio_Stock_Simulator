@@ -5,19 +5,15 @@ import lombok.Data;
 
 /**
  * Strongly-typed configuration for Finnhub market data integration.
- * <p>
- * Binds properties with prefix {@code app.marketdata.finnhub} from
- * {@code application.properties} or environment variables.
- * Typical entries:
- * <ul>
- * <li>{@code app.marketdata.finnhub.wsUrl} – WebSocket endpoint (e.g.,
- * wss://ws.finnhub.io)</li>
- * <li>{@code app.marketdata.finnhub.token} – API token</li>
- * <li>{@code app.marketdata.finnhub.apiBase} – REST base URL (defaults to
- * https://finnhub.io/api/v1)</li>
- * <li>{@code app.marketdata.finnhub.enabled} – feature flag to enable/disable
- * integration</li>
- * </ul>
+ *
+ * Prefix: {@code app.marketdata.finnhub}
+ *
+ * Properties:
+ * - {@code wsUrl}: WebSocket endpoint (for example wss://ws.finnhub.io)
+ * - {@code token}: API token
+ * - {@code apiBase}: REST base URL (default https://finnhub.io/api/v1)
+ * - {@code enabled}: feature flag to enable or disable integration
+ *
  * Used by services that publish/subscribe to real-time quotes and call Finnhub
  * REST.
  */

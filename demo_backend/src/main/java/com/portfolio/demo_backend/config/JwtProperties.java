@@ -5,14 +5,12 @@ import lombok.Data;
 
 /**
  * JWT configuration bound from properties with prefix {@code jwt}.
- * <p>
- * Typical entries:
- * <ul>
- * <li>{@code jwt.secret} – HMAC secret used to sign tokens</li>
- * <li>{@code jwt.expiration} – access token validity in milliseconds</li>
- * <li>{@code jwt.refresh-expiration} – refresh token validity in
- * milliseconds</li>
- * </ul>
+ *
+ * Properties:
+ * - {@code jwt.secret}: HMAC secret used to sign tokens
+ * - {@code jwt.expiration}: access token validity in milliseconds
+ * - {@code jwt.refresh-expiration}: refresh token validity in milliseconds
+ *
  * Consumed by the security layer to mint and validate JWTs.
  */
 @Data
