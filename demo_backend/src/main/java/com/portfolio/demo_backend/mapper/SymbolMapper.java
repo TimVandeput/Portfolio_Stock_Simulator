@@ -10,7 +10,13 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SymbolMapper {
+    /**
+     * Flattens a {@link Symbol} entity to its API representation.
+     */
     SymbolDTO toDTO(Symbol e);
 
+    /**
+     * Bulk mapping convenience for lists.
+     */
     List<SymbolDTO> toDTOs(List<Symbol> entities);
 }

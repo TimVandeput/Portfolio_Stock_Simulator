@@ -9,7 +9,13 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
 
+    /**
+     * Maps domain registration data to the API registration response.
+     */
     RegistrationResponse toRegistrationResponse(RegistrationData data);
 
+    /**
+     * Maps token tuple and user context to the authentication response DTO.
+     */
     AuthResponse toAuthResponse(AuthTokensData data);
 }

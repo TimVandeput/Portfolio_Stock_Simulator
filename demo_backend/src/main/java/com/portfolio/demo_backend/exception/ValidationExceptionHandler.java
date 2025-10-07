@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * High-priority handler for request validation errors that returns a field->message map.
+ */
 @RestControllerAdvice
 @Order(1)
 public class ValidationExceptionHandler {

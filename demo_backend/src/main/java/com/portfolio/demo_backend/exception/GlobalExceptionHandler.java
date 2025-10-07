@@ -30,6 +30,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Catch-all exception handler mapping domain/runtime exceptions to HTTP responses.
+ * Ordered after validation handler; emits JSON bodies by default and plain text for SSE endpoints.
+ */
 @RestControllerAdvice
 @Slf4j
 @org.springframework.core.annotation.Order(2)
@@ -69,8 +73,6 @@ public class GlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
-
-
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<Map<String, String>> handleInvalidRefresh(InvalidRefreshTokenException ex) {
@@ -149,16 +151,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-
-
     @ExceptionHandler(PortfolioDataException.class)
     public ResponseEntity<Map<String, String>> handlePortfolioData(PortfolioDataException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
-
-
 
     @ExceptionHandler(NotificationNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotificationNotFound(NotificationNotFoundException ex) {

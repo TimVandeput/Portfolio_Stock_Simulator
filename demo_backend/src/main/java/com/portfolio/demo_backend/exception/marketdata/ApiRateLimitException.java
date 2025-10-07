@@ -3,6 +3,9 @@ package com.portfolio.demo_backend.exception.marketdata;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Thrown when a market data provider rejects requests due to rate limiting (HTTP 429).
+ */
 @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
 public class ApiRateLimitException extends RuntimeException {
     private final String provider;

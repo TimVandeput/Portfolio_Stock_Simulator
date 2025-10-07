@@ -18,6 +18,10 @@ public abstract class NotificationMapper {
     @Autowired
     protected UserService userService;
 
+    /**
+     * Maps a {@link Notification} entity to a response DTO. Sender name is resolved from the user service.
+     * Also produces a short plain-text preview from the HTML body.
+     */
     @Mapping(target = "id", source = "id")
     @Mapping(target = "senderName", source = "senderUserId", qualifiedByName = "mapSenderName")
     @Mapping(target = "receiverUserId", source = "receiverUserId")
@@ -28,8 +32,14 @@ public abstract class NotificationMapper {
     @Mapping(target = "read", source = "read")
     public abstract NotificationResponse toDTO(Notification notification);
 
+    /**
+     * Bulk mapping convenience for lists.
+     */
     public abstract List<NotificationResponse> toDTOList(List<Notification> notifications);
 
+    /**
+     * Resolves a sender username from an ID. Returns fallback labels when missing/unknown.
+     */
     @Named("mapSenderName")
     protected String mapSenderName(Long senderUserId) {
         if (senderUserId == null) {
@@ -44,6 +54,9 @@ public abstract class NotificationMapper {
         }
     }
 
+    /**
+     * Creates a 100-char plain-text preview by stripping HTML from the body.
+     */
     @Named("createPreview")
     protected String createPreview(String body) {
         if (body == null || body.trim().isEmpty()) {
