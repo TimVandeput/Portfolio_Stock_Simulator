@@ -9,12 +9,14 @@ import jakarta.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Authentication response returned by login/refresh endpoints.
  */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
     @NotBlank
     private String accessToken;
