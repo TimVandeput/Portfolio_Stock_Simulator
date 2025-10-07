@@ -24,16 +24,4 @@ public class PriceController {
         log.info("Successfully fetched prices for {} symbols", prices.size());
         return ResponseEntity.ok(prices);
     }
-
-    @GetMapping("/current/{symbol}")
-    public ResponseEntity<YahooQuoteDTO> getCurrentPrice(@PathVariable String symbol) {
-        log.info("Fetching current price for symbol: {}", symbol);
-        YahooQuoteDTO quote = priceService.getCurrentPrice(symbol.toUpperCase());
-        if (quote == null) {
-            log.warn("No price data found for symbol: {}", symbol);
-            return ResponseEntity.notFound().build();
-        }
-        log.info("Successfully fetched price for {}: ${}", symbol, quote.getPrice());
-        return ResponseEntity.ok(quote);
-    }
 }

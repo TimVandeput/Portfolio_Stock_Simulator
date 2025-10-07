@@ -5,10 +5,10 @@ import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
 import com.portfolio.demo_backend.service.data.AuthTokensData;
 import com.portfolio.demo_backend.service.data.RegistrationData;
 import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring")
 public interface AuthMapper {
+
     RegistrationResponse toRegistrationResponse(RegistrationData data);
 
     AuthResponse toAuthResponse(AuthTokensData data);
