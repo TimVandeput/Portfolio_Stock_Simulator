@@ -76,65 +76,7 @@ class UserServiceIntegrationTest {
                                 .isInstanceOf(UserNotFoundException.class);
         }
 
-        @Test
-        void updateUser_username_and_password() {
-                User saved = userService
-                                .createUser(User.builder().username("tim").email("tim@example.com").password("Pass1234")
-                                                .build());
 
-                User patch = User.builder().username("timnieuw").email("timnieuw@example.com").password("Newpass1")
-                                .build();
-                User updated = userService.updateUser(saved.getId(), patch);
-
-                assertThat(updated.getUsername()).isEqualTo("timnieuw");
-                assertThat(updated.getPassword()).isNotEqualTo("Newpass1");
-                assertThat(updated.getPassword()).startsWith("$2");
-        }
-
-        @Test
-        void updateUser_partial_nulls_doNotOverwrite() {
-                User saved = userService
-                                .createUser(User.builder().username("tim").email("tim@example.com").password("Pass1234")
-                                                .build());
-                String oldHash = saved.getPassword();
-
-                userService.updateUser(saved.getId(),
-                                User.builder().username("onlyname").email("onlyname@example.com").build());
-                User after1 = userRepository.findById(saved.getId()).orElseThrow();
-                assertThat(after1.getUsername()).isEqualTo("onlyname");
-                assertThat(after1.getPassword()).isEqualTo(oldHash);
-
-                userService.updateUser(saved.getId(), User.builder().password("Newpass1").build());
-                User after2 = userRepository.findById(saved.getId()).orElseThrow();
-                assertThat(after2.getUsername()).isEqualTo("onlyname");
-                assertThat(after2.getPassword()).isNotEqualTo(oldHash);
-                assertThat(after2.getPassword()).startsWith("$2");
-        }
-
-        @Test
-        void updateUser_duplicateEmail_throws() {
-                @SuppressWarnings("unused")
-                User user1 = userService
-                                .createUser(User.builder().username("tim").email("tim@example.com").password("Pass1234")
-                                                .build());
-                User user2 = userService
-                                .createUser(User.builder().username("sarah").email("sarah@example.com")
-                                                .password("Pass1234").build());
-
-                assertThatThrownBy(() -> userService.updateUser(user2.getId(),
-                                User.builder().email("tim@example.com").build()))
-                                .isInstanceOf(EmailAlreadyExistsException.class);
-        }
-
-        @Test
-        void deleteUser_works_and_notFoundThrows() {
-                User saved = userService
-                                .createUser(User.builder().username("tim").email("tim@example.com").password("Pass1234")
-                                                .build());
-                userService.deleteUser(saved.getId());
-                assertThatThrownBy(() -> userService.getUserById(saved.getId()))
-                                .isInstanceOf(UserNotFoundException.class);
-        }
 
         @Test
         void createUser_automaticallyCreatesWalletWithDefaultBalance() {

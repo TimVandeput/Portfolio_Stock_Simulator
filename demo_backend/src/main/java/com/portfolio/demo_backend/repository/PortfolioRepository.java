@@ -17,6 +17,5 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     @Query("SELECT p FROM Portfolio p WHERE p.userId = :userId AND p.sharesOwned > 0")
     List<Portfolio> findActivePositionsByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT SUM(p.sharesOwned) FROM Portfolio p WHERE p.userId = :userId AND p.symbol.symbol = :symbol")
-    Integer getTotalSharesOwned(@Param("userId") Long userId, @Param("symbol") String symbol);
+
 }

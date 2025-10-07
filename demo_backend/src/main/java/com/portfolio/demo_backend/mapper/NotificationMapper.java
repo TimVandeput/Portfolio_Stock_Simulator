@@ -49,7 +49,7 @@ public abstract class NotificationMapper {
         if (body == null || body.trim().isEmpty()) {
             return "";
         }
-        String cleaned = body.replaceAll("<[^>]*>", "").trim(); // Remove HTML tags
+        String cleaned = body.replaceAll("<[^>]*>", "").trim();
         if (cleaned.length() <= 100) {
             return cleaned;
         }

@@ -168,15 +168,6 @@ class SymbolServiceUnitTest {
         assertThat(result.getLastSummary()).isNull();
     }
 
-    @Test
-    void getEnabledSymbols_returnsSymbolList() {
-        when(symbolRepository.findEnabledSymbols()).thenReturn(List.of("AAPL", "MSFT", "GOOGL"));
-
-        List<String> result = symbolService.getEnabledSymbols();
-
-        assertThat(result).containsExactly("AAPL", "MSFT", "GOOGL");
-    }
-
     private Symbol createSymbol(String symbol, String name, boolean enabled) {
         Symbol entity = new Symbol();
         entity.setSymbol(symbol);

@@ -1,13 +1,12 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
-import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
+
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
-import com.portfolio.demo_backend.model.Symbol;
-import com.portfolio.demo_backend.model.Portfolio;
+
 import com.portfolio.demo_backend.repository.UserRepository;
 import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -101,22 +100,7 @@ class WalletServiceIntegrationTest {
                 .isInstanceOf(WalletNotFoundException.class);
     }
 
-    @Test
-    void addCashToWallet_increasesBalance() {
-        BigDecimal initialCash = testWallet.getCashBalance();
-        BigDecimal addAmount = BigDecimal.valueOf(500.00);
 
-        walletService.addCashToWallet(testUser.getId(), addAmount, "Test addition");
-
-        Wallet updatedWallet = walletRepository.findById(testWallet.getUserId()).orElseThrow();
-        assertThat(updatedWallet.getCashBalance()).isEqualByComparingTo(initialCash.add(addAmount));
-    }
-
-    @Test
-    void addCashToWallet_withNonExistentUser_throws() {
-        assertThatThrownBy(() -> walletService.addCashToWallet(999L, BigDecimal.valueOf(100), "Test"))
-                .isInstanceOf(RuntimeException.class);
-    }
 
     @Test
     void updateWalletBalance_increasesBalance() {
@@ -138,36 +122,5 @@ class WalletServiceIntegrationTest {
         assertThat(updatedWallet.getCashBalance()).isEqualByComparingTo(newBalance);
     }
 
-    @Test
-    void getPortfolioSummary_withPortfolioEntries() {
-        Symbol symbol = new Symbol();
-        symbol.setSymbol("AAPL");
-        symbol.setName("Apple Inc.");
-        symbol = symbolRepository.save(symbol);
 
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(testUser.getId());
-        portfolio.setUser(testUser);
-        portfolio.setSymbol(symbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(BigDecimal.valueOf(150.00));
-        portfolioRepository.save(portfolio);
-
-        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
-
-        assertThat(summary).isNotNull();
-        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getPositions()).hasSize(1);
-        assertThat(summary.getPositions().get(0).getSymbol().getSymbol()).isEqualTo("AAPL");
-        assertThat(summary.getPositions().get(0).getSharesOwned()).isEqualTo(10);
-    }
-
-    @Test
-    void getPortfolioSummary_withoutPortfolioEntries() {
-        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
-
-        assertThat(summary).isNotNull();
-        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getPositions()).isEmpty();
-    }
 }

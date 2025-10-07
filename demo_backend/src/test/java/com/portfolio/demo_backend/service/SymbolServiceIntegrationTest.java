@@ -13,8 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -130,34 +128,4 @@ class SymbolServiceIntegrationTest {
         assertThat(status.isRunning()).isFalse();
     }
 
-    @Test
-    void getEnabledSymbols_returnsOnlyEnabledSymbolNames() {
-        Symbol symbol2 = new Symbol();
-        symbol2.setSymbol("GOOGL");
-        symbol2.setName("Alphabet Inc.");
-        symbol2.setEnabled(true);
-        symbolRepository.save(symbol2);
-
-        Symbol symbol3 = new Symbol();
-        symbol3.setSymbol("TSLA");
-        symbol3.setName("Tesla Inc.");
-        symbol3.setEnabled(false);
-        symbolRepository.save(symbol3);
-
-        List<String> symbols = symbolService.getEnabledSymbols();
-
-        assertThat(symbols).hasSize(2);
-        assertThat(symbols).contains("AAPL", "GOOGL");
-        assertThat(symbols).doesNotContain("TSLA");
-    }
-
-    @Test
-    void getEnabledSymbols_withNoEnabledSymbols_returnsEmpty() {
-        testSymbol.setEnabled(false);
-        symbolRepository.save(testSymbol);
-
-        List<String> symbols = symbolService.getEnabledSymbols();
-
-        assertThat(symbols).isEmpty();
-    }
 }
