@@ -13,7 +13,6 @@
 
   <groupId>com.portfolio</groupId>
   <artifactId>demo-backend</artifactId> 
-          <!-- Show private members so DTO fields appear in docs even with Lombok-backed classes -->
           <show>private</show>
   <version>0.0.1-SNAPSHOT</version>
   <name>demo-backend</name>
