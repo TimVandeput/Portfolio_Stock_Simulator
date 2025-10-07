@@ -3,6 +3,9 @@ package com.portfolio.demo_backend.dto.symbol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * Current state of a symbols import task with last run summary.
+ */
 public class ImportStatusDTO {
     public boolean running;
     public String lastImportedAt;

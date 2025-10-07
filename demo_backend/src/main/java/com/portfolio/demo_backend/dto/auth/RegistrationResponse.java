@@ -9,6 +9,9 @@ import lombok.Data;
 
 import java.util.Set;
 
+/**
+ * Registration confirmation payload echoing user id, username and roles.
+ */
 @Data
 @AllArgsConstructor
 public class RegistrationResponse {

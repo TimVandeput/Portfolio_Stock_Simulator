@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
+/**
+ * Payload used to authenticate a websocket stream session, including the user
+ * identity, JWT token, subscribed symbols, and the authentication timestamp.
+ */
 public record StreamAuthData(
         @NotBlank String username,
         @NotBlank String token,

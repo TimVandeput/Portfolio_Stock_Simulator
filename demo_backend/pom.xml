@@ -184,6 +184,10 @@
               <packages>com.portfolio.demo_backend.service:com.portfolio.demo_backend.marketdata.service</packages>
             </group>
             <group>
+              <title>DTOs &amp; Data</title>
+              <packages>com.portfolio.demo_backend.dto*:com.portfolio.demo_backend.*.dto*:com.portfolio.demo_backend.service.data:com.portfolio.demo_backend.marketdata.service.data</packages>
+            </group>
+            <group>
               <title>Market Data</title>
               <packages>com.portfolio.demo_backend.marketdata.*</packages>
             </group>

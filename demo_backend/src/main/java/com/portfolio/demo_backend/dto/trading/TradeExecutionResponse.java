@@ -11,6 +11,9 @@ import java.time.Instant;
 
 import com.portfolio.demo_backend.model.enums.TransactionType;
 
+/**
+ * API response returned after a buy/sell order is executed successfully.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

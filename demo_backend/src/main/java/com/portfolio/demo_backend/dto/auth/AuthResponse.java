@@ -10,6 +10,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Authentication response returned by login/refresh endpoints.
+ */
 @Data
 @AllArgsConstructor
 public class AuthResponse {

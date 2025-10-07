@@ -3,6 +3,10 @@ package com.portfolio.demo_backend.marketdata.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * SSE/WebSocket event payload used for pushing price updates and heartbeats to
+ * clients.
+ */
 public record PriceEvent(
         @NotBlank String type,
         @NotBlank String symbol,
