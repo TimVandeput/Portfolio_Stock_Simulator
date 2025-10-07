@@ -20,6 +20,17 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Read-oriented service for portfolio aggregation and holdings lookup.
+ * <p>
+ * Responsibilities:
+ * - Aggregate user portfolios and wallet into a
+ * {@link com.portfolio.demo_backend.service.data.UserPortfolioData}
+ * - Fetch a specific holding for a user by symbol
+ * <p>
+ * This service does not mutate state; errors are wrapped in domain-specific
+ * exceptions.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +40,16 @@ public class PortfolioService {
     private final UserService userService;
     private final WalletService walletService;
 
+    /**
+     * Aggregates portfolio positions, wallet balances and totals for a user.
+     *
+     * @param userId the user id; must not be null
+     * @return aggregated portfolio data
+     * @throws IllegalArgumentException if userId is null
+     * @throws com.portfolio.demo_backend.exception.user.UserNotFoundException if the user does not exist
+     * @throws com.portfolio.demo_backend.exception.trading.WalletNotFoundException if the user's wallet cannot be found
+     * @throws com.portfolio.demo_backend.exception.portfolio.PortfolioDataException for unexpected errors
+     */
     public UserPortfolioData getUserPortfolio(Long userId) {
         if (ObjectUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("User ID cannot be null");
@@ -63,6 +84,16 @@ public class PortfolioService {
         }
     }
 
+    /**
+     * Retrieves a single holding for a normalized symbol for the given user.
+     *
+     * @param userId the user id; must not be null
+     * @param symbol the raw symbol (case-insensitive); must be non-empty
+     * @return {@link UserHoldingData} containing the portfolio entity if present
+     * @throws IllegalArgumentException if inputs are invalid
+     * @throws com.portfolio.demo_backend.exception.user.UserNotFoundException if the user does not exist
+     * @throws com.portfolio.demo_backend.exception.portfolio.PortfolioDataException for unexpected errors
+     */
     public UserHoldingData getUserHolding(Long userId, String symbol) {
         if (ObjectUtils.isEmpty(userId)) {
             throw new IllegalArgumentException("User ID cannot be null");

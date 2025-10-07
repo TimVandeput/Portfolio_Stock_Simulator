@@ -18,11 +18,35 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * WebSocket streaming client for Finnhub trades.
+ * <p>
+ * Responsibilities:
+ * - Manage WebSocket connection lifecycle with exponential backoff retries
+ * - Maintain last price and percent change snapshots per symbol
+ * - Allow dynamic subscribe/unsubscribe and listener callbacks per symbol
+ * <p>
+ * Thread-safety:
+ * - Listener collections and price maps are {@link java.util.concurrent.ConcurrentHashMap}
+ *   backed and safe for concurrent access from the WS thread and application threads.
+ * - Public methods are designed to be called concurrently; internal state is guarded
+ *   via concurrent collections.
+ * <p>
+ * Lifecycle:
+ * - {@link #connect()} is invoked at startup (@PostConstruct) when streaming is enabled and
+ *   a token is present; reconnect is automatic on failures.
+ * - {@link #shutdown()} is invoked at container shutdown (@PreDestroy) to close resources.
+ */
 @Slf4j
 @Service
 public class FinnhubStreamService {
 
+    /** Listener for price updates per symbol. */
     public interface PriceListener {
+        /**
+         * Called on each price update. Percent change may be null if open price
+         * unknown.
+         */
         void onPrice(String symbol, double price, Double percentChange);
     }
 
@@ -36,6 +60,11 @@ public class FinnhubStreamService {
     private final Map<String, Double> lastPrices = new ConcurrentHashMap<>();
     private final Map<String, Double> dailyOpenPrices = new ConcurrentHashMap<>();
 
+    /**
+     * Constructs the Finnhub streaming service with the provided properties.
+     *
+     * @param props configuration containing API token, WS URL and enabled flag
+     */
     public FinnhubStreamService(FinnhubProperties props) {
         this.props = props;
         log.info("FinnhubStreamService constructor called with enabled={} token={}",
@@ -43,6 +72,15 @@ public class FinnhubStreamService {
     }
 
     @PostConstruct
+    /**
+     * Opens the WebSocket connection if streaming is enabled and a token is configured.
+     * On successful (re)connect, automatically re-subscribes to all symbols previously
+     * added via {@link #subscribe(String)} or {@link #addListener(String, PriceListener)}.
+     *
+     * Error handling:
+     * - Connection failures schedule a retry using exponential backoff with jitter.
+     * - Any failures are logged; callers do not receive exceptions.
+     */
     public void connect() {
         log.info("FinnhubStreamService @PostConstruct connect() method called");
         if (!props.isEnabled() || !StringUtils.hasText(props.getToken())) {
@@ -113,12 +151,24 @@ public class FinnhubStreamService {
     }
 
     @PreDestroy
+    /**
+     * Gracefully closes the WebSocket and shuts down the HTTP client's executor.
+     * Safe to call multiple times; subsequent calls are no-ops.
+     */
     public void shutdown() {
         if (!ObjectUtils.isEmpty(ws))
             ws.close(1000, "shutdown");
         client.dispatcher().executorService().shutdown();
     }
 
+    /**
+     * Subscribes to price updates for a symbol.
+     * <p>
+     * If the WebSocket is not yet connected, the symbol is tracked and will be
+     * (re)subscribed automatically on the next successful connection.
+     *
+     * @param symbol ticker symbol (e.g., AAPL)
+     */
     public void subscribe(String symbol) {
         log.debug("Adding subscription for symbol: {}", symbol);
         listeners.computeIfAbsent(symbol, k -> new CopyOnWriteArrayList<>());
@@ -131,6 +181,14 @@ public class FinnhubStreamService {
         }
     }
 
+    /**
+     * Unsubscribes a listener from a symbol. If no listeners remain for the symbol,
+     * a WS-level unsubscribe message is sent and the local subscription is removed.
+     * Missing listeners or symbols are ignored.
+     *
+     * @param symbol ticker symbol
+     * @param l      listener to remove
+     */
     public void unsubscribe(String symbol, PriceListener l) {
         List<PriceListener> ls = listeners.get(symbol);
         if (!ObjectUtils.isEmpty(ls)) {
@@ -145,15 +203,36 @@ public class FinnhubStreamService {
         }
     }
 
+    /**
+     * Adds a price listener for the given symbol and ensures a subscription exists.
+     * If the WS is connected, a subscribe message is sent immediately; otherwise the
+     * subscription will be established on the next reconnect.
+     *
+     * @param symbol ticker symbol
+     * @param l      listener callback
+     */
     public void addListener(String symbol, PriceListener l) {
         listeners.computeIfAbsent(symbol, k -> new CopyOnWriteArrayList<>()).add(l);
         subscribe(symbol);
     }
 
+    /**
+     * Returns the last observed price for a symbol.
+     *
+     * @param symbol ticker symbol
+     * @return last price, or {@code null} if no trades have been observed yet
+     */
     public Double getLastPrice(String symbol) {
         return lastPrices.get(symbol);
     }
 
+    /**
+     * Computes percent change based on last price vs the first observed price of the day
+     * (treated as an "open" price). If there is insufficient data, returns {@code null}.
+     *
+     * @param symbol ticker symbol
+     * @return percent change, or {@code null} if open/current price is unavailable
+     */
     public Double getPercentChange(String symbol) {
         Double current = lastPrices.get(symbol);
         Double open = dailyOpenPrices.get(symbol);
@@ -163,6 +242,13 @@ public class FinnhubStreamService {
         return null;
     }
 
+    /**
+     * Handles a raw WebSocket JSON message. Parses trade updates and updates internal
+     * price snapshots, then notifies registered listeners for the affected symbols.
+     * Non-trade messages or malformed payloads are ignored.
+     *
+     * @param json raw JSON message payload from Finnhub WS
+     */
     private void handle(String json) {
         try {
             JsonNode root = mapper.readTree(json);
