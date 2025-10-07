@@ -2,8 +2,7 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
 import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
-import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
-import com.portfolio.demo_backend.mapper.TradingMapper;
+
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
@@ -37,7 +36,6 @@ public class TradingService {
     private final PriceService priceService;
     private final UserService userService;
     private final WalletService walletService;
-    private final TradingMapper tradingMapper;
     private final NotificationService notificationService;
 
     @Transactional
@@ -117,20 +115,6 @@ public class TradingService {
 
         return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
-    }
-
-    @Transactional
-    public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
-        TradeExecutionData data = executeBuy(userId, request);
-        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
-                data.getNewSharesOwned());
-    }
-
-    @Transactional
-    public TradeExecutionResponse executeSellOrder(Long userId, SellOrderRequest request) {
-        TradeExecutionData data = executeSell(userId, request);
-        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
-                data.getNewSharesOwned());
     }
 
     public List<Transaction> getTransactionHistory(Long userId) {

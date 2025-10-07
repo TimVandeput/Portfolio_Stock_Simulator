@@ -222,10 +222,6 @@ public class SymbolService {
         return new ImportData(importRunning.get(), lastImportedAt, lastSummary);
     }
 
-    public List<String> getEnabledSymbols() {
-        return symbolRepository.findEnabledSymbols();
-    }
-
     private String norm(String s) {
         return s == null ? null : s.trim().toUpperCase(Locale.ROOT);
     }
