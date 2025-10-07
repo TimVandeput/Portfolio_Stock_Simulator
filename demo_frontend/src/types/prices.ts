@@ -1,3 +1,8 @@
+export interface YahooQuote {
+  price: number | null;
+  changePercent?: number | null;
+}
+
 export interface Price {
   last?: number;
   percentChange?: number;
