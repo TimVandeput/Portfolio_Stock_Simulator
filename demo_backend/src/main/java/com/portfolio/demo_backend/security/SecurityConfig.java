@@ -15,6 +15,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Spring Security configuration defining stateless JWT auth and route
+ * authorizations.
+ *
+ * Highlights:
+ * - Stateless sessions, CSRF disabled for API usage.
+ * - Custom entry point returning JSON 401 bodies.
+ * - Explicit per-endpoint authorization mapping for clarity.
+ */
 @Configuration
 public class SecurityConfig {
 

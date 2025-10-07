@@ -12,6 +12,18 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Minimal REST client for Finnhub endpoints used by this service.
+ *
+ * Responsibilities:
+ * - Retrieve index constituents and symbol metadata by exchange.
+ * - Surface rate-limiting (429) and server errors as domain exceptions.
+ *
+ * Notes:
+ * - Uses a default OkHttpClient and Jackson for parsing.
+ * - Does not implement retries; callers may wrap with
+ * {@link #throttled(CallSupplier)}.
+ */
 @Component
 @RequiredArgsConstructor
 public class FinnhubClient {
@@ -34,6 +46,13 @@ public class FinnhubClient {
         public String type;
     }
 
+    /**
+     * Returns the list of constituents for a given index (e.g. ^GSPC).
+     *
+     * @param indexSymbol provider-specific index identifier
+     * @return list of ticker symbols; empty when API returns none
+     * @throws IOException on HTTP/network/JSON failures
+     */
     public List<String> getIndexConstituents(String indexSymbol) throws IOException {
         HttpUrl url = HttpUrl.parse(props.getApiBase() + "/index/constituents")
                 .newBuilder()
@@ -56,6 +75,13 @@ public class FinnhubClient {
         }
     }
 
+    /**
+     * Lists symbols provided by a specific exchange.
+     *
+     * @param exchange the exchange code (e.g. US, NASDAQ, NYSE)
+     * @return list of symbol metadata; empty when API returns none
+     * @throws IOException on HTTP/network/JSON failures
+     */
     public List<SymbolItem> listSymbolsByExchange(String exchange) throws IOException {
         HttpUrl url = HttpUrl.parse(props.getApiBase() + "/stock/symbol")
                 .newBuilder()
@@ -78,6 +104,10 @@ public class FinnhubClient {
         }
     }
 
+    /**
+     * Simple client-side pacing helper to mitigate rate limits.
+     * Sleeps for ~1.6s before executing the supplier.
+     */
     public <T> T throttled(CallSupplier<T> supplier) throws IOException {
         try {
             Thread.sleep(1600L);

@@ -10,6 +10,15 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+/**
+ * Small utility service for issuing and parsing HMAC-SHA256 JWT access tokens.
+ *
+ * Token shape:
+ * - subject: username
+ * - claims: role (String), optionally userId (Long)
+ * - expiration: configured via
+ * {@link com.portfolio.demo_backend.config.JwtProperties}
+ */
 @Service
 public class JwtService {
 
