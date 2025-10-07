@@ -11,6 +11,10 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Aggregated view of a user's portfolio state combining holdings, wallet cash
+ * and precomputed totals used by the portfolio endpoints.
+ */
 @Data
 @AllArgsConstructor
 public class UserPortfolioData {

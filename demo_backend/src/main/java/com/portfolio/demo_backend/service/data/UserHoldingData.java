@@ -4,6 +4,10 @@ import com.portfolio.demo_backend.model.Portfolio;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 
+/**
+ * Lightweight flag carrier to indicate whether a user currently holds shares
+ * of a specific symbol within a given portfolio.
+ */
 @Data
 @AllArgsConstructor
 public class UserHoldingData {
