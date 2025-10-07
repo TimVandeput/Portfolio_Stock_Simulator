@@ -75,11 +75,10 @@ export default function LoginForm({
 
         <div className="mt-auto flex flex-col">
           <div className="mb-2 h-[54px] overflow-hidden flex items-center">
-            {error && <StatusMessage message={error} className="mb-1 w-full" />}
-            {success && (
+            {(error || success) && (
               <StatusMessage
-                message={success}
-                type="success"
+                message={(error || success) as string}
+                type={error ? "error" : "success"}
                 className="mb-1 w-full"
               />
             )}

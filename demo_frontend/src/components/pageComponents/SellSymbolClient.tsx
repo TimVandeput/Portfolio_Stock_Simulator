@@ -290,8 +290,12 @@ This action cannot be undone.`}
             </div>
 
             <div className="min-h-[28px] mb-4">
-              {error && <StatusMessage message={error} />}
-              {success && <StatusMessage message={success} type="success" />}
+              {(error || success) && (
+                <StatusMessage
+                  message={error || success}
+                  type={error ? "error" : "success"}
+                />
+              )}
             </div>
 
             <NeumorphicButton
