@@ -12,12 +12,24 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for {@link TradingMapper}.
+ *
+ * Verifies mapping from domain
+ * {@link com.portfolio.demo_backend.model.Transaction}
+ * to {@link com.portfolio.demo_backend.dto.trading.TradeExecutionResponse} for
+ * both BUY and SELL scenarios.
+ */
 class TradingMapperTest {
 
     private final TradingMapper mapper = Mappers.getMapper(TradingMapper.class);
 
+    /**
+     * Ensures BUY transaction is mapped to TradeExecutionResponse correctly.
+     */
     @Test
     void toTradeExecutionResponse_buyOrder_generatesProperly() {
+        // Given: A BUY transaction with values
         Symbol symbol = new Symbol();
         symbol.setSymbol("AAPL");
         symbol.setName("Apple Inc.");
@@ -33,9 +45,11 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("1212.50");
         Integer newSharesOwned = 150;
 
+        // When: Mapping to response
         TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
+        // Then: Fields are transferred correctly
         assertEquals("AAPL", response.getSymbol());
         assertEquals(50, response.getQuantity());
         assertEquals(new BigDecimal("155.75"), response.getExecutionPrice());
@@ -46,8 +60,12 @@ class TradingMapperTest {
         assertTrue(response.getMessage().contains("Successfully bought 50 shares of AAPL"));
     }
 
+    /**
+     * Ensures SELL transaction is mapped to TradeExecutionResponse correctly.
+     */
     @Test
     void toTradeExecutionResponse_sellOrder_generatesProperly() {
+        // Given: A SELL transaction with values
         Symbol symbol = new Symbol();
         symbol.setSymbol("GOOGL");
         symbol.setName("Alphabet Inc.");
@@ -63,9 +81,11 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("8375.00");
         Integer newSharesOwned = 25;
 
+        // When: Mapping to response
         TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
+        // Then: Fields and message reflect SELL
         assertEquals(TransactionType.SELL, response.getTransactionType());
         assertTrue(response.getMessage().contains("Successfully sold 25 shares of GOOGL"));
     }

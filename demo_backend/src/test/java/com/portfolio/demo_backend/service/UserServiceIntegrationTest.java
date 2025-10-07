@@ -20,6 +20,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Integration tests for {@link UserService} focusing on persistence and
+ * constraints.
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -32,17 +36,29 @@ class UserServiceIntegrationTest {
         @Autowired
         WalletRepository walletRepository;
 
+        /**
+         * Given a new user
+         * When creating the user
+         * Then the password is encoded and the entity is persisted
+         */
         @Test
         void createUser_persists_andEncodesPassword() {
                 User u = User.builder().username("tim").email("tim@example.com").password("Pass1234").build();
 
+                // When
                 User saved = userService.createUser(u);
 
+                // Then
                 assertThat(saved.getId()).isNotNull();
                 assertThat(saved.getPassword()).isNotEqualTo("Pass1234");
                 assertThat(saved.getPassword()).startsWith("$2");
         }
 
+        /**
+         * Given an existing username
+         * When creating another user with the same username
+         * Then UserAlreadyExistsException is thrown
+         */
         @Test
         void createUser_duplicateUsername_throws() {
                 userService.createUser(
@@ -54,6 +70,11 @@ class UserServiceIntegrationTest {
                                 .isInstanceOf(UserAlreadyExistsException.class);
         }
 
+        /**
+         * Given an existing email
+         * When creating another user with the same email
+         * Then EmailAlreadyExistsException is thrown
+         */
         @Test
         void createUser_duplicateEmail_throws() {
                 userService.createUser(
@@ -65,19 +86,28 @@ class UserServiceIntegrationTest {
                                 .isInstanceOf(EmailAlreadyExistsException.class);
         }
 
+        /**
+         * Given a persisted user
+         * When fetching by id
+         * Then the user is found; and a different id yields UserNotFoundException
+         */
         @Test
         void getUserById_found_and_notFound() {
                 User saved = userService
                                 .createUser(User.builder().username("tim").email("tim@example.com").password("Pass1234")
                                                 .build());
 
+                // When/Then
                 assertThat(userService.getUserById(saved.getId()).getUsername()).isEqualTo("tim");
                 assertThatThrownBy(() -> userService.getUserById(999L))
                                 .isInstanceOf(UserNotFoundException.class);
         }
 
-
-
+        /**
+         * Given a new user registration
+         * When creating the user
+         * Then a wallet is automatically created with the default balance
+         */
         @Test
         void createUser_automaticallyCreatesWalletWithDefaultBalance() {
                 User newUser = User.builder()
@@ -87,8 +117,10 @@ class UserServiceIntegrationTest {
                                 .roles(EnumSet.of(Role.ROLE_USER))
                                 .build();
 
+                // When
                 User createdUser = userService.createUser(newUser);
 
+                // Then
                 assertThat(createdUser).isNotNull();
                 assertThat(createdUser.getId()).isNotNull();
                 assertThat(createdUser.getUsername()).isEqualTo("newuser");
@@ -104,6 +136,11 @@ class UserServiceIntegrationTest {
                 assertThat(wallet.getUpdatedAt()).isNotNull();
         }
 
+        /**
+         * Given a newly created user
+         * When fetching the user and associated wallet
+         * Then the wallet is present and linked to the user
+         */
         @Test
         void createUser_walletIsAccessibleThroughUserEntity() {
                 User newUser = User.builder()
@@ -113,8 +150,10 @@ class UserServiceIntegrationTest {
                                 .roles(EnumSet.of(Role.ROLE_USER))
                                 .build();
 
+                // When
                 User createdUser = userService.createUser(newUser);
 
+                // Then
                 User foundUser = userRepository.findById(createdUser.getId()).orElseThrow();
 
                 Optional<Wallet> wallet = walletRepository.findByUserId(foundUser.getId());

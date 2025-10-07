@@ -26,6 +26,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link SymbolService} import and listing behavior.
+ *
+ * Adds class/method Javadoc and inline Given/When/Then comments without
+ * changing logic.
+ */
 @ExtendWith(MockitoExtension.class)
 class SymbolServiceUnitTest {
 
@@ -38,6 +44,11 @@ class SymbolServiceUnitTest {
     @InjectMocks
     private SymbolService symbolService;
 
+    /**
+     * Given Finnhub returns two new symbols and none exist in the repository
+     * When importing the NDX universe
+     * Then two symbols are imported and none updated
+     */
     @Test
     void importUniverse_ndx_success_returnsImportSummary() throws IOException {
         List<FinnhubClient.SymbolItem> mockSymbols = List.of(
@@ -48,14 +59,21 @@ class SymbolServiceUnitTest {
         when(symbolRepository.findBySymbol("MSFT")).thenReturn(Optional.empty());
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // When
         ImportSummaryDTO result = symbolService.importUniverse("NDX");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.imported).isEqualTo(2);
         assertThat(result.updated).isEqualTo(0);
         verify(symbolRepository, times(2)).save(any(Symbol.class));
     }
 
+    /**
+     * Given an import is already in progress
+     * When importUniverse is called again
+     * Then an ImportInProgressException is thrown
+     */
     @Test
     void importUniverse_duplicateCall_throwsImportInProgressException() throws IOException {
         List<FinnhubClient.SymbolItem> mockSymbols = List
@@ -87,6 +105,7 @@ class SymbolServiceUnitTest {
             Thread.currentThread().interrupt();
         }
 
+        // Then
         assertThatThrownBy(() -> symbolService.importUniverse("NDX"))
                 .isInstanceOf(ImportInProgressException.class);
 
@@ -97,6 +116,11 @@ class SymbolServiceUnitTest {
         }
     }
 
+    /**
+     * Given Finnhub throws an IOException
+     * When importUniverse is invoked
+     * Then the IOException propagates
+     */
     @Test
     void importUniverse_finnhubException_propagatesException() throws IOException {
         when(finnhubClient.listSymbolsByExchange("US")).thenThrow(new IOException("Finnhub API error"));
@@ -106,6 +130,11 @@ class SymbolServiceUnitTest {
                 .hasMessage("Finnhub API error");
     }
 
+    /**
+     * Given repository returns a paged result for a query
+     * When list is invoked
+     * Then the returned page contains expected symbol fields
+     */
     @Test
     void list_withQuery_returnsFilteredResults() {
         Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
@@ -114,14 +143,21 @@ class SymbolServiceUnitTest {
 
         when(symbolRepository.search(eq("AAPL"), eq(true), any(Pageable.class))).thenReturn(mockPage);
 
+        // When
         Page<Symbol> result = symbolService.list("AAPL", true, pageable);
 
+        // Then
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getSymbol()).isEqualTo("AAPL");
         assertThat(result.getContent().get(0).getName()).isEqualTo("Apple Inc");
         assertThat(result.getContent().get(0).isEnabled()).isTrue();
     }
 
+    /**
+     * Given a disabled symbol exists
+     * When enabling it
+     * Then the symbol is saved with enabled true
+     */
     @Test
     void setEnabled_enableSymbol_success() {
         Symbol symbol = createSymbol("AAPL", "Apple Inc", false);
@@ -129,13 +165,20 @@ class SymbolServiceUnitTest {
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // When
         Symbol result = symbolService.setEnabled(1L, true);
 
+        // Then
         assertThat(result.isEnabled()).isTrue();
         verify(symbolRepository).save(symbol);
         assertThat(symbol.isEnabled()).isTrue();
     }
 
+    /**
+     * Given an enabled symbol exists
+     * When disabling it
+     * Then the symbol is saved with enabled false
+     */
     @Test
     void setEnabled_disableSymbol_success() {
         Symbol symbol = createSymbol("AAPL", "Apple Inc", true);
@@ -143,13 +186,21 @@ class SymbolServiceUnitTest {
         when(symbolRepository.findById(1L)).thenReturn(Optional.of(symbol));
         when(symbolRepository.save(any(Symbol.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // When
         Symbol result = symbolService.setEnabled(1L, false);
 
+        // Then
         assertThat(result.isEnabled()).isFalse();
         verify(symbolRepository).save(symbol);
         assertThat(symbol.isEnabled()).isFalse();
     }
 
+    /**
+     * Given no symbol with the given id
+     * When setEnabled is called
+     * Then ResponseStatusException is thrown with message containing 'Symbol not
+     * found'
+     */
     @Test
     void setEnabled_symbolNotFound_throwsResponseStatusException() {
         when(symbolRepository.findById(999L)).thenReturn(Optional.empty());
@@ -159,6 +210,11 @@ class SymbolServiceUnitTest {
                 .hasMessageContaining("Symbol not found");
     }
 
+    /**
+     * Given no prior imports have run
+     * When importStatus is queried
+     * Then the status reflects not running and null last-import fields
+     */
     @Test
     void importStatus_noImportYet_returnsCorrectStatus() {
         ImportData result = symbolService.importStatus();

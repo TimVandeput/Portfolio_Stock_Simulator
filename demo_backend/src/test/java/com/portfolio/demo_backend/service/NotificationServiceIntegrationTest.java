@@ -16,6 +16,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Integration tests for {@link NotificationService} verifying persistence and
+ * ordering.
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -30,6 +34,11 @@ class NotificationServiceIntegrationTest {
         @Autowired
         NotificationRepository notificationRepository;
 
+        /**
+         * Given two users and a sent notification
+         * When fetching notifications for the receiver
+         * Then results are persisted and ordered by createdAt desc
+         */
         @Test
         void sendAndFetch_notificationsPersistedAndOrdered() {
                 User u1 = User.builder().username("nuser1").email("u1@x.com").password("p")
@@ -43,13 +52,20 @@ class NotificationServiceIntegrationTest {
 
                 notificationService.sendToUser(0L, u1.getId(), "sub1", "body1");
 
+                // When
                 List<Notification> fetched = notificationService.getNotificationsForUser(u1.getId());
+                // Then
                 assertThat(fetched).isNotEmpty();
                 for (int i = 1; i < fetched.size(); i++) {
                         assertThat(fetched.get(i - 1).getCreatedAt()).isAfterOrEqualTo(fetched.get(i).getCreatedAt());
                 }
         }
 
+        /**
+         * Given sender and receiver users
+         * When sending a notification
+         * Then persisted fields reflect sender, receiver, subject, and body
+         */
         @Test
         void notificationMapper_integrationWithUserService() {
                 User sender = User.builder()
@@ -68,12 +84,14 @@ class NotificationServiceIntegrationTest {
                 userRepository.save(sender);
                 userRepository.save(receiver);
 
+                // When
                 Notification notification = notificationService.sendToUser(
                                 sender.getId(),
                                 receiver.getId(),
                                 "Integration Test",
                                 "This is a test notification with <strong>HTML</strong> content that should be longer than 100 characters to test the preview functionality properly.");
 
+                // Then
                 assertThat(notification).isNotNull();
                 assertThat(notification.getSenderUserId()).isEqualTo(sender.getId());
                 assertThat(notification.getReceiverUserId()).isEqualTo(receiver.getId());

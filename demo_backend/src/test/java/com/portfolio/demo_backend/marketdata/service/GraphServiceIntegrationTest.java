@@ -35,6 +35,11 @@ import static org.mockito.Mockito.reset;
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 @Transactional
+/**
+ * Integration tests for {@link GraphService} verifying end-to-end behavior of
+ * chart retrieval, including HTTP interactions, error handling, and URL/header
+ * correctness.
+ */
 class GraphServiceIntegrationTest {
 
     @Autowired
@@ -97,16 +102,25 @@ class GraphServiceIntegrationTest {
         microsoftSymbol = symbolRepository.save(microsoftSymbol);
     }
 
+    /**
+     * Returns empty list when the user has no holdings and performs no HTTP calls.
+     */
     @Test
     void getCharts_withEmptyPortfolio_returnsEmptyList() {
+        // Given: No portfolios for the user
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Empty result and no HTTP invocations
         assertThat(charts).isEmpty();
         verifyNoInteractions(mockHttpClient);
     }
 
+    /**
+     * Returns a single chart when one holding exists and parses response body.
+     */
     @Test
     void getCharts_withSingleHolding_returnsSingleChart() throws IOException {
+        // Given: One AAPL holding and a successful HTTP response
         Portfolio portfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
@@ -118,8 +132,10 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Exactly one AAPL chart is returned
         assertThat(charts).hasSize(1);
         Map<String, Object> chart = charts.get(0);
         assertThat(chart.get("symbol")).isEqualTo("AAPL");
@@ -128,8 +144,12 @@ class GraphServiceIntegrationTest {
         verify(mockHttpClient).newCall(any(Request.class));
     }
 
+    /**
+     * Returns multiple charts when multiple holdings exist.
+     */
     @Test
     void getCharts_withMultipleHoldings_returnsMultipleCharts() throws IOException {
+        // Given: Two holdings and distinct mock responses
         Portfolio applePortfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         Portfolio googlePortfolio = createPortfolio(googleSymbol, 5, BigDecimal.valueOf(120.00));
         portfolioRepository.saveAll(List.of(applePortfolio, googlePortfolio));
@@ -145,8 +165,10 @@ class GraphServiceIntegrationTest {
                 .thenReturn(appleChartResponse)
                 .thenReturn(googleChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Both symbols are present in any order
         assertThat(charts).hasSize(2);
         assertThat(charts.stream().map(chart -> chart.get("symbol")))
                 .containsExactlyInAnyOrder("AAPL", "GOOGL");
@@ -154,8 +176,13 @@ class GraphServiceIntegrationTest {
         verify(mockHttpClient, times(2)).newCall(any(Request.class));
     }
 
+    /**
+     * Deduplicates symbols and returns a single chart when multiple portfolios
+     * share the same symbol.
+     */
     @Test
     void getCharts_withDuplicateSymbols_returnsUniqueCharts() throws IOException {
+        // Given: Two portfolios for AAPL across users
         User anotherUser = User.builder()
                 .username("anotheruser")
                 .email("anotheruser@example.com")
@@ -176,16 +203,22 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Only one AAPL chart
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("AAPL");
 
         verify(mockHttpClient, times(1)).newCall(any(Request.class));
     }
 
+    /**
+     * Continues processing other symbols when one API call returns a server error.
+     */
     @Test
     void getCharts_withApiError_continuesWithOtherSymbols() throws IOException {
+        // Given: Two holdings; first HTTP returns 500, second is successful
         Portfolio applePortfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         Portfolio googlePortfolio = createPortfolio(googleSymbol, 5, BigDecimal.valueOf(120.00));
         portfolioRepository.saveAll(List.of(applePortfolio, googlePortfolio));
@@ -203,16 +236,23 @@ class GraphServiceIntegrationTest {
                 .thenReturn("Server Error")
                 .thenReturn(googleChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Only the successful chart is included
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("GOOGL");
 
         verify(mockHttpClient, times(2)).newCall(any(Request.class));
     }
 
+    /**
+     * Continues processing when a request is rate-limited, including other
+     * successful charts.
+     */
     @Test
     void getCharts_withRateLimitError_continuesWithOtherSymbols() throws IOException {
+        // Given: Two holdings; first returns 429, second succeeds
         Portfolio applePortfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         Portfolio microsoftPortfolio = createPortfolio(microsoftSymbol, 3, BigDecimal.valueOf(300.00));
         portfolioRepository.saveAll(List.of(applePortfolio, microsoftPortfolio));
@@ -230,16 +270,22 @@ class GraphServiceIntegrationTest {
                 .thenReturn("Rate limit exceeded")
                 .thenReturn(microsoftChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Only MSFT chart is included
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("MSFT");
 
         verify(mockHttpClient, times(2)).newCall(any(Request.class));
     }
 
+    /**
+     * Skips invalid JSON responses and continues with valid ones.
+     */
     @Test
     void getCharts_withInvalidJsonResponse_continuesWithOtherSymbols() throws IOException {
+        // Given: Two holdings; first returns invalid JSON, second succeeds
         Portfolio applePortfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         Portfolio googlePortfolio = createPortfolio(googleSymbol, 5, BigDecimal.valueOf(120.00));
         portfolioRepository.saveAll(List.of(applePortfolio, googlePortfolio));
@@ -254,16 +300,22 @@ class GraphServiceIntegrationTest {
                 .thenReturn("invalid json")
                 .thenReturn(googleChartResponse);
 
+        // When: Fetching charts
         List<Map<String, Object>> charts = graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Only GOOGL chart is included
         assertThat(charts).hasSize(1);
         assertThat(charts.get(0).get("symbol")).isEqualTo("GOOGL");
 
         verify(mockHttpClient, times(2)).newCall(any(Request.class));
     }
 
+    /**
+     * Verifies the request URL contains the expected query parameters.
+     */
     @Test
     void getCharts_verifyCorrectApiUrl() throws IOException {
+        // Given: One portfolio and a successful response
         Portfolio portfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
@@ -275,8 +327,10 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
+        // When: Fetching charts
         graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: URL matches expected params
         verify(mockHttpClient).newCall(argThat(request -> {
             String url = request.url().toString();
             return url.contains("/stock/v3/get-chart") &&
@@ -290,8 +344,12 @@ class GraphServiceIntegrationTest {
         }));
     }
 
+    /**
+     * Verifies headers needed for RapidAPI are present on requests.
+     */
     @Test
     void getCharts_verifyCorrectHeaders() throws IOException {
+        // Given: One portfolio and a successful response
         Portfolio portfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
@@ -303,8 +361,10 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
+        // When: Fetching charts
         graphService.getCharts(testUser.getId(), "1d");
 
+        // Then: Required headers are set
         verify(mockHttpClient).newCall(argThat(request -> {
             Headers headers = request.headers();
             return headers.get("x-rapidapi-key") != null &&
@@ -314,8 +374,12 @@ class GraphServiceIntegrationTest {
         }));
     }
 
+    /**
+     * Uses correct intervals for different ranges and verifies per-request URL.
+     */
     @Test
     void getCharts_withDifferentRanges_usesCorrectIntervals() throws IOException {
+        // Given: A portfolio and successful responses
         Portfolio portfolio = createPortfolio(appleSymbol, 10, BigDecimal.valueOf(150.00));
         portfolioRepository.save(portfolio);
 
@@ -327,6 +391,7 @@ class GraphServiceIntegrationTest {
         lenient().when(mockResponse.body()).thenReturn(mockResponseBody);
         lenient().when(mockResponseBody.string()).thenReturn(appleChartResponse);
 
+        // When/Then: 1d
         graphService.getCharts(testUser.getId(), "1d");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=1d")));
@@ -334,7 +399,7 @@ class GraphServiceIntegrationTest {
         reset(mockHttpClient);
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
-
+        // When/Then: 1mo
         graphService.getCharts(testUser.getId(), "1mo");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=1mo")));
@@ -342,7 +407,7 @@ class GraphServiceIntegrationTest {
         reset(mockHttpClient);
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
-
+        // When/Then: 3mo
         graphService.getCharts(testUser.getId(), "3mo");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=3mo")));
@@ -350,11 +415,12 @@ class GraphServiceIntegrationTest {
         reset(mockHttpClient);
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
-
+        // When/Then: 2y
         graphService.getCharts(testUser.getId(), "2y");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1wk") &&
                 request.url().toString().contains("range=2y")));
 
+        // When/Then: 1y
         graphService.getCharts(testUser.getId(), "1y");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1d") &&
                 request.url().toString().contains("range=1y")));
@@ -362,7 +428,7 @@ class GraphServiceIntegrationTest {
         reset(mockHttpClient);
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
-
+        // When/Then: 5y
         graphService.getCharts(testUser.getId(), "5y");
         verify(mockHttpClient).newCall(argThat(request -> request.url().toString().contains("interval=1wk") &&
                 request.url().toString().contains("range=5y")));

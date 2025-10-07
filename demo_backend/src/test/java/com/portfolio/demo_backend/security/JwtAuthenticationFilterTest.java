@@ -18,6 +18,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+/**
+ * Unit tests for {@link JwtAuthenticationFilter} ensuring authentication is
+ * established from headers, cookies, and query params, and excluded paths are
+ * bypassed.
+ */
 class JwtAuthenticationFilterTest {
 
     @AfterEach
@@ -33,8 +38,12 @@ class JwtAuthenticationFilterTest {
         return new JwtService(props);
     }
 
+    /**
+     * Extracts bearer token from Authorization header and authenticates.
+     */
     @Test
     void authenticates_fromAuthorizationHeader() throws ServletException, IOException {
+        // Given: A valid access token in the Authorization header
         JwtService jwt = realJwtService();
         JwtAuthenticationFilter f = new JwtAuthenticationFilter(jwt);
 
@@ -45,13 +54,19 @@ class JwtAuthenticationFilterTest {
         MockHttpServletResponse res = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
 
+        // When: The filter is executed
         f.doFilter(req, res, chain);
 
+        // Then: Authentication is present in the security context
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
     }
 
+    /**
+     * Extracts token from auth.access cookie and authenticates.
+     */
     @Test
     void authenticates_fromCookie() throws ServletException, IOException {
+        // Given: A valid access token in the cookie
         JwtService jwt = realJwtService();
         JwtAuthenticationFilter f = new JwtAuthenticationFilter(jwt);
 
@@ -62,13 +77,19 @@ class JwtAuthenticationFilterTest {
         MockHttpServletResponse res = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
 
+        // When: The filter runs
         f.doFilter(req, res, chain);
 
+        // Then: Authentication is established
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
     }
 
+    /**
+     * Extracts token from access_token query parameter and authenticates.
+     */
     @Test
     void authenticates_fromQueryParam() throws ServletException, IOException {
+        // Given: A valid token passed via query string
         JwtService jwt = realJwtService();
         JwtAuthenticationFilter f = new JwtAuthenticationFilter(jwt);
 
@@ -79,13 +100,19 @@ class JwtAuthenticationFilterTest {
         MockHttpServletResponse res = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
 
+        // When: The filter executes
         f.doFilter(req, res, chain);
 
+        // Then: Authentication is set
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
     }
 
+    /**
+     * Skips authentication for auth endpoints.
+     */
     @Test
     void skips_authEndpoints() throws ServletException, IOException {
+        // Given: A request to the login endpoint without a token
         JwtService jwt = realJwtService();
         JwtAuthenticationFilter f = new JwtAuthenticationFilter(jwt);
 
@@ -93,8 +120,10 @@ class JwtAuthenticationFilterTest {
         MockHttpServletResponse res = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
 
+        // When: The filter runs on the auth endpoint
         f.doFilter(req, res, chain);
 
+        // Then: No authentication is set and chain continues
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(chain, times(1)).doFilter(req, res);
     }
