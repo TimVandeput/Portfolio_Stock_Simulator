@@ -1,9 +1,14 @@
 package com.portfolio.demo_backend.dto.symbol;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
 public class ImportStatusDTO {
     public boolean running;
     public String lastImportedAt;
+    @Valid
     public ImportSummaryDTO lastSummary;
+    @NotBlank
     public String status;
 
     public ImportStatusDTO(boolean running, String lastImportedAt, ImportSummaryDTO lastSummary) {

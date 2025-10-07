@@ -6,6 +6,8 @@ import okio.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -43,9 +45,9 @@ public class FinnhubStreamService {
     @PostConstruct
     public void connect() {
         log.info("FinnhubStreamService @PostConstruct connect() method called");
-        if (!props.isEnabled() || props.getToken() == null || props.getToken().isBlank()) {
+        if (!props.isEnabled() || !StringUtils.hasText(props.getToken())) {
             log.info("Finnhub streaming disabled (enabled={} tokenPresent={})",
-                    props.isEnabled(), props.getToken() != null && !props.getToken().isBlank());
+                    props.isEnabled(), StringUtils.hasText(props.getToken()));
             return;
         }
 
@@ -112,7 +114,7 @@ public class FinnhubStreamService {
 
     @PreDestroy
     public void shutdown() {
-        if (ws != null)
+        if (!ObjectUtils.isEmpty(ws))
             ws.close(1000, "shutdown");
         client.dispatcher().executorService().shutdown();
     }
@@ -120,7 +122,7 @@ public class FinnhubStreamService {
     public void subscribe(String symbol) {
         log.debug("Adding subscription for symbol: {}", symbol);
         listeners.computeIfAbsent(symbol, k -> new CopyOnWriteArrayList<>());
-        if (ws != null) {
+        if (!ObjectUtils.isEmpty(ws)) {
             String msg = "{\"type\":\"subscribe\",\"symbol\":\"" + symbol + "\"}";
             log.debug("Sending subscribe message: {}", msg);
             ws.send(msg);
@@ -131,11 +133,11 @@ public class FinnhubStreamService {
 
     public void unsubscribe(String symbol, PriceListener l) {
         List<PriceListener> ls = listeners.get(symbol);
-        if (ls != null) {
+        if (!ObjectUtils.isEmpty(ls)) {
             ls.remove(l);
             if (ls.isEmpty()) {
                 listeners.remove(symbol);
-                if (ws != null) {
+                if (!ObjectUtils.isEmpty(ws)) {
                     String msg = "{\"type\":\"unsubscribe\",\"symbol\":\"" + symbol + "\"}";
                     ws.send(msg);
                 }
@@ -155,7 +157,7 @@ public class FinnhubStreamService {
     public Double getPercentChange(String symbol) {
         Double current = lastPrices.get(symbol);
         Double open = dailyOpenPrices.get(symbol);
-        if (current != null && open != null && open != 0) {
+        if (!ObjectUtils.isEmpty(current) && !ObjectUtils.isEmpty(open) && open != 0) {
             return ((current - open) / open) * 100.0;
         }
         return null;
@@ -167,12 +169,12 @@ public class FinnhubStreamService {
             if (!root.has("type") || !"trade".equals(root.get("type").asText()))
                 return;
             JsonNode data = root.get("data");
-            if (data == null || !data.isArray())
+            if (ObjectUtils.isEmpty(data) || !data.isArray())
                 return;
             for (JsonNode item : data) {
                 JsonNode s = item.get("s");
                 JsonNode p = item.get("p");
-                if (s == null || p == null)
+                if (ObjectUtils.isEmpty(s) || ObjectUtils.isEmpty(p))
                     continue;
                 String sym = s.asText();
                 double price;
@@ -191,7 +193,7 @@ public class FinnhubStreamService {
                 log.debug("Price update for {}: {} ({}%)", sym, price, percentChange);
 
                 var ls = listeners.get(sym);
-                if (ls != null)
+                if (!ObjectUtils.isEmpty(ls))
                     ls.forEach(l -> l.onPrice(sym, price, percentChange));
             }
         } catch (Exception ex) {

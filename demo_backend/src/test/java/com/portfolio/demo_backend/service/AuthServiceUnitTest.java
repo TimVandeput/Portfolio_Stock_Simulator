@@ -1,10 +1,10 @@
 package com.portfolio.demo_backend.service;
 
-import com.portfolio.demo_backend.dto.auth.AuthResponse;
+import com.portfolio.demo_backend.service.data.AuthTokensData;
 import com.portfolio.demo_backend.dto.auth.LoginRequest;
 import com.portfolio.demo_backend.dto.auth.RefreshRequest;
 import com.portfolio.demo_backend.dto.auth.RegisterRequest;
-import com.portfolio.demo_backend.dto.auth.RegistrationResponse;
+import com.portfolio.demo_backend.service.data.RegistrationData;
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
 import com.portfolio.demo_backend.model.RefreshToken;
@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +35,7 @@ class AuthServiceUnitTest {
     private PasswordEncoder passwordEncoder;
     private JwtService jwtService;
     private RefreshTokenService refreshTokenService;
+    private NotificationService notificationService;
 
     private AuthService authService;
 
@@ -44,8 +46,9 @@ class AuthServiceUnitTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtService = mock(JwtService.class);
         refreshTokenService = mock(RefreshTokenService.class);
+        notificationService = mock(NotificationService.class);
         authService = new AuthService(
-                userService, userRepository, passwordEncoder, jwtService, refreshTokenService);
+                userService, userRepository, passwordEncoder, jwtService, refreshTokenService, notificationService);
     }
 
     private static User user(String username, String email, Set<Role> roles, String hashedPwd) {
@@ -69,16 +72,16 @@ class AuthServiceUnitTest {
         when(userService.createUser(userCaptor.capture()))
                 .thenReturn(user("tim", "tim@example.com", EnumSet.of(Role.ROLE_USER), "$2a..."));
 
-        RegistrationResponse out = authService.register(req);
+        RegistrationData out = authService.register(req);
 
         User createdArg = userCaptor.getValue();
         assertThat(createdArg.getUsername()).isEqualTo("tim");
         assertThat(createdArg.getEmail()).isEqualTo("tim@example.com");
         assertThat(createdArg.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
 
-        assertThat(out.getId()).isEqualTo(42L);
-        assertThat(out.getUsername()).isEqualTo("tim");
-        assertThat(out.getRoles()).containsExactlyInAnyOrder(Role.ROLE_USER);
+        assertThat(out.id()).isEqualTo(42L);
+        assertThat(out.username()).isEqualTo("tim");
+        assertThat(out.roles()).containsExactlyInAnyOrder(Role.ROLE_USER);
     }
 
     @Test
@@ -94,14 +97,14 @@ class AuthServiceUnitTest {
         when(refreshTokenService.create(u)).thenReturn(
                 RefreshToken.builder().token("refresh-1").user(u).build());
 
-        AuthResponse out = authService.login(req);
+        AuthTokensData out = authService.login(req);
 
-        assertThat(out.getAccessToken()).isEqualTo("jwt-access");
-        assertThat(out.getRefreshToken()).isEqualTo("refresh-1");
-        assertThat(out.getTokenType()).isEqualTo("Bearer");
-        assertThat(out.getUsername()).isEqualTo("alice");
-        assertThat(out.getRoles()).contains(Role.ROLE_USER);
-        assertThat(out.getAuthenticatedAs()).isEqualTo(Role.ROLE_USER);
+        assertThat(out.accessToken()).isEqualTo("jwt-access");
+        assertThat(out.refreshToken()).isEqualTo("refresh-1");
+        assertThat(out.tokenType()).isEqualTo("Bearer");
+        assertThat(out.username()).isEqualTo("alice");
+        assertThat(out.roles()).contains(Role.ROLE_USER);
+        assertThat(out.authenticatedAs()).isEqualTo(Role.ROLE_USER);
     }
 
     @Test
@@ -144,12 +147,12 @@ class AuthServiceUnitTest {
         when(refreshTokenService.rotate(old)).thenReturn(fresh);
         when(jwtService.generateAccessToken("dave", 42L, Role.ROLE_USER)).thenReturn("access-new");
 
-        AuthResponse out = authService.refresh(req);
+        AuthTokensData out = authService.refresh(req);
 
-        assertThat(out.getAccessToken()).isEqualTo("access-new");
-        assertThat(out.getRefreshToken()).isEqualTo("new");
-        assertThat(out.getAuthenticatedAs()).isEqualTo(Role.ROLE_USER);
-        assertThat(out.getUsername()).isEqualTo("dave");
+        assertThat(out.accessToken()).isEqualTo("access-new");
+        assertThat(out.refreshToken()).isEqualTo("new");
+        assertThat(out.authenticatedAs()).isEqualTo(Role.ROLE_USER);
+        assertThat(out.username()).isEqualTo("dave");
         verify(refreshTokenService).rotate(old);
     }
 
@@ -173,5 +176,81 @@ class AuthServiceUnitTest {
         authService.logout(req);
 
         verify(refreshTokenService).revoke("bye");
+    }
+
+    @Test
+    void register_sendsWelcomeNotification() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of(
+                user("admin", "admin@test.com", EnumSet.of(Role.ROLE_ADMIN), "adminpwd")));
+
+        RegistrationData result = authService.register(req);
+
+        assertThat(result.id()).isEqualTo(123L);
+        assertThat(result.username()).isEqualTo("newuser");
+
+        verify(notificationService).sendToUser(
+                anyLong(),
+                eq(123L),
+                eq("Welcome to Portfolio Stock Simulator! 🎉"),
+                argThat(body -> body.contains("Hi newuser! Welcome to our platform!") &&
+                        body.contains("<a href='/market'>Explore the Market</a>") &&
+                        body.contains("<a href='/dashboard'>Your Dashboard</a>") &&
+                        body.contains("Stock Simulator Team")));
+    }
+
+    @Test
+    void register_notificationFails_stillRegistersUser() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of());
+
+        doThrow(new RuntimeException("Notification failed")).when(notificationService)
+                .sendToUser(anyLong(), anyLong(), anyString(), anyString());
+
+        RegistrationData result = assertDoesNotThrow(() -> authService.register(req));
+
+        assertThat(result.id()).isEqualTo(123L);
+        assertThat(result.username()).isEqualTo("newuser");
+
+        verify(userService).createUser(any(User.class));
+        verify(notificationService).sendToUser(anyLong(), anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void register_noAdminUsers_usesDefaultSystemUser() {
+        RegisterRequest req = new RegisterRequest();
+        req.setUsername("newuser");
+        req.setEmail("newuser@test.com");
+        req.setPassword("password123");
+
+        User createdUser = user("newuser", "newuser@test.com", EnumSet.of(Role.ROLE_USER), "hashedpwd");
+        createdUser.setId(123L);
+
+        when(userService.createUser(any(User.class))).thenReturn(createdUser);
+        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(java.util.List.of()); // No admin users
+
+        authService.register(req);
+
+        verify(notificationService).sendToUser(
+                eq(1L),
+                eq(123L),
+                anyString(),
+                anyString());
     }
 }

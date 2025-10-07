@@ -330,6 +330,11 @@ export default function PortfolioClient() {
                     <div
                       key={holding.symbol}
                       className="neu-card p-4 rounded-xl hover:scale-[1.02] transition-transform"
+                      style={{
+                        borderLeft: `4px solid ${
+                          pnl >= 0 ? "#10b981" : "#ef4444"
+                        }`,
+                      }}
                     >
                       {/* Mobile Layout */}
                       <div className="md:hidden">

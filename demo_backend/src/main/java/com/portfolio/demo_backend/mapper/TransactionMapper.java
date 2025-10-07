@@ -2,37 +2,18 @@ package com.portfolio.demo_backend.mapper;
 
 import com.portfolio.demo_backend.dto.trading.TransactionDTO;
 import com.portfolio.demo_backend.model.Transaction;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class TransactionMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface TransactionMapper {
 
-    public static TransactionDTO toDTO(Transaction transaction) {
-        if (transaction == null) {
-            return null;
-        }
+    @Mapping(target = "symbol", source = "symbol.symbol")
+    @Mapping(target = "symbolName", source = "symbol.name")
+    TransactionDTO toDTO(Transaction transaction);
 
-        return new TransactionDTO(
-                transaction.getId(),
-                transaction.getUserId(),
-                transaction.getType(),
-                transaction.getSymbol() != null ? transaction.getSymbol().getSymbol() : null,
-                transaction.getSymbol() != null ? transaction.getSymbol().getName() : null,
-                transaction.getQuantity(),
-                transaction.getPricePerShare(),
-                transaction.getTotalAmount(),
-                transaction.getProfitLoss(),
-                transaction.getExecutedAt());
-    }
-
-    public static List<TransactionDTO> toDTOList(List<Transaction> transactions) {
-        if (transactions == null) {
-            return null;
-        }
-
-        return transactions.stream()
-                .map(TransactionMapper::toDTO)
-                .collect(Collectors.toList());
-    }
+    List<TransactionDTO> toDTOs(List<Transaction> transactions);
 }

@@ -3,32 +3,25 @@ package com.portfolio.demo_backend.mapper;
 import com.portfolio.demo_backend.dto.user.CreateUserDTO;
 import com.portfolio.demo_backend.dto.user.UpdateUserDTO;
 import com.portfolio.demo_backend.model.User;
+import org.mapstruct.*;
 
-public class UserMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-    public static User toEntity(CreateUserDTO dto) {
-        return User.builder()
-                .id(dto.getId())
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .password(dto.getPassword())
-                .build();
-    }
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "username", source = "username")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "password", source = "password")
+    User toEntity(CreateUserDTO dto);
 
-    public static CreateUserDTO toDTO(User user) {
-        CreateUserDTO dto = new CreateUserDTO();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        dto.setPassword(null);
-        return dto;
-    }
+    @Mapping(target = "password", ignore = true)
+    CreateUserDTO toDTO(User user);
 
-    public static User fromUpdateDTO(UpdateUserDTO dto) {
-        return User.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .password(dto.getPassword())
-                .build();
-    }
+    @BeanMapping(ignoreByDefault = true)
+    @Mappings({
+            @Mapping(target = "username", source = "username"),
+            @Mapping(target = "email", source = "email"),
+            @Mapping(target = "password", source = "password")
+    })
+    User fromUpdateDTO(UpdateUserDTO dto);
 }

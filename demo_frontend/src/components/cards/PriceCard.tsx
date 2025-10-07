@@ -20,9 +20,15 @@ export default function PriceCard({ symbol, currentPrice }: PriceCardProps) {
           <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {symbol}
           </h2>
-          <p className="text-sm text-[var(--text-secondary)]">Current Price</p>
+          <p className="text-sm text-[var(--text-secondary)]">Market Price</p>
         </div>
         <div className="text-right">
+          {currentPrice && lastPrice > 0 && (
+            <div className="flex items-center justify-end gap-2 text-xs text-[var(--accent)] mb-1">
+              <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></div>
+              Real-time data
+            </div>
+          )}
           <div className="text-2xl font-bold text-[var(--text-primary)]">
             ${lastPrice.toFixed(2)}
           </div>
@@ -33,19 +39,11 @@ export default function PriceCard({ symbol, currentPrice }: PriceCardProps) {
               }`}
             >
               {isPositiveChange ? "+" : ""}
-              {percentChange.toFixed(2)}%
+              {percentChange.toFixed(2)}% since close
             </div>
           )}
         </div>
       </div>
-
-      {currentPrice?.lastUpdate &&
-        Date.now() - currentPrice.lastUpdate < 5000 && (
-          <div className="flex items-center gap-2 text-xs text-[var(--accent)]">
-            <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></div>
-            Live Price
-          </div>
-        )}
     </div>
   );
 }

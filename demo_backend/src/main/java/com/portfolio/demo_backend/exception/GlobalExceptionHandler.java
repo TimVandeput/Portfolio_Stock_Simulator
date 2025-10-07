@@ -11,6 +11,9 @@ import com.portfolio.demo_backend.exception.portfolio.PortfolioNotFoundException
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioAccessException;
 import com.portfolio.demo_backend.exception.trading.*;
+import com.portfolio.demo_backend.exception.notification.NotificationNotFoundException;
+import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyException;
+import com.portfolio.demo_backend.exception.notification.EmptyNotificationSubjectException;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -31,6 +34,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
+@org.springframework.core.annotation.Order(2)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -171,6 +175,20 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotificationNotFound(NotificationNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler({ EmptyNotificationSubjectException.class, EmptyNotificationBodyException.class })
+    public ResponseEntity<Map<String, String>> handleNotificationValidation(RuntimeException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(Exception.class)

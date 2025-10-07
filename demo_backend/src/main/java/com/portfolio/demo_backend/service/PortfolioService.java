@@ -3,7 +3,7 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
-import com.portfolio.demo_backend.mapper.PortfolioMapper;
+import com.portfolio.demo_backend.service.util.PortfolioCalculations;
 import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
@@ -13,6 +13,8 @@ import com.portfolio.demo_backend.service.data.UserHoldingData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,8 +30,8 @@ public class PortfolioService {
     private final WalletService walletService;
 
     public UserPortfolioData getUserPortfolio(Long userId) {
-        if (userId == null || userId <= 0) {
-            throw new IllegalArgumentException("User ID must be a positive number");
+        if (ObjectUtils.isEmpty(userId)) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
 
         try {
@@ -37,13 +39,13 @@ public class PortfolioService {
             log.info("Getting portfolio for user: {}", user.getUsername());
 
             Wallet wallet = walletService.getUserWallet(userId, user.getUsername());
-            if (wallet == null) {
+            if (ObjectUtils.isEmpty(wallet)) {
                 throw new WalletNotFoundException(user.getUsername());
             }
 
             List<Portfolio> portfolios = portfolioRepository.findByUserId(userId);
 
-            BigDecimal totalInvested = PortfolioMapper.calculateTotalInvested(portfolios);
+            BigDecimal totalInvested = PortfolioCalculations.calculateTotalInvested(portfolios);
             BigDecimal totalValue = wallet.getCashBalance().add(totalInvested);
             BigDecimal totalPL = totalValue.subtract(wallet.getCashBalance()).subtract(totalInvested);
 
@@ -62,10 +64,10 @@ public class PortfolioService {
     }
 
     public UserHoldingData getUserHolding(Long userId, String symbol) {
-        if (userId == null || userId <= 0) {
-            throw new IllegalArgumentException("User ID must be a positive number");
+        if (ObjectUtils.isEmpty(userId)) {
+            throw new IllegalArgumentException("User ID cannot be null");
         }
-        if (symbol == null || symbol.trim().isEmpty()) {
+        if (!StringUtils.hasText(symbol)) {
             throw new IllegalArgumentException("Symbol cannot be null or empty");
         }
 

@@ -2,11 +2,15 @@ package com.portfolio.demo_backend.mapper;
 
 import com.portfolio.demo_backend.dto.symbol.SymbolDTO;
 import com.portfolio.demo_backend.model.Symbol;
+import org.mapstruct.factory.Mappers;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SymbolMapperTest {
+
+    private final SymbolMapper mapper = Mappers.getMapper(SymbolMapper.class);
 
     @Test
     void toSymbol_mapsAllFields() {
@@ -18,7 +22,7 @@ class SymbolMapperTest {
         entity.setCurrency("USD");
         entity.setEnabled(true);
 
-        SymbolDTO dto = SymbolMapper.toSymbol(entity);
+        SymbolDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
         assertThat(dto.id).isEqualTo(1L);
@@ -37,7 +41,7 @@ class SymbolMapperTest {
         entity.setName("Alphabet Inc.");
         entity.setEnabled(false);
 
-        SymbolDTO dto = SymbolMapper.toSymbol(entity);
+        SymbolDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
         assertThat(dto.id).isEqualTo(2L);
@@ -58,7 +62,7 @@ class SymbolMapperTest {
         entity.setCurrency("USD");
         entity.setEnabled(false);
 
-        SymbolDTO dto = SymbolMapper.toSymbol(entity);
+        SymbolDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
         assertThat(dto.enabled).isFalse();
@@ -74,7 +78,7 @@ class SymbolMapperTest {
         entity.setName("Amazon.com Inc.");
         entity.setEnabled(true);
 
-        SymbolDTO dto = SymbolMapper.toSymbol(entity);
+        SymbolDTO dto = mapper.toDTO(entity);
 
         assertThat(dto).isNotNull();
         assertThat(dto.id).isEqualTo(4L);
@@ -83,5 +87,33 @@ class SymbolMapperTest {
         assertThat(dto.exchange).isNull();
         assertThat(dto.currency).isNull();
         assertThat(dto.enabled).isTrue();
+    }
+
+    @Test
+    void toDTOs_mapsListCorrectly() {
+        Symbol s1 = new Symbol();
+        s1.setId(10L);
+        s1.setSymbol("AAPL");
+        s1.setName("Apple Inc.");
+        s1.setEnabled(true);
+
+        Symbol s2 = new Symbol();
+        s2.setId(11L);
+        s2.setSymbol("GOOGL");
+        s2.setName("Alphabet Inc.");
+        s2.setEnabled(false);
+
+        List<SymbolDTO> list = mapper.toDTOs(List.of(s1, s2));
+
+        assertThat(list).isNotNull();
+        assertThat(list).hasSize(2);
+        assertThat(list.get(0).id).isEqualTo(10L);
+        assertThat(list.get(0).symbol).isEqualTo("AAPL");
+        assertThat(list.get(0).name).isEqualTo("Apple Inc.");
+        assertThat(list.get(0).enabled).isTrue();
+        assertThat(list.get(1).id).isEqualTo(11L);
+        assertThat(list.get(1).symbol).isEqualTo("GOOGL");
+        assertThat(list.get(1).name).isEqualTo("Alphabet Inc.");
+        assertThat(list.get(1).enabled).isFalse();
     }
 }

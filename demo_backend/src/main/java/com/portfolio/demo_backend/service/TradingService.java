@@ -10,6 +10,7 @@ import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.repository.TransactionRepository;
+import com.portfolio.demo_backend.service.data.TradeExecutionData;
 import com.portfolio.demo_backend.repository.SymbolRepository;
 import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,9 +37,11 @@ public class TradingService {
     private final PriceService priceService;
     private final UserService userService;
     private final WalletService walletService;
+    private final TradingMapper tradingMapper;
+    private final NotificationService notificationService;
 
     @Transactional
-    public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
+    public TradeExecutionData executeBuy(Long userId, BuyOrderRequest request) {
         User user = userService.getUserById(userId);
         String username = user.getUsername();
 
@@ -65,12 +69,16 @@ public class TradingService {
         log.info("Buy order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
+        sendTradeNotification(userId, "buy", request.getSymbol(), request.getQuantity(), currentPrice, totalAmount,
+                null);
+
+        return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
     }
 
     @Transactional
-    public TradeExecutionResponse executeSellOrder(Long userId, SellOrderRequest request) {
+    public TradeExecutionData executeSell(Long userId,
+            SellOrderRequest request) {
         User user = userService.getUserById(userId);
         String username = user.getUsername();
 
@@ -104,8 +112,25 @@ public class TradingService {
         log.info("Sell order executed successfully for user: {}, symbol: {}, quantity: {}, price: {}",
                 username, request.getSymbol(), request.getQuantity(), currentPrice);
 
-        return TradingMapper.toTradeExecutionResponse(transaction, newBalance,
+        sendTradeNotification(userId, "sell", request.getSymbol(), request.getQuantity(), currentPrice, totalProceeds,
+                profitLoss);
+
+        return new TradeExecutionData(transaction, newBalance,
                 portfolio.getSharesOwned());
+    }
+
+    @Transactional
+    public TradeExecutionResponse executeBuyOrder(Long userId, BuyOrderRequest request) {
+        TradeExecutionData data = executeBuy(userId, request);
+        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
+                data.getNewSharesOwned());
+    }
+
+    @Transactional
+    public TradeExecutionResponse executeSellOrder(Long userId, SellOrderRequest request) {
+        TradeExecutionData data = executeSell(userId, request);
+        return tradingMapper.toTradeExecutionResponse(data.getTransaction(), data.getNewCashBalance(),
+                data.getNewSharesOwned());
     }
 
     public List<Transaction> getTransactionHistory(Long userId) {
@@ -120,7 +145,7 @@ public class TradingService {
     private BigDecimal getCurrentPrice(String symbol) {
         try {
             YahooQuoteDTO quote = priceService.getCurrentPrice(symbol);
-            if (quote == null) {
+            if (ObjectUtils.isEmpty(quote)) {
                 throw new PriceUnavailableException(symbol);
             }
             return BigDecimal.valueOf(quote.getPrice());
@@ -217,5 +242,52 @@ public class TradingService {
 
         BigDecimal sellValue = sellPrice.multiply(BigDecimal.valueOf(sellQuantity));
         return sellValue.subtract(totalCostBasis);
+    }
+
+    private void sendTradeNotification(Long userId, String tradeType, String symbol, Integer quantity,
+            BigDecimal pricePerShare, BigDecimal totalAmount, BigDecimal profitLoss) {
+        try {
+            Long systemUserId = getSystemUserId();
+            String action = tradeType.equalsIgnoreCase("buy") ? "purchased" : "sold";
+            String emoji = tradeType.equalsIgnoreCase("buy") ? "📈" : "📉";
+
+            String subject = String.format("%s Trade Executed - %s", emoji, symbol.toUpperCase());
+
+            StringBuilder bodyBuilder = new StringBuilder();
+            bodyBuilder.append(String.format("Your %s order has been successfully executed! %s<br><br>",
+                    tradeType.toLowerCase(), emoji));
+            bodyBuilder.append("<strong>Trade Details:</strong><br>");
+            bodyBuilder.append(String.format("• Symbol: <strong>%s</strong><br>", symbol.toUpperCase()));
+            bodyBuilder.append(String.format("• Action: %s<br>", action));
+            bodyBuilder.append(String.format("• Quantity: %,d shares<br>", quantity));
+            bodyBuilder.append(String.format("• Price per Share: $%.2f<br>", pricePerShare));
+            bodyBuilder.append(String.format("• Total Amount: $%.2f<br>", totalAmount));
+
+            if (profitLoss != null) {
+                String profitColor = profitLoss.compareTo(BigDecimal.ZERO) >= 0 ? "green" : "red";
+                String profitSymbol = profitLoss.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
+                bodyBuilder.append(String.format("• <span style='color: %s'>Profit/Loss: %s$%.2f</span><br>",
+                        profitColor, profitSymbol, profitLoss));
+            }
+
+            bodyBuilder.append(
+                    "<br>You can view your updated portfolio in your <a href='/portfolio'>Portfolio</a>.<br><br>");
+            bodyBuilder.append("Happy trading! 🚀<br><br>");
+            bodyBuilder.append("Best regards,<br>");
+            bodyBuilder.append("<strong>Stock Simulator Team</strong>");
+
+            notificationService.sendToUser(systemUserId, userId, subject, bodyBuilder.toString());
+        } catch (Exception e) {
+            log.error("Failed to send trade notification for user {} after {} trade of {}: {}",
+                    userId, tradeType, symbol, e.getMessage());
+        }
+    }
+
+    private Long getSystemUserId() {
+        return userService.getAllUsers().stream()
+                .filter(user -> user.getRoles().contains(com.portfolio.demo_backend.model.enums.Role.ROLE_ADMIN))
+                .findFirst()
+                .map(User::getId)
+                .orElse(1L);
     }
 }

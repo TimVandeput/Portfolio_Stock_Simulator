@@ -230,8 +230,12 @@ This will deduct $${totalCost.toFixed(2)} from your available cash balance.`}
             </div>
 
             <div className="min-h-[28px] mb-4">
-              {error && <StatusMessage message={error} />}
-              {success && <StatusMessage message={success} type="success" />}
+              {(error || success) && (
+                <StatusMessage
+                  message={error || success}
+                  type={error ? "error" : "success"}
+                />
+              )}
             </div>
 
             <NeumorphicButton

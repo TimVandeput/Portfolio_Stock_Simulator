@@ -13,7 +13,6 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import PriceCard from "@/components/cards/PriceCard";
-import WalletBalanceCard from "@/components/cards/WalletBalanceCard";
 import QuantityInput from "@/components/input/QuantityInput";
 import OrderSummary from "@/components/status/OrderSummary";
 import ValidationMessages from "@/components/status/ValidationMessages";
@@ -241,17 +240,12 @@ This action cannot be undone.`}
                     {holding.avgCostBasis.toFixed(2)} avg
                   </p>
                   <p className="text-sm text-[var(--text-secondary)]">
-                    Total Cost: $
+                    Total Invested: $
                     {(holding.quantity * holding.avgCostBasis).toFixed(2)}
                   </p>
                 </div>
               </div>
             </div>
-
-            <WalletBalanceCard
-              walletBalance={walletBalance}
-              walletLoading={walletLoading}
-            />
 
             <div className="neu-card p-6 rounded-2xl mb-6">
               <div className="space-y-4">
@@ -269,6 +263,7 @@ This action cannot be undone.`}
                   quantityNum={quantityNum}
                   lastPrice={lastPrice}
                   totalCost={totalValue}
+                  mode="sell"
                 />
 
                 <ValidationMessages
@@ -278,6 +273,7 @@ This action cannot be undone.`}
                   lastPrice={lastPrice}
                   success={success}
                   loading={loading}
+                  mode="sell"
                 />
 
                 {!canSell &&
@@ -294,8 +290,12 @@ This action cannot be undone.`}
             </div>
 
             <div className="min-h-[28px] mb-4">
-              {error && <StatusMessage message={error} />}
-              {success && <StatusMessage message={success} type="success" />}
+              {(error || success) && (
+                <StatusMessage
+                  message={error || success}
+                  type={error ? "error" : "success"}
+                />
+              )}
             </div>
 
             <NeumorphicButton

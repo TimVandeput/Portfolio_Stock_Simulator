@@ -1,6 +1,7 @@
 package com.portfolio.demo_backend.marketdata.service;
 
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
+import com.portfolio.demo_backend.marketdata.service.data.PriceData;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
 import com.portfolio.demo_backend.marketdata.mapper.MarketDataMapper;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
@@ -10,6 +11,7 @@ import com.portfolio.demo_backend.repository.SymbolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ public class PriceService {
 
     private final RapidApiClient rapidApiClient;
     private final SymbolRepository symbolRepository;
+    private final MarketDataMapper marketDataMapper;
 
     public Map<String, YahooQuoteDTO> getAllCurrentPrices() {
         log.info("Fetching all enabled symbols from database");
@@ -48,7 +51,7 @@ public class PriceService {
 
             Map<String, YahooQuoteDTO> result = new HashMap<>();
             for (RapidApiClient.Quote quote : quotes) {
-                YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+                YahooQuoteDTO dto = marketDataMapper.toYahooQuoteDTO(quote);
                 result.put(quote.symbol, dto);
             }
 
@@ -75,7 +78,7 @@ public class PriceService {
         log.info("Fetching current price for symbol: {}", symbol);
 
         Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
-        if (symbolEntity == null) {
+        if (ObjectUtils.isEmpty(symbolEntity)) {
             log.warn("Symbol {} not found in database", symbol);
             return null;
         }
@@ -87,12 +90,12 @@ public class PriceService {
 
         try {
             RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
-            if (quote == null) {
+            if (ObjectUtils.isEmpty(quote)) {
                 log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
                 return null;
             }
 
-            return MarketDataMapper.toYahooQuoteDTO(quote);
+            return marketDataMapper.toYahooQuoteDTO(quote);
         } catch (ApiRateLimitException e) {
             log.error("Rate limit exceeded while fetching price for symbol {}: {}", symbol, e.getMessage());
             throw e;
@@ -104,5 +107,33 @@ public class PriceService {
             throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
                     "Failed to fetch price data for " + symbol + ": " + e.getMessage());
         }
+    }
+
+    public PriceData getPriceDataForSymbol(String symbol) {
+        log.info("Fetching price data for symbol: {}", symbol);
+
+        Symbol symbolEntity = symbolRepository.findBySymbol(symbol).orElse(null);
+        if (ObjectUtils.isEmpty(symbolEntity) || !symbolEntity.isEnabled()) {
+            log.warn("Symbol {} not found or disabled", symbol);
+            return null;
+        }
+
+        try {
+            RapidApiClient.Quote quote = rapidApiClient.getQuote(symbol);
+            if (ObjectUtils.isEmpty(quote)) {
+                log.warn("No quote returned from RapidAPI for symbol: {}", symbol);
+                return null;
+            }
+
+            return marketDataMapper.toPriceData(quote);
+        } catch (IOException e) {
+            log.error("IO error while fetching price data for symbol {}: {}", symbol, e.getMessage(), e);
+            throw new MarketDataUnavailableException("RapidAPI Yahoo Finance",
+                    "Failed to fetch price data for " + symbol + ": " + e.getMessage());
+        }
+    }
+
+    public YahooQuoteDTO convertToDTO(PriceData priceData) {
+        return marketDataMapper.fromPriceData(priceData);
     }
 }

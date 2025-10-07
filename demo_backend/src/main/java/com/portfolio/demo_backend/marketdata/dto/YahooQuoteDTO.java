@@ -1,6 +1,8 @@
 package com.portfolio.demo_backend.marketdata.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 
@@ -8,9 +10,11 @@ import lombok.Data;
 public class YahooQuoteDTO {
 
     @JsonProperty("symbol")
+    @NotBlank
     private String symbol;
 
     @JsonProperty("price")
+    @NotNull
     private Double price;
 
     @JsonProperty("change")

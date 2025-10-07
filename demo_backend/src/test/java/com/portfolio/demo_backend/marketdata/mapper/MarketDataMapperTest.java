@@ -3,10 +3,13 @@ package com.portfolio.demo_backend.marketdata.mapper;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.integration.RapidApiClient;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MarketDataMapperTest {
+
+    private final MarketDataMapper mapper = Mappers.getMapper(MarketDataMapper.class);
 
     @Test
     void toYahooQuoteDTO_mapsAllFields() {
@@ -20,7 +23,7 @@ class MarketDataMapperTest {
         quote.openPrice = 174.5;
         quote.previousClose = 173.0;
 
-        YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+        YahooQuoteDTO dto = mapper.toYahooQuoteDTO(quote);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getSymbol()).isEqualTo("AAPL");
@@ -43,7 +46,7 @@ class MarketDataMapperTest {
         quote.change = -1.25;
         quote.changePercent = -0.98;
 
-        YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+        YahooQuoteDTO dto = mapper.toYahooQuoteDTO(quote);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getSymbol()).isEqualTo("GOOGL");
@@ -69,7 +72,7 @@ class MarketDataMapperTest {
         quote.dayLow = 248.0;
         quote.previousClose = 255.0;
 
-        YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+        YahooQuoteDTO dto = mapper.toYahooQuoteDTO(quote);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getSymbol()).isEqualTo("TSLA");
@@ -88,7 +91,7 @@ class MarketDataMapperTest {
         quote.symbol = "AMZN";
         quote.price = 3200.0;
 
-        YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+        YahooQuoteDTO dto = mapper.toYahooQuoteDTO(quote);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getSymbol()).isEqualTo("AMZN");
@@ -114,7 +117,7 @@ class MarketDataMapperTest {
         quote.dayLow = 0.0;
         quote.previousClose = 0.0;
 
-        YahooQuoteDTO dto = MarketDataMapper.toYahooQuoteDTO(quote);
+        YahooQuoteDTO dto = mapper.toYahooQuoteDTO(quote);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getSymbol()).isEqualTo("BRK-A");

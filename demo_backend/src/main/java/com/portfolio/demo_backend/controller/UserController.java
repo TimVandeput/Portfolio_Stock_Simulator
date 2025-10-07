@@ -19,29 +19,30 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @PostMapping
     public ResponseEntity<CreateUserDTO> createUser(@Valid @RequestBody CreateUserDTO dto) {
-        User user = UserMapper.toEntity(dto);
-        User saved = userService.createUser(user);
-        return ResponseEntity.ok(UserMapper.toDTO(saved));
+        User saved = userService.createUser(dto);
+        return ResponseEntity.ok(userMapper.toDTO(saved));
     }
 
     @GetMapping
     public List<CreateUserDTO> getAllUsers() {
         return userService.getAllUsers().stream()
-                .map(UserMapper::toDTO)
+                .map(userMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CreateUserDTO> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
-        return ResponseEntity.ok(UserMapper.toDTO(user));
+        return ResponseEntity.ok(userMapper.toDTO(user));
     }
 
     @PutMapping("/{id}")
@@ -49,8 +50,8 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserDTO dto) {
         System.out.println("Updating user with ID: " + id);
-        User updated = userService.updateUser(id, UserMapper.fromUpdateDTO(dto));
-        return ResponseEntity.ok(UserMapper.toDTO(updated));
+        User updated = userService.updateUser(id, dto);
+        return ResponseEntity.ok(userMapper.toDTO(updated));
     }
 
     @DeleteMapping("/{id}")

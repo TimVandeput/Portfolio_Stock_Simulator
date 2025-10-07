@@ -27,22 +27,10 @@ export const navItems: NavItem[] = [
     allowedRoles: ["ROLE_USER"],
   },
   {
-    name: "WALLET",
-    href: "/wallet",
-    icon: "wallet",
-    allowedRoles: ["ROLE_USER"],
-  },
-  {
-    name: "GRAPHS",
+    name: "ANALYTICS",
     href: "/graphs",
     icon: "trending-up",
     allowedRoles: ["ROLE_USER"],
-  },
-  {
-    name: "USERS",
-    href: "/users",
-    icon: "users",
-    allowedRoles: ["ROLE_ADMIN"],
   },
   {
     name: "SYMBOLS",

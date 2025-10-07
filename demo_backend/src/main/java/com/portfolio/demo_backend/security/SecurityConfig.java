@@ -62,6 +62,8 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/trades/*/portfolio").authenticated();
                     auth.requestMatchers(HttpMethod.GET, "/api/trades/*/history").authenticated();
                     auth.requestMatchers("/api/wallet/**").authenticated();
+                    auth.requestMatchers(HttpMethod.GET, "/api/notifications/user/*").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/notifications/*/read").authenticated();
 
                     auth.anyRequest().authenticated();
                 });
