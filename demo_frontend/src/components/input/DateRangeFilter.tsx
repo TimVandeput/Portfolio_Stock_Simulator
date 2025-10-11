@@ -1,19 +1,156 @@
+/**
+ * @fileoverview Advanced date range filter component for transaction and data filtering
+ *
+ * This component provides an intuitive date range selection interface with dropdown
+ * functionality, visual feedback, and comprehensive filtering capabilities. Features
+ * include expandable date picker interface, active filter indicators, and seamless
+ * integration with data filtering systems.
+ */
+
 "use client";
 
 import { useState } from "react";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import { BaseComponentProps } from "@/types";
 
+/**
+ * Interface for date range values
+ * @interface DateRange
+ */
 export interface DateRange {
+  /** Start date in YYYY-MM-DD format */
   startDate: string;
+  /** End date in YYYY-MM-DD format */
   endDate: string;
 }
 
-interface DateRangeFilterProps {
+/**
+ * Props interface for DateRangeFilter component configuration
+ * @interface DateRangeFilterProps
+ * @extends {BaseComponentProps}
+ */
+export interface DateRangeFilterProps extends BaseComponentProps {
+  /** Current date range selection */
   dateRange: DateRange;
+  /** Callback function when date range changes */
   onChange: (dateRange: DateRange) => void;
+  /** Additional CSS classes for styling customization */
   className?: string;
 }
 
+/**
+ * Advanced date range filter component for transaction and data filtering
+ *
+ * @remarks
+ * The DateRangeFilter component provides comprehensive date filtering with the following features:
+ *
+ * **Filter Interface:**
+ * - Collapsible dropdown design with toggle button
+ * - Visual indicators for active filter states
+ * - Intuitive calendar icon and chevron controls
+ * - Clean, professional styling with theme integration
+ *
+ * **Date Selection:**
+ * - Native HTML5 date inputs with calendar pickers
+ * - Separate start and end date controls
+ * - Proper form validation and formatting
+ * - Cross-browser compatible date picker styling
+ *
+ * **User Experience:**
+ * - Click-outside-to-close functionality
+ * - Clear filter option when dates are active
+ * - Visual feedback for active filter states
+ * - Responsive design for mobile and desktop
+ *
+ * **State Management:**
+ * - Controlled component with external state management
+ * - Real-time callback updates on date changes
+ * - Persistent expansion state during interaction
+ * - Proper cleanup and event handling
+ *
+ * **Visual Design:**
+ * - Floating dropdown with shadow and border
+ * - Theme-aware color scheme integration
+ * - Consistent spacing and typography
+ * - Professional form field styling
+ *
+ * **Accessibility:**
+ * - Proper form labels and ARIA attributes
+ * - Keyboard navigation support
+ * - Focus management and visual indicators
+ * - Screen reader friendly interface
+ *
+ * @param props - Configuration object for date range filter
+ * @returns DateRangeFilter component with expandable date selection
+ *
+ * @example
+ * ```tsx
+ * // Basic date range filter with state management
+ * const [dateRange, setDateRange] = useState<DateRange>({
+ *   startDate: "",
+ *   endDate: ""
+ * });
+ *
+ * <DateRangeFilter
+ *   dateRange={dateRange}
+ *   onChange={setDateRange}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integrated with transaction filtering
+ * function TransactionFilters() {
+ *   const [filters, setFilters] = useState({
+ *     dateRange: { startDate: "", endDate: "" },
+ *     category: "all"
+ *   });
+ *
+ *   return (
+ *     <div className="flex gap-4">
+ *       <DateRangeFilter
+ *         dateRange={filters.dateRange}
+ *         onChange={(dateRange) =>
+ *           setFilters(prev => ({ ...prev, dateRange }))
+ *         }
+ *         className="flex-shrink-0"
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Advanced usage with validation and formatting
+ * function ReportDateFilter() {
+ *   const [dateRange, setDateRange] = useState<DateRange>({
+ *     startDate: "",
+ *     endDate: ""
+ *   });
+ *
+ *   const handleDateChange = (newRange: DateRange) => {
+ *     // Validation: end date must be after start date
+ *     if (newRange.startDate && newRange.endDate) {
+ *       if (new Date(newRange.endDate) < new Date(newRange.startDate)) {
+ *         return; // Invalid range
+ *       }
+ *     }
+ *
+ *     setDateRange(newRange);
+ *     generateReport(newRange);
+ *   };
+ *
+ *   return (
+ *     <DateRangeFilter
+ *       dateRange={dateRange}
+ *       onChange={handleDateChange}
+ *       className="mb-6"
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export default function DateRangeFilter({
   dateRange,
   onChange,
