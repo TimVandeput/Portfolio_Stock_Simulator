@@ -5,6 +5,9 @@
  * supporting both ordered and unordered lists with HTML content rendering.
  * Features semantic markup, responsive design, and consistent typography for
  * professional help system integration.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import { BaseComponentProps } from "@/types";

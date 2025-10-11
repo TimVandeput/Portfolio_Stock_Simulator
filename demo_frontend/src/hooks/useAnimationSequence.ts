@@ -13,9 +13,8 @@
  * - Smooth transitions with custom easing curves
  * - Visual effects integration (shadows, opacity, transforms)
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

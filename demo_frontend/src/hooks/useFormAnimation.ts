@@ -4,9 +4,8 @@
  * This hook manages animated transitions between login and registration forms
  * with smooth flip animations and timing controls for enhanced user experience.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -4,11 +4,9 @@
  * This hook provides layout-level access control with modal management
  * for unauthorized access scenarios and logout flow integration.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
-
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAccessControl } from "@/hooks/useAuth";

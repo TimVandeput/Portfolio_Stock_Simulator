@@ -5,6 +5,9 @@
  * and PDF format support. Features include dropdown interface, loading states,
  * professional styling, and seamless integration with transaction data management
  * for complete portfolio and trading history export capabilities.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

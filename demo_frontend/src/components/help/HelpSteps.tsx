@@ -5,6 +5,9 @@
  * instructions and procedures. Features sequential numbering, HTML content
  * support, and consistent formatting for professional help documentation
  * and user guidance systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import { BaseComponentProps } from "@/types";

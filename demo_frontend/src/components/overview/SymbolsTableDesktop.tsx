@@ -5,6 +5,9 @@
  * with real-time pricing, advanced column management, and professional data presentation.
  * Features include responsive column layouts, interactive controls, and seamless integration
  * with administrative and trading workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

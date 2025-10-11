@@ -5,6 +5,9 @@
  * library, delivering interactive financial visualizations with professional formatting,
  * data optimization, and responsive design. Features include intelligent data sampling,
  * price validation, dynamic scaling, and themed styling integration.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

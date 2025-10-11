@@ -5,6 +5,9 @@
  * and professional messaging. Features include orientation monitoring, overlay display,
  * animated iconography, and seamless integration with responsive design patterns
  * for optimal mobile user experience and interface usability.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

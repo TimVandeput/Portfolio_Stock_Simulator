@@ -5,9 +5,8 @@
  * user interface guidance, particularly for landscape-optimized content views.
  * It helps ensure optimal user experience across different device orientations.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

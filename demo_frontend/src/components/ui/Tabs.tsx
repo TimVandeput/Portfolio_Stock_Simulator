@@ -5,8 +5,10 @@
  * featuring desktop tab interface and mobile dropdown selector. Includes professional
  * styling, smooth transitions, theme integration, and flexible content management
  * for optimal user experience across all device sizes.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
-
 "use client";
 
 import { useState } from "react";

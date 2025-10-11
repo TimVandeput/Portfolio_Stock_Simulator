@@ -4,11 +4,9 @@
  * This hook manages the logout process state and provides utilities
  * for tracking logout progress and completion across the application.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

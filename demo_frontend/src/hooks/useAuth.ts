@@ -13,9 +13,8 @@
  * - Cross-tab authentication synchronization
  * - Comprehensive error handling and user feedback
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import { useEffect, useState } from "react";

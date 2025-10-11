@@ -5,6 +5,9 @@
  * functionality, visual feedback, and comprehensive filtering capabilities. Features
  * include expandable date picker interface, active filter indicators, and seamless
  * integration with data filtering systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

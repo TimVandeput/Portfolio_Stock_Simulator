@@ -5,6 +5,9 @@
  * global providers, navigation components, authentication flows, and modal systems.
  * Features comprehensive state management, responsive design patterns, and seamless
  * integration of all application-wide concerns including theming, pricing, and access control.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

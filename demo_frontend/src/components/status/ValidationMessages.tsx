@@ -5,6 +5,9 @@
  * with context-aware messaging, dynamic iconography, and professional error states.
  * Features include insufficient fund detection, price validation, loading state
  * management, and seamless integration with trading forms and order validation.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * accessibility features, and smooth animations. Features include context integration,
  * professional button styling, visual feedback, and comprehensive theme management
  * for enhanced user experience and accessibility compliance.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * styling, and formatting. Features include XSS protection through controlled parsing,
  * interactive link handling, professional styling, and seamless Next.js navigation
  * integration for safe and engaging content presentation.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

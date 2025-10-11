@@ -5,6 +5,9 @@
  * holdings, featuring clear call-to-action, motivational messaging, and seamless navigation
  * to market exploration. Includes professional iconography, responsive design, and
  * user-friendly investment encouragement with intuitive market access.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

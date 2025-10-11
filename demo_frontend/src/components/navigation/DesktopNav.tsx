@@ -5,6 +5,9 @@
  * dropdown functionality, accessibility features, and interactive visual feedback.
  * Features include neumorphic design elements, keyboard navigation support, and
  * seamless integration with Next.js routing and authentication systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

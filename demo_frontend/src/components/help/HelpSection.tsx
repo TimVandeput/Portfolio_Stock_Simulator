@@ -5,6 +5,9 @@
  * featuring dynamic icons, color-coded sections, and flexible content areas.
  * Integrates neumorphic design elements with professional typography and
  * structured information presentation.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

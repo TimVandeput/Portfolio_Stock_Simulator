@@ -4,9 +4,8 @@
  * This hook manages header component state including navigation visibility,
  * role-based filtering, and contextual UI elements based on current route.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * responsive design and professional UI patterns. Features include search input,
  * enabled/disabled filtering, page size selection, sorting capabilities, and
  * adaptive layout for different screen sizes and user workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

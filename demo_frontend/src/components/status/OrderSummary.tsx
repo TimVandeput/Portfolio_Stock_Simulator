@@ -5,6 +5,9 @@
  * professional formatting, and adaptive labeling for both buy and sell operations.
  * Features include precise decimal formatting, clear visual hierarchy, and seamless
  * integration with trading workflows and order confirmation processes.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

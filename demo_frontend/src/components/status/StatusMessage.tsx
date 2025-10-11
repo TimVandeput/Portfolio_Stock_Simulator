@@ -5,6 +5,9 @@
  * smooth transitions, and consistent visual feedback. Features include error
  * and success states, placeholder handling, and seamless integration with
  * forms, API responses, and validation systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import type { BaseComponentProps } from "@/types/components";

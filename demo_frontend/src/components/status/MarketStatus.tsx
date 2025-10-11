@@ -5,6 +5,9 @@
  * timezone calculations, and intelligent formatting. Features include automatic status
  * detection, countdown timers, and professional market hour tracking for US stock
  * market trading sessions with weekend and holiday considerations.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * theme integration, and clear essential cookie disclosure. Features include localStorage
  * persistence, responsive design, and professional styling with high z-index positioning
  * for optimal visibility and user experience compliance.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

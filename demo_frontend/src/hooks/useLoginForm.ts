@@ -13,9 +13,8 @@
  * - Form reset and cleanup functionality
  * - Animation trigger support for post-login sequences
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

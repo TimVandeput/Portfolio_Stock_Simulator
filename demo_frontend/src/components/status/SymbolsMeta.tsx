@@ -5,6 +5,9 @@
  * featuring import timestamps, operation summaries, and statistical breakdowns.
  * Includes responsive design, professional formatting, and seamless integration
  * with administrative interfaces and data management workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

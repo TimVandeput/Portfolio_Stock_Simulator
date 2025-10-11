@@ -5,9 +5,8 @@
  * keyboard navigation, click-outside detection, and automatic closure on route changes.
  * It ensures accessibility compliance and smooth user interactions.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

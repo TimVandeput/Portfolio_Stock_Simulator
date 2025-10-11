@@ -5,6 +5,9 @@
  * trading transaction history with comprehensive financial data, profit/loss calculations,
  * and professional table layouts. Features include advanced column management, responsive
  * design patterns, and seamless integration with financial data workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

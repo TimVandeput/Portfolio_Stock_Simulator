@@ -5,6 +5,9 @@
  * and extensive icon mapping. Features include flexible naming conventions, performance
  * optimization, and seamless integration with the Lucide React icon library for
  * consistent, scalable iconography throughout the application.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import { memo } from "react";

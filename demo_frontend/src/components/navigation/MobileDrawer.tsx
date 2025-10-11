@@ -5,6 +5,9 @@
  * slide-out animations, backdrop overlay, and responsive behavior. Features include
  * automatic desktop hiding, route-based filtering, and professional mobile-first
  * navigation patterns with accessibility and touch interaction support.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import Link from "next/link";

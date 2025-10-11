@@ -4,9 +4,8 @@
  * This hook provides comprehensive registration form functionality including form state
  * management, validation, API integration, error handling, and user feedback systems.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

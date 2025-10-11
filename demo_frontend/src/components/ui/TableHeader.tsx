@@ -5,6 +5,9 @@
  * alignment control, and professional styling. Features include configurable columns,
  * responsive design, theme integration, and clean typography for optimal data presentation
  * and professional table interface design.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import type { BaseComponentProps } from "@/types/components";

@@ -5,6 +5,9 @@
  * messaging, and styling. Features include neumorphic design integration, responsive
  * layout, and professional typography for maintaining consistent user experience
  * when content is unavailable or loading states complete without data.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * history with detailed financial information, profit/loss calculations, and intuitive
  * card-based layouts. Features include responsive design patterns, loading states, and
  * professional financial data presentation optimized for mobile interactions.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

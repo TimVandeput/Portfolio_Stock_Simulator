@@ -5,6 +5,9 @@
  * with real-time pricing, interactive controls, and adaptive functionality for both
  * administrative and market modes. Features include responsive card layouts, live price
  * updates, and seamless integration with trading workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

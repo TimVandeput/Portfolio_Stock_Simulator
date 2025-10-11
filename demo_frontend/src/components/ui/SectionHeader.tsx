@@ -5,6 +5,9 @@
  * typography. Features include customizable icon colors, consistent spacing, and theme
  * integration for creating clear visual hierarchy and professional section organization
  * throughout the application interface.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

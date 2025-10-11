@@ -4,9 +4,8 @@
  * This hook manages cursor trail effect preferences with persistent storage
  * and mobile device considerations for optimal performance and user experience.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

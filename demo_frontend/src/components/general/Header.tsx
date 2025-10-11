@@ -5,6 +5,9 @@
  * a comprehensive navigation solution with adaptive layout, professional branding, and
  * integrated user controls. Features responsive design patterns, dynamic content rendering,
  * and seamless integration with the application's theming and authentication systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

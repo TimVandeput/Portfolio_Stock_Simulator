@@ -5,6 +5,9 @@
  * delivering elevated visual aesthetics with soft shadows and subtle depth effects.
  * Features comprehensive accessibility support, flexible customization, and seamless
  * integration with form systems and validation workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import type { BaseComponentProps } from "@/types/components";

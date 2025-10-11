@@ -5,6 +5,9 @@
  * featuring automatic maximum calculation, wallet balance integration, and adaptive
  * behavior for both buy and sell operations. Includes neumorphic styling, real-time
  * validation, and seamless integration with trading workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

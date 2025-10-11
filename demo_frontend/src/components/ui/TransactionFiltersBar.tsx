@@ -5,6 +5,9 @@
  * designed for transaction data management. Features include search functionality,
  * pagination controls, sort options, and responsive design for optimal transaction
  * history navigation and professional trading interface integration.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

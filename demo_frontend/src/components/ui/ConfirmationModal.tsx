@@ -5,6 +5,9 @@
  * including keyboard navigation, body scroll lock, theme integration, and customizable
  * button styles. Features include escape key handling, accessibility compliance, and
  * seamless integration with user workflows requiring explicit confirmation.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

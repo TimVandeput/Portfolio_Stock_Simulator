@@ -5,9 +5,8 @@
  * loading states, error handling, and performance optimizations for large datasets.
  * It's designed for data tables, lists, and any paginated content.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

@@ -5,6 +5,9 @@
  * content, professional styling, and intelligent navigation handling. Features include
  * login requirements, role-based permissions, keyboard navigation, and seamless
  * integration with authentication and authorization workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

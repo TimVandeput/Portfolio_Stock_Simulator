@@ -5,6 +5,9 @@
  * accessible design, and theme integration. Features include configurable sort options,
  * professional styling, screen reader support, and seamless integration with
  * data management workflows and table systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

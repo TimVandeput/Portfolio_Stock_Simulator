@@ -5,6 +5,9 @@
  * color-coded categorization, and professional data presentation. Features include
  * transaction type breakdown, dynamic iconography, and seamless integration with
  * portfolio management and trading analytics interfaces.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

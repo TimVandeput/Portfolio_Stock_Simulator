@@ -5,6 +5,9 @@
  * professional animations, and consistent theming. Features include page, content,
  * and main area coverage modes with smooth spinner animations and customizable
  * styling for seamless integration across different loading scenarios.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

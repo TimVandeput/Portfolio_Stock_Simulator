@@ -4,6 +4,9 @@
  * This component provides an intuitive interface for selecting time ranges for financial
  * charts and data visualization. Features responsive button groups, active state management,
  * and seamless integration with chart components for dynamic data filtering and display.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";

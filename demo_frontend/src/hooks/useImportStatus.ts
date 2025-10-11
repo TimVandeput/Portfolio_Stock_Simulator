@@ -4,9 +4,8 @@
  * This hook monitors the status of symbol imports and provides real-time updates
  * on import progress, completion status, and refresh capabilities for administrative functions.
  *
- * @author Stock Simulator Team
- * @version 1.0.0
- * @since 2024
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 import { useEffect, useState, useCallback } from "react";

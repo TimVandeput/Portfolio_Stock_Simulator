@@ -5,6 +5,9 @@
  * capability, neumorphic design aesthetics, and comprehensive security considerations.
  * Features include visual feedback, accessible toggle controls, and seamless integration
  * with authentication and form validation systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
  */
 
 "use client";
