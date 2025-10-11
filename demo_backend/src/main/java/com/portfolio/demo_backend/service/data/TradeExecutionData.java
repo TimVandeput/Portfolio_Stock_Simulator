@@ -8,6 +8,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * Outcome of executing a trade, capturing the persisted transaction and the
+ * updated account state (cash balance and share count) for consistency.
+ */
 @Data
 public class TradeExecutionData {
     @NotNull

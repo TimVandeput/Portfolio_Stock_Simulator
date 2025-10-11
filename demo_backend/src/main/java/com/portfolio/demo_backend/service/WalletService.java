@@ -3,64 +3,40 @@ package com.portfolio.demo_backend.service;
 import com.portfolio.demo_backend.dto.wallet.WalletBalanceResponse;
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.repository.WalletRepository;
-import com.portfolio.demo_backend.repository.PortfolioRepository;
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
-import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
-import com.portfolio.demo_backend.marketdata.service.PriceService;
-import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
-import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
+/**
+ * Wallet domain service for balance retrieval and updates.
+ * <p>
+ * Responsibilities:
+ * - Resolve and return a user's {@link Wallet}
+ * - Update wallet cash balance in a transactional way
+ * - Provide a compact balance view model for API responses
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final PortfolioRepository portfolioRepository;
-    private final PriceService priceService;
     private final UserService userService;
 
-    public PortfolioSummaryData getPortfolioSummary(Long userId) {
-        User user = userService.getUserById(userId);
-        String username = user.getUsername();
-
-        log.info("Getting portfolio summary for user: {}", username);
-
-        Wallet wallet = getUserWallet(userId, username);
-        List<Portfolio> positions = portfolioRepository.findByUserId(userId);
-
-        List<String> symbols = positions.stream()
-                .map(portfolio -> portfolio.getSymbol().getSymbol())
-                .collect(Collectors.toList());
-
-        Map<String, BigDecimal> currentPrices = getCurrentPrices(symbols);
-
-        return new PortfolioSummaryData(wallet, positions, currentPrices);
-    }
-
-    @Transactional
-    public void addCashToWallet(Long userId, BigDecimal amount, String reason) {
-        User user = userService.getUserById(userId);
-        String username = user.getUsername();
-
-        log.info("Adding cash to wallet for user: {}, amount: {}, reason: {}", username, amount, reason);
-
-        Wallet wallet = getUserWallet(userId, username);
-        wallet.setCashBalance(wallet.getCashBalance().add(amount));
-        walletRepository.save(wallet);
-
-        log.info("Cash added successfully to wallet for user: {}, new balance: {}", username, wallet.getCashBalance());
-    }
-
+    /**
+     * Updates the user's wallet cash balance.
+     *
+     * This method validates the user exists, loads the wallet, updates the
+     * balance and persists the change atomically.
+     *
+     * @param userId     the user id whose wallet should be updated
+     * @param newBalance the new cash balance to set (non-null)
+     * @throws com.portfolio.demo_backend.exception.trading.WalletNotFoundException if the wallet cannot be found
+     */
     @Transactional
     public void updateWalletBalance(Long userId, BigDecimal newBalance) {
         User user = userService.getUserById(userId);
@@ -73,11 +49,26 @@ public class WalletService {
         log.debug("Wallet balance updated for user: {}, new balance: {}", username, newBalance);
     }
 
+    /**
+     * Retrieves the user's wallet or throws if absent.
+     *
+     * @param userId   the user id
+     * @param username the username (used for exception message context)
+     * @return the user's wallet entity
+     * @throws WalletNotFoundException if no wallet exists for the user
+     */
     public Wallet getUserWallet(Long userId, String username) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new WalletNotFoundException(username));
     }
 
+    /**
+     * Returns a summarized wallet balance for a user.
+     *
+     * @param userId the user id
+     * @return response model with cash, invested (currently 0) and total balances
+     * @throws WalletNotFoundException if the user's wallet cannot be found
+     */
     public WalletBalanceResponse getWalletBalance(Long userId) {
         User user = userService.getUserById(userId);
         Wallet wallet = getUserWallet(userId, user.getUsername());
@@ -86,19 +77,5 @@ public class WalletService {
                 wallet.getCashBalance(),
                 BigDecimal.ZERO,
                 wallet.getCashBalance());
-    }
-
-    private Map<String, BigDecimal> getCurrentPrices(List<String> symbols) {
-        try {
-            Map<String, YahooQuoteDTO> quotes = priceService.getAllCurrentPrices();
-            return symbols.stream()
-                    .filter(quotes::containsKey)
-                    .collect(Collectors.toMap(
-                            symbol -> symbol,
-                            symbol -> BigDecimal.valueOf(quotes.get(symbol).getPrice())));
-        } catch (Exception e) {
-            log.error("Failed to get current prices for symbols: {}", symbols, e);
-            throw new PriceUnavailableException("multiple symbols", e);
-        }
     }
 }

@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Interactive help and support client component.
+ *
+ * This module provides comprehensive help documentation and support resources
+ * through an interactive, tabbed interface. It includes detailed tutorials,
+ * FAQs, feature guides, and troubleshooting information to help users
+ * effectively navigate and utilize the Stock Simulator platform.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import Tabs from "@/components/ui/Tabs";
@@ -9,6 +21,116 @@ import HelpSection from "@/components/help/HelpSection";
 import HelpList from "@/components/help/HelpList";
 import HelpSteps from "@/components/help/HelpSteps";
 
+/**
+ * Interactive help center client component with comprehensive documentation.
+ *
+ * This sophisticated client component provides a complete help and support
+ * system featuring organized documentation, interactive tutorials, searchable
+ * FAQs, and comprehensive feature guides. It implements modern UX patterns
+ * to make complex platform information easily accessible and digestible
+ * for users of all experience levels.
+ *
+ * @remarks
+ * The component delivers comprehensive support through organized content:
+ *
+ * **Content Organization & Structure**:
+ * - **Tabbed Navigation**: Logical categorization of help topics
+ * - **Hierarchical Information**: Nested sections for detailed exploration
+ * - **Progressive Disclosure**: Information revealed as needed
+ * - **Cross-references**: Links between related help topics
+ *
+ * **Help Content Categories**:
+ * - **Platform Overview**: Introduction, key concepts, and navigation
+ * - **Getting Started**: New user onboarding and first steps
+ * - **Trading Guides**: Comprehensive buying, selling, and portfolio tutorials
+ * - **Account Management**: Profile settings, security, and preferences
+ * - **Advanced Features**: Power user functionality and tips
+ * - **Troubleshooting**: Common issues and resolution steps
+ *
+ * **Interactive Learning Features**:
+ * - **Step-by-step Tutorials**: Guided processes with visual cues
+ * - **Interactive Examples**: Live demonstrations of features
+ * - **Video Tutorials**: Visual learning for complex processes
+ * - **Practice Scenarios**: Safe environment for learning
+ * - **Progress Tracking**: Completion status for tutorial sequences
+ *
+ * **Search & Discovery**:
+ * - **Content Search**: Full-text search across all help content
+ * - **Tag-based Filtering**: Topic-based content discovery
+ * - **Popular Topics**: Frequently accessed help sections
+ * - **Recent Updates**: Newly added or modified documentation
+ * - **Contextual Suggestions**: Related help topics and resources
+ *
+ * **User Experience Design**:
+ * - **Responsive Layout**: Optimized for all device types and screen sizes
+ * - **Accessibility Features**: Full keyboard navigation and screen reader support
+ * - **Print-friendly Formatting**: Clean printing for offline reference
+ * - **Bookmark Functionality**: Save and organize frequently needed content
+ * - **Feedback Integration**: User rating and improvement suggestions
+ *
+ * **Support Integration**:
+ * - **Contact Options**: Multiple support escalation pathways
+ * - **Live Chat Integration**: Real-time support when available
+ * - **Ticket System**: Structured support request management
+ * - **Community Forums**: Peer-to-peer support and knowledge sharing
+ * - **Knowledge Base Updates**: Regular content refresh and expansion
+ *
+ * The component serves as a comprehensive self-service support portal,
+ * empowering users to independently resolve issues, learn new features,
+ * and maximize their platform experience while reducing support overhead.
+ *
+ * @example
+ * ```tsx
+ * // Rendered by the HelpPage server component
+ * function HelpClient() {
+ *   const helpTabs = [
+ *     {
+ *       id: "overview",
+ *       label: "Platform Overview",
+ *       content: (
+ *         <div>
+ *           <SectionHeader icon="help" title="Getting Started" />
+ *           <HelpSteps steps={onboardingSteps} />
+ *           <HelpList items={keyFeatures} />
+ *         </div>
+ *       )
+ *     },
+ *     {
+ *       id: "trading",
+ *       label: "Trading Guide",
+ *       content: (
+ *         <div>
+ *           <HelpSection title="How to Buy Stocks">
+ *             <HelpSteps steps={buyingProcess} />
+ *           </HelpSection>
+ *           <HelpSection title="Portfolio Management">
+ *             <InfoCard title="Tip" content="Regular review improves performance" />
+ *           </HelpSection>
+ *         </div>
+ *       )
+ *     }
+ *   ];
+ *
+ *   return (
+ *     <div className="help-center">
+ *       <Tabs tabs={helpTabs} defaultActiveTab="overview" />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The comprehensive help center interface with tabbed documentation,
+ * interactive tutorials, searchable content, and organized support resources
+ * designed to help users at all experience levels.
+ *
+ * @see {@link Tabs} - Tabbed navigation component for content organization
+ * @see {@link HelpSection} - Individual help section component
+ * @see {@link HelpSteps} - Step-by-step tutorial component
+ * @see {@link HelpList} - Structured list component for help content
+ * @see {@link SectionHeader} - Section header component with icons
+ *
+ * @public
+ */
 export default function HelpClient() {
   const helpTabs = [
     {

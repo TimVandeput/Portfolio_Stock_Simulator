@@ -1,3 +1,22 @@
+/**
+ * @fileoverview HTTP client with authentication and error handling for Stock Simulator API.
+ *
+ * This module provides a robust HTTP client built on Axios with comprehensive authentication
+ * handling, automatic token refresh, request/response interceptors, and standardized error
+ * management for all API communications.
+ *
+ * The client provides:
+ * - Automatic Bearer token authentication
+ * - Token refresh on 401/403 responses
+ * - Comprehensive error handling and reporting
+ * - Request/response interceptors
+ * - Timeout management and retry logic
+ * - Type-safe API responses
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type { RefreshRequest, AuthResponse } from "@/types";
 import type { ErrorResponse, HttpClientOptions } from "@/types/api";
@@ -9,9 +28,30 @@ import {
   loadTokensFromStorage,
 } from "@/lib/auth/tokenStorage";
 
+/**
+ * Custom error class for API-related errors with enhanced error information.
+ *
+ * Extends the native Error class to provide additional context about API failures
+ * including HTTP status codes and structured error response bodies.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await client.get('/api/data');
+ * } catch (error) {
+ *   if (error instanceof ApiError) {
+ *     console.log(`API Error ${error.status}: ${error.message}`);
+ *     console.log('Error details:', error.body);
+ *   }
+ * }
+ * ```
+ */
 export class ApiError extends Error {
+  /** HTTP status code of the failed request */
   status: number;
+  /** Structured error response body from the server */
   body?: ErrorResponse;
+
   constructor(status: number, message: string, body?: ErrorResponse) {
     super(message);
     this.status = status;
@@ -19,6 +59,41 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * HTTP client class providing authenticated API communication with automatic token management.
+ *
+ * This class wraps Axios to provide a consistent interface for all API communications
+ * with built-in authentication, token refresh, error handling, and type safety.
+ *
+ * @remarks
+ * Key features:
+ * - Automatic Bearer token authentication via request interceptors
+ * - Token refresh on 401/403 responses with retry logic
+ * - Comprehensive error handling with structured ApiError responses
+ * - Type-safe HTTP methods (GET, POST, PUT, DELETE)
+ * - Timeout management and request/response logging
+ * - Cross-tab token synchronization
+ *
+ * @example
+ * ```typescript
+ * const client = new HttpClient();
+ *
+ * // GET request
+ * const users = await client.get<User[]>('/api/users');
+ *
+ * // POST request
+ * const newUser = await client.post<User>('/api/users', userData);
+ *
+ * // Error handling
+ * try {
+ *   await client.get('/api/protected');
+ * } catch (error) {
+ *   if (error instanceof ApiError && error.status === 401) {
+ *     // Handle authentication error
+ *   }
+ * }
+ * ```
+ */
 export class HttpClient {
   private client: AxiosInstance;
 
@@ -142,18 +217,52 @@ export class HttpClient {
     }
   }
 
+  /**
+   * Performs a GET request to the specified path.
+   *
+   * @template T The expected response type
+   * @param path The API endpoint path
+   * @returns Promise resolving to the typed response data
+   * @throws ApiError on HTTP errors or authentication failures
+   */
   async get<T>(path: string): Promise<T> {
     return this.handleRequest(() => this.client.get<T>(path));
   }
 
+  /**
+   * Performs a POST request to the specified path with optional body data.
+   *
+   * @template T The expected response type
+   * @param path The API endpoint path
+   * @param body Optional request body data
+   * @returns Promise resolving to the typed response data
+   * @throws ApiError on HTTP errors or authentication failures
+   */
   async post<T>(path: string, body?: unknown): Promise<T> {
     return this.handleRequest(() => this.client.post<T>(path, body));
   }
 
+  /**
+   * Performs a PUT request to the specified path with optional body data.
+   *
+   * @template T The expected response type
+   * @param path The API endpoint path
+   * @param body Optional request body data
+   * @returns Promise resolving to the typed response data
+   * @throws ApiError on HTTP errors or authentication failures
+   */
   async put<T>(path: string, body?: unknown): Promise<T> {
     return this.handleRequest(() => this.client.put<T>(path, body));
   }
 
+  /**
+   * Performs a DELETE request to the specified path.
+   *
+   * @template T The expected response type (defaults to void)
+   * @param path The API endpoint path
+   * @returns Promise resolving to the typed response data
+   * @throws ApiError on HTTP errors or authentication failures
+   */
   async delete<T = void>(path: string): Promise<T> {
     return this.handleRequest(() => this.client.delete<T>(path));
   }

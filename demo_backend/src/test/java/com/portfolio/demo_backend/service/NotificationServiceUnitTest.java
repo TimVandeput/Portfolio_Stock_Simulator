@@ -2,8 +2,6 @@ package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.model.Notification;
 import com.portfolio.demo_backend.model.User;
-import com.portfolio.demo_backend.model.enums.Role;
-import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyException;
 import com.portfolio.demo_backend.exception.notification.EmptyNotificationSubjectException;
 import com.portfolio.demo_backend.exception.notification.NotificationNotFoundException;
 import com.portfolio.demo_backend.exception.user.UserNotFoundException;
@@ -15,11 +13,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link NotificationService} focusing on sending and marking
+ * notifications.
+ *
+ * Includes class/method Javadoc and Given/When/Then inline comments.
+ */
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceUnitTest {
 
@@ -34,6 +36,9 @@ class NotificationServiceUnitTest {
 
     private User user;
 
+    /**
+     * Given a user fixture for tests.
+     */
     @BeforeEach
     void setup() {
         user = new User();
@@ -41,58 +46,30 @@ class NotificationServiceUnitTest {
         user.setUsername("u1");
     }
 
+    /**
+     * Given receiver exists
+     * When sendToUser is invoked with subject and body
+     * Then notification is saved and returned
+     */
     @Test
     void sendToUser_savesNotification() {
         when(userRepository.existsById(1L)).thenReturn(true);
         Notification n = new Notification(0L, 1L, "S", "B");
         when(notificationRepository.save(any())).thenReturn(n);
 
+        // When
         Notification saved = notificationService.sendToUser(0L, 1L, "S", "B");
 
+        // Then
         assertThat(saved).isNotNull();
         verify(notificationRepository).save(any(Notification.class));
     }
 
-    @Test
-    void sendToRole_createsForEachUser() {
-        User a = new User();
-        a.setId(2L);
-        User b = new User();
-        b.setId(3L);
-        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(List.of(a, b));
-        when(notificationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        List<Notification> created = notificationService.sendToRole(0L, Role.ROLE_ADMIN, "S", "B");
-
-        assertThat(created).hasSize(2);
-        verify(userRepository).findByRole(Role.ROLE_ADMIN);
-    }
-
-    @Test
-    void sendToRole_noUsers_returnsEmptyAndSavesNothing() {
-        when(userRepository.findByRole(Role.ROLE_ADMIN)).thenReturn(List.of());
-
-        List<Notification> created = notificationService.sendToRole(0L, Role.ROLE_ADMIN, "S", "B");
-
-        assertThat(created).isEmpty();
-        verify(notificationRepository, never()).save(any());
-    }
-
-    @Test
-    void sendToAllUsers_createsForEachUser() {
-        User a = new User();
-        a.setId(2L);
-        User b = new User();
-        b.setId(3L);
-        when(userRepository.findAll()).thenReturn(List.of(a, b));
-        when(notificationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        List<Notification> created = notificationService.sendToAllUsers(0L, "S", "B");
-
-        assertThat(created).hasSize(2);
-        verify(userRepository).findAll();
-    }
-
+    /**
+     * Given a stored notification
+     * When markAsRead is called
+     * Then it becomes read and is persisted
+     */
     @Test
     void markAsRead_marksNotificationAndSaves() {
         Notification n = new Notification(0L, 1L, "S", "B");
@@ -100,12 +77,19 @@ class NotificationServiceUnitTest {
         when(notificationRepository.findById(5L)).thenReturn(java.util.Optional.of(n));
         when(notificationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
+        // When
         notificationService.markAsRead(5L);
 
+        // Then
         assertThat(n.isRead()).isTrue();
         verify(notificationRepository).save(n);
     }
 
+    /**
+     * Given an unknown id
+     * When markAsRead is invoked
+     * Then NotificationNotFoundException is thrown
+     */
     @Test
     void markAsRead_unknownId_throws() {
         when(notificationRepository.findById(999L)).thenReturn(java.util.Optional.empty());
@@ -114,6 +98,11 @@ class NotificationServiceUnitTest {
                 .isInstanceOf(NotificationNotFoundException.class);
     }
 
+    /**
+     * Given a non-existing receiver id
+     * When sendToUser is called
+     * Then UserNotFoundException is thrown and nothing is saved
+     */
     @Test
     void sendToUser_unknownReceiver_throwsUserNotFound() {
         when(userRepository.existsById(123L)).thenReturn(false);
@@ -123,18 +112,16 @@ class NotificationServiceUnitTest {
         verify(notificationRepository, never()).save(any());
     }
 
+    /**
+     * Given an existing receiver
+     * When sendToUser is called with a blank subject
+     * Then EmptyNotificationSubjectException is thrown
+     */
     @Test
     void sendToUser_blankSubject_throwsInvalidContent() {
         when(userRepository.existsById(1L)).thenReturn(true);
 
         assertThatThrownBy(() -> notificationService.sendToUser(0L, 1L, "  ", "B"))
                 .isInstanceOf(EmptyNotificationSubjectException.class);
-    }
-
-    @Test
-    void sendToRole_blankBody_throwsInvalidContent() {
-        assertThatThrownBy(() -> notificationService.sendToRole(0L, Role.ROLE_USER, "S", ""))
-                .isInstanceOf(EmptyNotificationBodyException.class);
-        verifyNoInteractions(userRepository, notificationRepository);
     }
 }

@@ -6,6 +6,10 @@ import lombok.AllArgsConstructor;
 
 import java.time.Instant;
 
+/**
+ * Status snapshot of a symbol import job including last run timestamp and
+ * summary. Used for monitoring and UI polling.
+ */
 @Data
 @AllArgsConstructor
 public class ImportData {

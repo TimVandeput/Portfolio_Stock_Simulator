@@ -2,6 +2,9 @@ package com.portfolio.demo_backend.dto.symbol;
 
 import jakarta.validation.constraints.Min;
 
+/**
+ * Summary counters produced after a symbol universe import.
+ */
 public class ImportSummaryDTO {
     @Min(0)
     public int imported;

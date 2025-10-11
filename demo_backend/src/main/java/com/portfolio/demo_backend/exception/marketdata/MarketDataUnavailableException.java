@@ -3,6 +3,9 @@ package com.portfolio.demo_backend.exception.marketdata;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Indicates the market data provider is temporarily unavailable or an IO error occurred.
+ */
 @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 public class MarketDataUnavailableException extends RuntimeException {
     private final String provider;

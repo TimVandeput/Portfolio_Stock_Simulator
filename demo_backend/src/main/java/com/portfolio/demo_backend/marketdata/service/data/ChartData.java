@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Time-series chart payload holding raw provider response plus normalized axis
+ * arrays when available.
+ */
 public record ChartData(
         @NotBlank String symbol,
         @NotBlank String range,

@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 
+/**
+ * DTO representing a simplified Yahoo quote response consumed by our
+ * MarketData mappers and services.
+ */
 @Data
 public class YahooQuoteDTO {
 

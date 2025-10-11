@@ -12,9 +12,19 @@ import org.mapstruct.MappingTarget;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Portfolio mapping utilities.
+ *
+ * Flattens portfolio entities into API DTOs and computes derived values like
+ * totalCost and wallet balances.
+ */
 @Mapper(componentModel = "spring")
 public interface PortfolioDtoMapper {
 
+    /**
+     * Maps a position to a holding DTO. totalCost is computed in an @AfterMapping
+     * hook.
+     */
     @Mapping(target = "symbol", source = "symbol.symbol")
     @Mapping(target = "quantity", source = "sharesOwned")
     @Mapping(target = "avgCostBasis", source = "averageCostBasis")
@@ -22,8 +32,14 @@ public interface PortfolioDtoMapper {
     @Mapping(target = "lastTradeDate", source = "updatedAt")
     PortfolioHoldingResponseDTO toHolding(Portfolio portfolio);
 
+    /**
+     * Bulk mapping convenience for lists.
+     */
     List<PortfolioHoldingResponseDTO> toHoldings(List<Portfolio> portfolios);
 
+    /**
+     * Computes derived fields such as totalCost after the primary mapping.
+     */
     @AfterMapping
     default void computeTotals(Portfolio source, @MappingTarget PortfolioHoldingResponseDTO target) {
         if (source == null || target == null)
@@ -35,6 +51,9 @@ public interface PortfolioDtoMapper {
         }
     }
 
+    /**
+     * Creates an empty holding DTO placeholder for symbols without positions.
+     */
     default PortfolioHoldingResponseDTO toEmptyHolding(String symbol) {
         PortfolioHoldingResponseDTO dto = new PortfolioHoldingResponseDTO();
         dto.setSymbol(symbol);
@@ -45,6 +64,9 @@ public interface PortfolioDtoMapper {
         return dto;
     }
 
+    /**
+     * Converts a wallet entity and total invested amount into a wallet balance DTO.
+     */
     default PortfolioResponseDTO.WalletBalanceDTO toWalletBalanceDTO(Wallet wallet, BigDecimal totalInvested) {
         if (wallet == null)
             return null;
@@ -54,6 +76,10 @@ public interface PortfolioDtoMapper {
         return new PortfolioResponseDTO.WalletBalanceDTO(cash, totalValue, invested);
     }
 
+    /**
+     * Builds a summary details DTO based on total value. Other fields are
+     * placeholders.
+     */
     default PortfolioResponseDTO.PortfolioSummaryDetailsDTO toPortfolioSummaryDetailsDTO(BigDecimal totalValue) {
         return new PortfolioResponseDTO.PortfolioSummaryDetailsDTO(
                 totalValue,
@@ -62,6 +88,9 @@ public interface PortfolioDtoMapper {
                 BigDecimal.ZERO);
     }
 
+    /**
+     * Assembles the final portfolio response object.
+     */
     default PortfolioResponseDTO toPortfolioResponseDTO(
             List<PortfolioHoldingResponseDTO> holdings,
             PortfolioResponseDTO.WalletBalanceDTO walletBalance,

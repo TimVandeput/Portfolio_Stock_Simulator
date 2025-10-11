@@ -1,13 +1,12 @@
 package com.portfolio.demo_backend.service;
 
 import com.portfolio.demo_backend.exception.trading.WalletNotFoundException;
-import com.portfolio.demo_backend.service.data.PortfolioSummaryData;
+
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.User;
 import com.portfolio.demo_backend.model.Wallet;
-import com.portfolio.demo_backend.model.Symbol;
-import com.portfolio.demo_backend.model.Portfolio;
+
 import com.portfolio.demo_backend.repository.UserRepository;
 import com.portfolio.demo_backend.repository.WalletRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
@@ -29,6 +28,10 @@ import java.util.HashMap;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Integration tests for {@link WalletService} focusing on persistence and
+ * balance updates.
+ */
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
@@ -60,6 +63,9 @@ class WalletServiceIntegrationTest {
     private User testUser;
     private Wallet testWallet;
 
+    /**
+     * Given a persisted user and wallet and mocked price service.
+     */
     @BeforeEach
     void setUp() {
         testUser = User.builder()
@@ -89,10 +95,17 @@ class WalletServiceIntegrationTest {
                 new YahooQuoteDTO("GOOGL", 125.75, -1.25, -0.98, "USD", 1600000.0, 127.0, 128.0, 125.0, 800000.0));
     }
 
+    /**
+     * Given a user with a wallet and a missing user id
+     * When fetching wallets
+     * Then correct wallet is returned and missing id throws
+     */
     @Test
     void getUserWallet_found_and_notFound() {
+        // When
         Wallet found = walletService.getUserWallet(testUser.getId(), testUser.getUsername());
 
+        // Then
         assertThat(found).isNotNull();
         assertThat(found.getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
         assertThat(found.getUser().getId()).isEqualTo(testUser.getId());
@@ -101,73 +114,38 @@ class WalletServiceIntegrationTest {
                 .isInstanceOf(WalletNotFoundException.class);
     }
 
-    @Test
-    void addCashToWallet_increasesBalance() {
-        BigDecimal initialCash = testWallet.getCashBalance();
-        BigDecimal addAmount = BigDecimal.valueOf(500.00);
-
-        walletService.addCashToWallet(testUser.getId(), addAmount, "Test addition");
-
-        Wallet updatedWallet = walletRepository.findById(testWallet.getUserId()).orElseThrow();
-        assertThat(updatedWallet.getCashBalance()).isEqualByComparingTo(initialCash.add(addAmount));
-    }
-
-    @Test
-    void addCashToWallet_withNonExistentUser_throws() {
-        assertThatThrownBy(() -> walletService.addCashToWallet(999L, BigDecimal.valueOf(100), "Test"))
-                .isInstanceOf(RuntimeException.class);
-    }
-
+    /**
+     * Given an existing wallet
+     * When increasing the balance
+     * Then the new balance is persisted
+     */
     @Test
     void updateWalletBalance_increasesBalance() {
         BigDecimal newBalance = BigDecimal.valueOf(1250.00);
 
+        // When
         walletService.updateWalletBalance(testUser.getId(), newBalance);
 
+        // Then
         Wallet updatedWallet = walletRepository.findById(testWallet.getUserId()).orElseThrow();
         assertThat(updatedWallet.getCashBalance()).isEqualByComparingTo(newBalance);
     }
 
+    /**
+     * Given an existing wallet
+     * When decreasing the balance
+     * Then the new balance is persisted
+     */
     @Test
     void updateWalletBalance_decreasesBalance() {
         BigDecimal newBalance = BigDecimal.valueOf(700.00);
 
+        // When
         walletService.updateWalletBalance(testUser.getId(), newBalance);
 
+        // Then
         Wallet updatedWallet = walletRepository.findById(testWallet.getUserId()).orElseThrow();
         assertThat(updatedWallet.getCashBalance()).isEqualByComparingTo(newBalance);
     }
 
-    @Test
-    void getPortfolioSummary_withPortfolioEntries() {
-        Symbol symbol = new Symbol();
-        symbol.setSymbol("AAPL");
-        symbol.setName("Apple Inc.");
-        symbol = symbolRepository.save(symbol);
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(testUser.getId());
-        portfolio.setUser(testUser);
-        portfolio.setSymbol(symbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(BigDecimal.valueOf(150.00));
-        portfolioRepository.save(portfolio);
-
-        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
-
-        assertThat(summary).isNotNull();
-        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getPositions()).hasSize(1);
-        assertThat(summary.getPositions().get(0).getSymbol().getSymbol()).isEqualTo("AAPL");
-        assertThat(summary.getPositions().get(0).getSharesOwned()).isEqualTo(10);
-    }
-
-    @Test
-    void getPortfolioSummary_withoutPortfolioEntries() {
-        PortfolioSummaryData summary = walletService.getPortfolioSummary(testUser.getId());
-
-        assertThat(summary).isNotNull();
-        assertThat(summary.getWallet().getCashBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
-        assertThat(summary.getPositions()).isEmpty();
-    }
 }

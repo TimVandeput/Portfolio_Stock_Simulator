@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Interactive stock purchase client component for individual stocks.
+ *
+ * This module provides a comprehensive stock purchase interface that enables users
+ * to buy shares of individual stocks through an advanced trading interface with
+ * real-time price integration, wallet validation, order confirmation, and secure
+ * transaction execution within the Stock Simulator platform.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -19,10 +31,138 @@ import ValidationMessages from "@/components/status/ValidationMessages";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";
 
+/**
+ * Props interface for the BuySymbolClient component.
+ * @interface BuySymbolClientProps
+ */
 interface BuySymbolClientProps {
+  /** The stock symbol to purchase (e.g., "AAPL", "GOOGL") */
   symbol: string;
 }
 
+/**
+ * Interactive stock purchase client component for individual stock symbols.
+ *
+ * This sophisticated client component provides a comprehensive stock purchase
+ * interface with advanced trading capabilities including real-time price monitoring,
+ * wallet balance validation, quantity calculations, order confirmations, and secure
+ * transaction execution. It delivers a professional-grade trading experience within
+ * the Stock Simulator platform.
+ *
+ * @remarks
+ * The component delivers comprehensive stock purchase functionality through:
+ *
+ * **Real-time Market Data Integration**:
+ * - **Live Price Feeds**: Real-time stock price updates via PriceContext
+ * - **Market State Monitoring**: Current bid/ask spreads and volume data
+ * - **Price Change Indicators**: Visual indicators for price movements
+ * - **Market Hours Awareness**: Trading availability status integration
+ *
+ * **Advanced Purchase Interface**:
+ * - **Quantity Input**: Flexible share quantity selection with validation
+ * - **Maximum Affordable Calculation**: Auto-calculation of maximum purchasable shares
+ * - **Order Cost Preview**: Real-time total cost calculations
+ * - **Price Impact Analysis**: Cost basis and projected value calculations
+ *
+ * **Wallet Integration & Validation**:
+ * - **Real-time Balance Checking**: Live wallet balance monitoring
+ * - **Purchase Power Validation**: Sufficient funds verification
+ * - **Cost Tolerance Handling**: Floating-point precision safeguards
+ * - **Balance Updates**: Post-transaction balance synchronization
+ *
+ * **Order Execution & Confirmation**:
+ * - **Two-step Confirmation**: Modal confirmation before execution
+ * - **Order Summary Display**: Complete transaction details preview
+ * - **Execution Progress**: Real-time processing status indicators
+ * - **Success/Error Handling**: Comprehensive transaction result processing
+ *
+ * **User Experience Enhancements**:
+ * - **Responsive Design**: Optimized layouts for all device types
+ * - **Loading States**: Smooth transitions during data operations
+ * - **Error Recovery**: Graceful handling with retry mechanisms
+ * - **Navigation Integration**: Seamless routing after successful transactions
+ * - **Scroll Position Management**: Preserved scroll state during modal interactions
+ *
+ * **Input Validation & Security**:
+ * - **Quantity Validation**: Numeric input sanitization and bounds checking
+ * - **Price Verification**: Expected price matching for order security
+ * - **Authentication Verification**: Secure user session validation
+ * - **Transaction Integrity**: Comprehensive error handling and rollback
+ *
+ * **Performance Optimizations**:
+ * - **Memoized Calculations**: Optimized quantity and cost computations
+ * - **Efficient State Management**: Minimal re-renders through useMemo hooks
+ * - **Debounced Updates**: Reduced API calls during input interactions
+ * - **Smart Loading States**: Targeted loading indicators for specific operations
+ *
+ * **Professional Trading Features**:
+ * - **Market Order Execution**: Immediate execution at current market price
+ * - **Order Validation**: Comprehensive pre-execution verification
+ * - **Transaction History Integration**: Automatic order tracking and recording
+ * - **Portfolio Updates**: Real-time portfolio synchronization post-purchase
+ *
+ * The component serves as a complete stock purchase solution, providing users
+ * with professional-grade trading capabilities while maintaining security,
+ * performance, and user experience standards expected in modern financial
+ * applications.
+ *
+ * @example
+ * ```tsx
+ * // Comprehensive stock purchase interface usage
+ * function BuySymbolClient({ symbol }: BuySymbolClientProps) {
+ *   const [quantity, setQuantity] = useState<string>("1");
+ *   const [walletBalance, setWalletBalance] = useState<WalletBalanceResponse | null>(null);
+ *   const { prices } = usePrices();
+ *
+ *   const currentPrice = prices[symbol];
+ *   const totalCost = useMemo(() => {
+ *     const qty = parseFloat(quantity) || 0;
+ *     return qty * (currentPrice?.last || 0);
+ *   }, [quantity, currentPrice]);
+ *
+ *   const handleBuy = async () => {
+ *     const response = await executeBuyOrder(userId, {
+ *       symbol,
+ *       quantity: parseFloat(quantity),
+ *       expectedPrice: currentPrice?.last || 0
+ *     });
+ *
+ *     // Update UI with transaction results
+ *     setWalletBalance(prev => prev ? {
+ *       ...prev,
+ *       cashBalance: response.newCashBalance
+ *     } : null);
+ *   };
+ *
+ *   return (
+ *     <div className="buy-interface">
+ *       <PriceCard symbol={symbol} currentPrice={currentPrice} />
+ *       <WalletBalanceCard walletBalance={walletBalance} />
+ *       <QuantityInput quantity={quantity} onChange={setQuantity} />
+ *       <OrderSummary totalCost={totalCost} />
+ *       <NeumorphicButton onClick={handleBuy}>
+ *         Buy {quantity} shares
+ *       </NeumorphicButton>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @param props - Component properties containing the stock symbol to purchase
+ * @returns A comprehensive stock purchase interface with real-time data integration,
+ * validation, confirmation, and secure transaction execution capabilities
+ *
+ * @see {@link usePrices} - Real-time price data context provider
+ * @see {@link executeBuyOrder} - API function for executing stock purchases
+ * @see {@link getWalletBalance} - API function for retrieving wallet balance
+ * @see {@link PriceCard} - Real-time stock price display component
+ * @see {@link WalletBalanceCard} - Wallet balance display component
+ * @see {@link QuantityInput} - Share quantity input component
+ * @see {@link OrderSummary} - Transaction summary display component
+ * @see {@link ConfirmationModal} - Order confirmation modal component
+ *
+ * @public
+ */
 export default function BuySymbolClient({ symbol }: BuySymbolClientProps) {
   const router = useRouter();
   const { prices } = usePrices();

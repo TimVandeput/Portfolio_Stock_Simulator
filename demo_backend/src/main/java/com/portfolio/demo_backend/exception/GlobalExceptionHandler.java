@@ -7,9 +7,7 @@ import com.portfolio.demo_backend.exception.marketdata.StreamAuthenticationExcep
 import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
 import com.portfolio.demo_backend.exception.marketdata.ApiRateLimitException;
 import com.portfolio.demo_backend.exception.marketdata.MarketDataUnavailableException;
-import com.portfolio.demo_backend.exception.portfolio.PortfolioNotFoundException;
 import com.portfolio.demo_backend.exception.portfolio.PortfolioDataException;
-import com.portfolio.demo_backend.exception.portfolio.PortfolioAccessException;
 import com.portfolio.demo_backend.exception.trading.*;
 import com.portfolio.demo_backend.exception.notification.NotificationNotFoundException;
 import com.portfolio.demo_backend.exception.notification.EmptyNotificationBodyException;
@@ -20,7 +18,7 @@ import org.springframework.http.MediaType;
 
 import com.portfolio.demo_backend.exception.auth.InvalidCredentialsException;
 import com.portfolio.demo_backend.exception.auth.InvalidRefreshTokenException;
-import com.portfolio.demo_backend.exception.auth.RoleNotAssignedException;
+
 import com.portfolio.demo_backend.exception.symbol.ImportInProgressException;
 import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
 import com.portfolio.demo_backend.exception.user.UserAlreadyExistsException;
@@ -32,6 +30,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Catch-all exception handler mapping domain/runtime exceptions to HTTP responses.
+ * Ordered after validation handler; emits JSON bodies by default and plain text for SSE endpoints.
+ */
 @RestControllerAdvice
 @Slf4j
 @org.springframework.core.annotation.Order(2)
@@ -70,13 +72,6 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    }
-
-    @ExceptionHandler(RoleNotAssignedException.class)
-    public ResponseEntity<Map<String, String>> handleRoleNotAssigned(RoleNotAssignedException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
@@ -156,25 +151,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler(PortfolioNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handlePortfolioNotFound(PortfolioNotFoundException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
     @ExceptionHandler(PortfolioDataException.class)
     public ResponseEntity<Map<String, String>> handlePortfolioData(PortfolioDataException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-    }
-
-    @ExceptionHandler(PortfolioAccessException.class)
-    public ResponseEntity<Map<String, String>> handlePortfolioAccess(PortfolioAccessException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(NotificationNotFoundException.class)

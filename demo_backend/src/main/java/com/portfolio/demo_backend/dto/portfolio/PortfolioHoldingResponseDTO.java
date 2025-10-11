@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+/**
+ * Single holding within a user's portfolio including quantity and cost basis.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,11 +1,7 @@
 package com.portfolio.demo_backend.mapper;
 
-import com.portfolio.demo_backend.dto.trading.PortfolioHoldingDTO;
-import com.portfolio.demo_backend.dto.trading.PortfolioSummaryDTO;
 import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
-import com.portfolio.demo_backend.model.Portfolio;
 import com.portfolio.demo_backend.model.Transaction;
-import com.portfolio.demo_backend.model.Wallet;
 import com.portfolio.demo_backend.model.Symbol;
 import com.portfolio.demo_backend.model.enums.TransactionType;
 
@@ -14,76 +10,26 @@ import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for {@link TradingMapper}.
+ *
+ * Verifies mapping from domain
+ * {@link com.portfolio.demo_backend.model.Transaction}
+ * to {@link com.portfolio.demo_backend.dto.trading.TradeExecutionResponse} for
+ * both BUY and SELL scenarios.
+ */
 class TradingMapperTest {
 
     private final TradingMapper mapper = Mappers.getMapper(TradingMapper.class);
 
-    @Test
-    void toPortfolioHoldingDTO_withProfitablePosition_calculatesCorrectly() {
-        Symbol symbol = new Symbol();
-        symbol.setSymbol("AAPL");
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setSymbol(symbol);
-        portfolio.setSharesOwned(100);
-        portfolio.setAverageCostBasis(new BigDecimal("150.00"));
-        BigDecimal currentPrice = new BigDecimal("160.00");
-
-        PortfolioHoldingDTO dto = mapper.toPortfolioHoldingDTO(portfolio, currentPrice);
-
-        assertEquals("AAPL", dto.getSymbol());
-        assertEquals(100, dto.getShares());
-        assertEquals(new BigDecimal("150.00"), dto.getAverageCost());
-        assertEquals(new BigDecimal("160.00"), dto.getCurrentPrice());
-        assertEquals(new BigDecimal("16000.00"), dto.getMarketValue());
-        assertEquals(new BigDecimal("1000.00"), dto.getUnrealizedGainLoss());
-        assertEquals(0, new BigDecimal("6.67")
-                .compareTo(dto.getUnrealizedGainLossPercent().setScale(2, java.math.RoundingMode.HALF_UP)));
-    }
-
-    @Test
-    void toPortfolioSummaryDTO_withMultipleHoldings_aggregatesCorrectly() {
-        Wallet wallet = new Wallet();
-        wallet.setCashBalance(new BigDecimal("2000.00"));
-
-        Symbol symbol1 = new Symbol();
-        symbol1.setSymbol("AAPL");
-
-        Symbol symbol2 = new Symbol();
-        symbol2.setSymbol("GOOGL");
-
-        Portfolio portfolio1 = new Portfolio();
-        portfolio1.setSymbol(symbol1);
-        portfolio1.setSharesOwned(100);
-        portfolio1.setAverageCostBasis(new BigDecimal("150.00"));
-
-        Portfolio portfolio2 = new Portfolio();
-        portfolio2.setSymbol(symbol2);
-        portfolio2.setSharesOwned(50);
-        portfolio2.setAverageCostBasis(new BigDecimal("120.00"));
-
-        Map<String, BigDecimal> currentPrices = new HashMap<>();
-        currentPrices.put("AAPL", new BigDecimal("160.00"));
-        currentPrices.put("GOOGL", new BigDecimal("130.00"));
-
-        PortfolioSummaryDTO summary = mapper.toPortfolioSummaryDTO(
-                wallet, Arrays.asList(portfolio1, portfolio2), currentPrices);
-
-        assertEquals(new BigDecimal("2000.00"), summary.getCashBalance());
-        assertEquals(new BigDecimal("22500.00"), summary.getTotalMarketValue());
-        assertEquals(new BigDecimal("24500.00"), summary.getTotalPortfolioValue());
-        assertEquals(new BigDecimal("1500.00"), summary.getTotalUnrealizedGainLoss());
-        assertEquals(2, summary.getHoldings().size());
-    }
-
+    /**
+     * Ensures BUY transaction is mapped to TradeExecutionResponse correctly.
+     */
     @Test
     void toTradeExecutionResponse_buyOrder_generatesProperly() {
+        // Given: A BUY transaction with values
         Symbol symbol = new Symbol();
         symbol.setSymbol("AAPL");
         symbol.setName("Apple Inc.");
@@ -99,9 +45,11 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("1212.50");
         Integer newSharesOwned = 150;
 
+        // When: Mapping to response
         TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
+        // Then: Fields are transferred correctly
         assertEquals("AAPL", response.getSymbol());
         assertEquals(50, response.getQuantity());
         assertEquals(new BigDecimal("155.75"), response.getExecutionPrice());
@@ -112,8 +60,12 @@ class TradingMapperTest {
         assertTrue(response.getMessage().contains("Successfully bought 50 shares of AAPL"));
     }
 
+    /**
+     * Ensures SELL transaction is mapped to TradeExecutionResponse correctly.
+     */
     @Test
     void toTradeExecutionResponse_sellOrder_generatesProperly() {
+        // Given: A SELL transaction with values
         Symbol symbol = new Symbol();
         symbol.setSymbol("GOOGL");
         symbol.setName("Alphabet Inc.");
@@ -129,9 +81,11 @@ class TradingMapperTest {
         BigDecimal newCashBalance = new BigDecimal("8375.00");
         Integer newSharesOwned = 25;
 
+        // When: Mapping to response
         TradeExecutionResponse response = mapper.toTradeExecutionResponse(
                 transaction, newCashBalance, newSharesOwned);
 
+        // Then: Fields and message reflect SELL
         assertEquals(TransactionType.SELL, response.getTransactionType());
         assertTrue(response.getMessage().contains("Successfully sold 25 shares of GOOGL"));
     }

@@ -1,22 +1,230 @@
+/**
+ * @fileoverview Comprehensive filters bar component for data table management and user controls
+ *
+ * This component provides advanced filtering, searching, and pagination controls with
+ * responsive design and professional UI patterns. Features include search input,
+ * enabled/disabled filtering, page size selection, sorting capabilities, and
+ * adaptive layout for different screen sizes and user workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import NeumorphicInput from "@/components/input/NeumorphicInput";
 import SortDropdown from "@/components/ui/SortDropdown";
+import type { BaseComponentProps } from "@/types/components";
 
+/** Filter options for enabled/disabled state filtering */
 type EnabledFilter = "all" | "enabled" | "disabled";
 
-type Props = {
+/**
+ * Props interface for FiltersBar component configuration
+ * @interface FiltersBarProps
+ * @extends {BaseComponentProps}
+ */
+export interface FiltersBarProps extends BaseComponentProps {
+  /** Current search query string */
   q: string;
+  /** Function to update search query */
   setQ: (v: string) => void;
+  /** Current enabled filter state */
   enabledFilter: EnabledFilter;
+  /** Function to update enabled filter */
   setEnabledFilter: (f: EnabledFilter) => void;
+  /** Current page size for pagination */
   pageSize: number;
+  /** Function to update page size */
   setPageSize: (n: number) => void;
+  /** Current sort field (optional) */
   sortBy?: string;
+  /** Function to update sort field (optional) */
   setSortBy?: (s: string) => void;
+  /** Available sort options (optional) */
   sortOptions?: Array<{ value: string; label: string }>;
-};
+}
 
+/**
+ * Comprehensive filters bar component for data table management and user controls
+ *
+ * @remarks
+ * The FiltersBar component delivers advanced data management controls with the following features:
+ *
+ * **Search Functionality:**
+ * - Neumorphic search input with placeholder guidance
+ * - Real-time search query updates
+ * - Symbol and name search capabilities
+ * - Professional input styling and theming
+ *
+ * **Filter Controls:**
+ * - All/Enabled/Disabled state filtering
+ * - Chip-style filter buttons with active states
+ * - Visual feedback with selected state styling
+ * - Professional transition animations
+ *
+ * **Pagination Management:**
+ * - Configurable page size (10, 25, 50 rows)
+ * - Dropdown selection with theme integration
+ * - Accessible labeling for screen readers
+ * - Professional select styling
+ *
+ * **Sort Integration:**
+ * - Optional sorting functionality
+ * - SortDropdown component integration
+ * - Flexible sort options configuration
+ * - Professional dropdown styling
+ *
+ * **Responsive Design:**
+ * - Mobile-first approach with column layout
+ * - Tablet breakpoint with hidden/shown elements
+ * - Desktop layout with optimized spacing
+ * - Adaptive component visibility
+ *
+ * **Layout Patterns:**
+ * - Flexible container with gap spacing
+ * - Responsive flex direction changes
+ * - Auto margin for right alignment
+ * - Professional spacing and alignment
+ *
+ * **Visual Design:**
+ * - Consistent chip styling for filters
+ * - Theme-integrated colors and borders
+ * - Professional typography and sizing
+ * - Clean visual hierarchy
+ *
+ * **Accessibility:**
+ * - ARIA labels for screen readers
+ * - Semantic HTML structure
+ * - Keyboard navigation support
+ * - Clear interactive elements
+ *
+ * **Theme Integration:**
+ * - CSS custom properties for theming
+ * - Surface background colors
+ * - Border and text color variables
+ * - Professional color palette
+ *
+ * **Performance:**
+ * - Efficient re-render patterns
+ * - Optimized responsive breakpoints
+ * - Clean component structure
+ * - Professional state management
+ *
+ * @param props - Configuration object for filters bar functionality
+ * @returns FiltersBar component with comprehensive data management controls
+ *
+ * @example
+ * ```tsx
+ * // Basic filters bar usage
+ * <FiltersBar
+ *   q={searchQuery}
+ *   setQ={setSearchQuery}
+ *   enabledFilter={enabledFilter}
+ *   setEnabledFilter={setEnabledFilter}
+ *   pageSize={pageSize}
+ *   setPageSize={setPageSize}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Full-featured filters bar with sorting
+ * <FiltersBar
+ *   q={searchQuery}
+ *   setQ={setSearchQuery}
+ *   enabledFilter={enabledFilter}
+ *   setEnabledFilter={setEnabledFilter}
+ *   pageSize={pageSize}
+ *   setPageSize={setPageSize}
+ *   sortBy={sortBy}
+ *   setSortBy={setSortBy}
+ *   sortOptions={[
+ *     { value: 'symbol', label: 'Symbol' },
+ *     { value: 'name', label: 'Name' },
+ *     { value: 'price', label: 'Price' }
+ *   ]}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with data table
+ * function SymbolsManager() {
+ *   const [filters, setFilters] = useState({
+ *     q: '',
+ *     enabledFilter: 'all' as EnabledFilter,
+ *     pageSize: 25,
+ *     sortBy: 'symbol'
+ *   });
+ *
+ *   const { data: symbols } = useFilteredSymbols(filters);
+ *
+ *   return (
+ *     <div className="space-y-6">
+ *       <FiltersBar
+ *         q={filters.q}
+ *         setQ={(q) => setFilters(prev => ({ ...prev, q }))}
+ *         enabledFilter={filters.enabledFilter}
+ *         setEnabledFilter={(enabledFilter) =>
+ *           setFilters(prev => ({ ...prev, enabledFilter }))
+ *         }
+ *         pageSize={filters.pageSize}
+ *         setPageSize={(pageSize) =>
+ *           setFilters(prev => ({ ...prev, pageSize }))
+ *         }
+ *         sortBy={filters.sortBy}
+ *         setSortBy={(sortBy) =>
+ *           setFilters(prev => ({ ...prev, sortBy }))
+ *         }
+ *         sortOptions={SORT_OPTIONS}
+ *       />
+ *
+ *       <SymbolsTable symbols={symbols} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Custom filter integration
+ * function AdvancedFiltersBar() {
+ *   const [advancedFilters, setAdvancedFilters] = useState({
+ *     query: '',
+ *     status: 'all' as EnabledFilter,
+ *     resultsPerPage: 25,
+ *     sortField: 'symbol'
+ *   });
+ *
+ *   return (
+ *     <div className="filters-container">
+ *       <FiltersBar
+ *         q={advancedFilters.query}
+ *         setQ={(query) =>
+ *           setAdvancedFilters(prev => ({ ...prev, query }))
+ *         }
+ *         enabledFilter={advancedFilters.status}
+ *         setEnabledFilter={(status) =>
+ *           setAdvancedFilters(prev => ({ ...prev, status }))
+ *         }
+ *         pageSize={advancedFilters.resultsPerPage}
+ *         setPageSize={(resultsPerPage) =>
+ *           setAdvancedFilters(prev => ({ ...prev, resultsPerPage }))
+ *         }
+ *         sortBy={advancedFilters.sortField}
+ *         setSortBy={(sortField) =>
+ *           setAdvancedFilters(prev => ({ ...prev, sortField }))
+ *         }
+ *         sortOptions={ADVANCED_SORT_OPTIONS}
+ *       />
+ *
+ *       <FilteredResults filters={advancedFilters} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export default function FiltersBar({
   q,
   setQ,
@@ -27,7 +235,7 @@ export default function FiltersBar({
   sortBy,
   setSortBy,
   sortOptions,
-}: Props) {
+}: FiltersBarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 md:flex-row md:flex-wrap md:items-center md:gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-3 mb-3">
       <NeumorphicInput

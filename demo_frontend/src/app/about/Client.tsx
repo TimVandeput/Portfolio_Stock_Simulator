@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Interactive about page client component for project information.
+ *
+ * This module provides comprehensive information about the Stock Simulator project
+ * through an interactive tabbed interface. It includes project details, developer
+ * biography, and legal disclaimers, presenting content in an organized and
+ * visually appealing format for users seeking platform information.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import Tabs from "@/components/ui/Tabs";
@@ -6,6 +18,110 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import FeatureCard from "@/components/cards/FeatureCard";
 import InfoCard from "@/components/cards/InfoCard";
 
+/**
+ * Interactive about page client component with comprehensive project information.
+ *
+ * This sophisticated client component provides detailed information about the
+ * Stock Simulator project through an organized tabbed interface. It presents
+ * project details, developer biography, and important legal disclaimers in
+ * an engaging and user-friendly format that helps users understand the
+ * platform's purpose, capabilities, and limitations.
+ *
+ * @remarks
+ * The component implements comprehensive information presentation through:
+ *
+ * **Content Organization & Structure**:
+ * - **Tabbed Interface**: Organized sections for different information types
+ * - **Visual Design**: Consistent styling with platform design system
+ * - **Responsive Layout**: Optimized presentation for all device sizes
+ * - **Interactive Elements**: Engaging user interface components
+ *
+ * **Information Categories**:
+ * - **Project Overview**: Platform purpose, features, and capabilities
+ * - **Technology Stack**: Development technologies and architecture
+ * - **Developer Biography**: Creator background and expertise
+ * - **Legal Disclaimers**: Important usage terms and limitations
+ * - **Educational Purpose**: Platform's role as a learning tool
+ *
+ * **Content Presentation Features**:
+ * - **Feature Cards**: Visual presentation of key platform capabilities
+ * - **Info Cards**: Highlighted important information and notices
+ * - **Section Headers**: Clear organization with iconography
+ * - **Responsive Typography**: Readable text across all screen sizes
+ * - **Image Integration**: Developer photo and visual elements
+ *
+ * **User Experience Design**:
+ * - **Progressive Disclosure**: Information revealed through tab navigation
+ * - **Visual Hierarchy**: Clear information prioritization and flow
+ * - **Accessibility**: Full keyboard navigation and screen reader support
+ * - **Performance**: Optimized loading and rendering for smooth interaction
+ *
+ * **Educational Content**:
+ * - **Platform Limitations**: Transparent communication about demo constraints
+ * - **Learning Objectives**: Clear explanation of educational goals
+ * - **Risk Disclaimer**: Important financial education messaging
+ * - **Usage Guidelines**: Proper platform utilization instructions
+ *
+ * The component serves as a comprehensive information hub that builds user
+ * confidence through transparency, educates about platform capabilities,
+ * and establishes appropriate expectations for the trading simulation experience.
+ *
+ * @example
+ * ```tsx
+ * // Rendered by the AboutPage server component
+ * function AboutClient() {
+ *   const aboutTabs = [
+ *     {
+ *       id: "project",
+ *       label: "About the Project",
+ *       content: (
+ *         <div>
+ *           <SectionHeader icon="briefcase" title="Stock Simulator" />
+ *           <FeatureCard
+ *             icon="trending-up"
+ *             title="Market Data"
+ *             description="Real-time price feeds with 15-minute delays"
+ *           />
+ *           <InfoCard
+ *             icon="info"
+ *             title="Demo Application"
+ *             description="Portfolio showcase with budget considerations"
+ *           />
+ *         </div>
+ *       )
+ *     },
+ *     {
+ *       id: "developer",
+ *       label: "About the Developer",
+ *       content: (
+ *         <div>
+ *           <SectionHeader icon="user" title="Meet the Developer" />
+ *           <DeveloperBio />
+ *         </div>
+ *       )
+ *     }
+ *   ];
+ *
+ *   return (
+ *     <div className="about-container">
+ *       <Tabs tabs={aboutTabs} defaultActiveTab="project" />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The comprehensive about page interface with tabbed content including
+ * project information, developer details, and legal disclaimers presented
+ * through an interactive and visually appealing interface.
+ *
+ * @see {@link Tabs} - Tabbed navigation component for content organization
+ * @see {@link FeatureCard} - Feature presentation component
+ * @see {@link InfoCard} - Information highlight component
+ * @see {@link SectionHeader} - Section header component with icons
+ * @see {@link DynamicIcon} - Dynamic icon rendering component
+ *
+ * @public
+ */
 export default function AboutClient() {
   const aboutTabs = [
     {
@@ -68,8 +184,9 @@ export default function AboutClient() {
                 This application serves as a demonstration of my development
                 capabilities. As a portfolio piece, certain technical
                 limitations were accepted for budget considerations, including
-                the 15-minute data delay from Finnhub and a curated selection of
-                50 symbols rather than the full market catalog.
+                the 15-minute data delay from Finnhub, a curated selection of 50
+                symbols rather than the full market catalog, American stock only
+                and graphs only available for currently held shares.
               </p>
             </div>
           </div>

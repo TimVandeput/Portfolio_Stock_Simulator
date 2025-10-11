@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Desktop navigation component with advanced dropdown menu system
+ *
+ * This component provides a comprehensive desktop navigation solution with sophisticated
+ * dropdown functionality, accessibility features, and interactive visual feedback.
+ * Features include neumorphic design elements, keyboard navigation support, and
+ * seamless integration with Next.js routing and authentication systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -6,12 +18,122 @@ import { usePathname } from "next/navigation";
 import type { NavItem } from "@/types";
 import DynamicIcon from "../ui/DynamicIcon";
 import { useDropdownMenu } from "@/hooks/useDropdownMenu";
+import { BaseComponentProps } from "@/types";
 
-interface DesktopNavProps {
+/**
+ * Props interface for DesktopNav component configuration
+ * @interface DesktopNavProps
+ * @extends {BaseComponentProps}
+ */
+export interface DesktopNavProps extends BaseComponentProps {
+  /** Array of navigation items to display */
   navItems: NavItem[];
+  /** Whether to hide the navigation component */
   hideNav: boolean;
 }
 
+/**
+ * Desktop navigation component with advanced dropdown menu system
+ *
+ * @remarks
+ * The DesktopNav component delivers sophisticated desktop navigation with the following features:
+ *
+ * **Navigation Structure:**
+ * - Dropdown menu system with expandable navigation items
+ * - Dynamic menu toggle button with X/menu icon switching
+ * - Professional neumorphic button styling with interactive effects
+ * - Responsive design optimized for desktop and larger screens
+ *
+ * **Interactive Features:**
+ * - Click-to-expand dropdown with smooth animations
+ * - Hover and press effects with visual feedback
+ * - Active route highlighting with inverted color scheme
+ * - Mouse interactions with press/release state management
+ *
+ * **Accessibility:**
+ * - Full ARIA support with proper menu semantics
+ * - Keyboard navigation with arrow key support
+ * - Screen reader compatible with role and label attributes
+ * - Focus management and visual focus indicators
+ *
+ * **Visual Design:**
+ * - Neumorphic design language with soft shadows
+ * - Dynamic border radius adjustments for open states
+ * - Consistent spacing and typography hierarchy
+ * - Theme integration with CSS custom properties
+ *
+ * **State Management:**
+ * - Path-based active state detection
+ * - Dropdown open/close state management
+ * - Auto-close on navigation selection
+ * - Hide/show functionality for conditional display
+ *
+ * **Layout Features:**
+ * - Absolute positioning for dropdown overlay
+ * - Scrollable menu area for long navigation lists
+ * - Proper z-index layering for modal behavior
+ * - Responsive spacing and sizing adaptations
+ *
+ * **Integration:**
+ * - Next.js Link components for client-side navigation
+ * - usePathname hook for active route detection
+ * - Custom dropdown menu hook for complex interactions
+ * - Dynamic icon system for consistent iconography
+ *
+ * @param props - Configuration object for navigation behavior
+ * @returns DesktopNav component with sophisticated dropdown navigation
+ *
+ * @example
+ * ```tsx
+ * // Basic desktop navigation with nav items
+ * const navItems = [
+ *   { name: "Dashboard", href: "/dashboard" },
+ *   { name: "Portfolio", href: "/portfolio" },
+ *   { name: "Market", href: "/market" }
+ * ];
+ *
+ * <DesktopNav
+ *   navItems={navItems}
+ *   hideNav={false}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Conditional navigation with authentication
+ * function HeaderNavigation({ user }: { user: User | null }) {
+ *   const navItems = filterNavItemsByRole(user?.role);
+ *
+ *   return (
+ *     <DesktopNav
+ *       navItems={navItems}
+ *       hideNav={!user}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with header component
+ * function AppHeader() {
+ *   const { user } = useAuth();
+ *   const navItems = getNavigationItems(user);
+ *   const shouldHideNav = useHeaderState().hideNav;
+ *
+ *   return (
+ *     <header className="flex items-center justify-between">
+ *       <Logo />
+ *       <DesktopNav
+ *         navItems={navItems}
+ *         hideNav={shouldHideNav}
+ *       />
+ *       <UserControls />
+ *     </header>
+ *   );
+ * }
+ * ```
+ */
 export default function DesktopNav({ navItems, hideNav }: DesktopNavProps) {
   const pathname = usePathname();
   const { open, setOpen, panelRef, btnRef, listRef, onKeyDown } =

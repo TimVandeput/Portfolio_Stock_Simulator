@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Notification status tracking hook for user notifications management.
+ *
+ * This hook provides real-time notification status tracking including unread counts,
+ * loading states, and automatic updates for user notification systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect } from "react";

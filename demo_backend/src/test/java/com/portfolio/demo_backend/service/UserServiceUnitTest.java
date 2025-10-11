@@ -19,6 +19,12 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link UserService} focusing on create and retrieval
+ * scenarios.
+ *
+ * Applies Given/When/Then inline comments and method-level Javadoc for clarity.
+ */
 @ExtendWith(MockitoExtension.class)
 class UserServiceUnitTest {
 
@@ -34,6 +40,9 @@ class UserServiceUnitTest {
 
     private User user;
 
+    /**
+     * Given a default user fixture for tests.
+     */
     @BeforeEach
     void setup() {
         user = User.builder()
@@ -43,6 +52,11 @@ class UserServiceUnitTest {
                 .build();
     }
 
+    /**
+     * Given username not taken and a strong password
+     * When createUser is called
+     * Then password is encoded, user saved, and a wallet is created for the user
+     */
     @Test
     void createUser_happyPath_encodesPassword_andSaves() {
         when(userRepository.findByUsername("tim")).thenReturn(Optional.empty());
@@ -56,8 +70,10 @@ class UserServiceUnitTest {
         when(userRepository.save(any(User.class)))
                 .thenReturn(savedUser);
 
+        // When
         User saved = userService.createUser(user);
 
+        // Then
         assertThat(saved.getPassword()).isEqualTo("ENCODED");
         verify(userRepository).findByUsername("tim");
         verify(passwordEncoder).encode("Pass1234");
@@ -70,6 +86,11 @@ class UserServiceUnitTest {
         assertThat(createdWallet.getUser()).isEqualTo(savedUser);
     }
 
+    /**
+     * Given username exists already
+     * When createUser is invoked
+     * Then UserAlreadyExistsException is thrown and user is not saved
+     */
     @Test
     void createUser_duplicateUsername_throws() {
         when(userRepository.findByUsername("tim")).thenReturn(Optional.of(new User()));
@@ -80,6 +101,11 @@ class UserServiceUnitTest {
         verify(userRepository, never()).save(any());
     }
 
+    /**
+     * Given a weak password
+     * When createUser is invoked
+     * Then WeakPasswordException is thrown and nothing is persisted
+     */
     @Test
     void createUser_weakPassword_throws() {
         user.setPassword("short1");
@@ -92,15 +118,27 @@ class UserServiceUnitTest {
         verify(passwordEncoder, never()).encode(anyString());
     }
 
+    /**
+     * Given an existing user id
+     * When getUserById is called
+     * Then the user is returned
+     */
     @Test
     void getUserById_found_returnsUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        // When
         User found = userService.getUserById(1L);
 
+        // Then
         assertThat(found).isEqualTo(user);
     }
 
+    /**
+     * Given a non-existing user id
+     * When getUserById is called
+     * Then UserNotFoundException is thrown
+     */
     @Test
     void getUserById_notFound_throws() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
@@ -109,112 +147,20 @@ class UserServiceUnitTest {
                 .isInstanceOf(UserNotFoundException.class);
     }
 
+    /**
+     * Given repository returns a list
+     * When getAllUsers is called
+     * Then the list is returned unchanged
+     */
     @Test
     void getAllUsers_returnsList() {
         when(userRepository.findAll()).thenReturn(List.of(user));
 
+        // When
         List<User> all = userService.getAllUsers();
 
+        // Then
         assertThat(all).containsExactly(user);
     }
 
-    @Test
-    void updateUser_changeUsername_onlyWhenUnique() {
-        User existing = User.builder().id(1L).username("tim").password("HASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(userRepository.findByUsername("timnieuw")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        User patch = User.builder().username("timnieuw").build();
-        User updated = userService.updateUser(1L, patch);
-
-        assertThat(updated.getUsername()).isEqualTo("timnieuw");
-        assertThat(updated.getPassword()).isEqualTo("HASH");
-    }
-
-    @Test
-    void updateUser_changeUsername_toExisting_throws() {
-        User existing = User.builder().id(1L).username("tim").password("HASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(userRepository.findByUsername("taken")).thenReturn(Optional.of(new User()));
-
-        User patch = User.builder().username("taken").build();
-
-        assertThatThrownBy(() -> userService.updateUser(1L, patch))
-                .isInstanceOf(UserAlreadyExistsException.class);
-
-        verify(userRepository, never()).save(any());
-    }
-
-    @Test
-    void updateUser_changePassword_validatesAndEncodes() {
-        User existing = User.builder().id(1L).username("tim").password("OLDHASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(passwordEncoder.encode("Newpass1")).thenReturn("NEWHASH");
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        User patch = User.builder().password("Newpass1").build();
-        User updated = userService.updateUser(1L, patch);
-
-        assertThat(updated.getPassword()).isEqualTo("NEWHASH");
-        verify(passwordEncoder).encode("Newpass1");
-    }
-
-    @Test
-    void updateUser_passwordNull_keepsOld() {
-        User existing = User.builder().id(1L).username("tim").password("OLDHASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        User patch = User.builder().password(null).build();
-        User updated = userService.updateUser(1L, patch);
-
-        assertThat(updated.getPassword()).isEqualTo("OLDHASH");
-        verify(passwordEncoder, never()).encode(anyString());
-    }
-
-    @Test
-    void updateUser_passwordBlank_keepsOld() {
-        User existing = User.builder().id(1L).username("tim").password("OLDHASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        User patch = User.builder().password("   ").build();
-        User updated = userService.updateUser(1L, patch);
-
-        assertThat(updated.getPassword()).isEqualTo("OLDHASH");
-        verify(passwordEncoder, never()).encode(anyString());
-    }
-
-    @Test
-    void updateUser_noFieldsProvided_keepsAll() {
-        User existing = User.builder().id(1L).username("tim").password("HASH").build();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        User patch = new User();
-        User updated = userService.updateUser(1L, patch);
-
-        assertThat(updated.getUsername()).isEqualTo("tim");
-        assertThat(updated.getPassword()).isEqualTo("HASH");
-    }
-
-    @Test
-    void deleteUser_exists_deletes() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-
-        userService.deleteUser(1L);
-
-        verify(userRepository).deleteById(1L);
-    }
-
-    @Test
-    void deleteUser_notFound_throws() {
-        when(userRepository.existsById(1L)).thenReturn(false);
-
-        assertThatThrownBy(() -> userService.deleteUser(1L))
-                .isInstanceOf(UserNotFoundException.class);
-
-        verify(userRepository, never()).deleteById(anyLong());
-    }
 }

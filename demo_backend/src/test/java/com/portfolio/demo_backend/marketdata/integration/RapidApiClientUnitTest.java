@@ -21,6 +21,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Unit tests for {@link RapidApiClient} covering success paths and various HTTP
+ * error conditions for both bulk and single-quote endpoints.
+ */
 class RapidApiClientUnitTest {
 
     @Mock
@@ -50,6 +54,9 @@ class RapidApiClientUnitTest {
         ReflectionTestUtils.setField(rapidApiClient, "http", mockHttpClient);
     }
 
+    /**
+     * Parses a successful bulk quotes response into Quote objects.
+     */
     @Test
     void getQuotes_success_returnsQuotesList() throws IOException {
         String jsonResponse = """
@@ -77,8 +84,10 @@ class RapidApiClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         List<RapidApiClient.Quote> result = rapidApiClient.getQuotes(List.of("AAPL"));
 
+        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).symbol).isEqualTo("AAPL");
         assertThat(result.get(0).price).isEqualTo(150.00);
@@ -86,22 +95,33 @@ class RapidApiClientUnitTest {
         assertThat(result.get(0).changePercent).isEqualTo(1.69);
     }
 
+    /**
+     * Returns empty list when requested with no symbols.
+     */
     @Test
     void getQuotes_emptySymbols_returnsEmptyList() throws IOException {
+        // When
         List<RapidApiClient.Quote> result = rapidApiClient.getQuotes(List.of());
 
         assertThat(result).isEmpty();
         verifyNoInteractions(mockHttpClient);
     }
 
+    /**
+     * Returns empty list when given null symbols list.
+     */
     @Test
     void getQuotes_nullSymbols_returnsEmptyList() throws IOException {
+        // When
         List<RapidApiClient.Quote> result = rapidApiClient.getQuotes(null);
 
         assertThat(result).isEmpty();
         verifyNoInteractions(mockHttpClient);
     }
 
+    /**
+     * Throws ApiRateLimitException when HTTP 429 is returned.
+     */
     @Test
     void getQuotes_rateLimitError_throwsApiRateLimitException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -114,6 +134,9 @@ class RapidApiClientUnitTest {
                 .hasMessageContaining("RapidAPI Yahoo Finance");
     }
 
+    /**
+     * Throws MarketDataUnavailableException for server error responses.
+     */
     @Test
     void getQuotes_serverError_throwsMarketDataUnavailableException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -128,6 +151,9 @@ class RapidApiClientUnitTest {
                 .hasMessageContaining("Server error: 500");
     }
 
+    /**
+     * Throws IOException for 401 responses.
+     */
     @Test
     void getQuotes_authError_throwsIOException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -140,6 +166,9 @@ class RapidApiClientUnitTest {
                 .hasMessageContaining("RapidAPI authentication failed");
     }
 
+    /**
+     * Throws IOException for 403 responses with body.
+     */
     @Test
     void getQuotes_forbiddenError_throwsIOException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -154,6 +183,9 @@ class RapidApiClientUnitTest {
                 .hasMessageContaining("RapidAPI authentication/authorization failed");
     }
 
+    /**
+     * Parses single quote response to a Quote object.
+     */
     @Test
     void getQuote_success_returnsSingleQuote() throws IOException {
         String jsonResponse = """
@@ -177,14 +209,19 @@ class RapidApiClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         RapidApiClient.Quote result = rapidApiClient.getQuote("MSFT");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.symbol).isEqualTo("MSFT");
         assertThat(result.price).isEqualTo(300.00);
         assertThat(result.change).isEqualTo(-5.00);
     }
 
+    /**
+     * Returns null when the response has no results.
+     */
     @Test
     void getQuote_noResults_returnsNull() throws IOException {
         String jsonResponse = """
@@ -201,16 +238,24 @@ class RapidApiClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         RapidApiClient.Quote result = rapidApiClient.getQuote("INVALID");
 
+        // Then
         assertThat(result).isNull();
     }
 
+    /**
+     * Sanity check for client construction.
+     */
     @Test
     void constructor_setsProperties() {
         assertThat(rapidApiClient).isNotNull();
     }
 
+    /**
+     * Verifies ApiRateLimitException provider and message shape.
+     */
     @Test
     void apiRateLimitException_hasCorrectProvider() {
         ApiRateLimitException exception = new ApiRateLimitException("RapidAPI Yahoo Finance");
@@ -219,6 +264,9 @@ class RapidApiClientUnitTest {
         assertThat(exception.getMessage()).contains("Rate limit exceeded");
     }
 
+    /**
+     * Verifies MarketDataUnavailableException provider and message.
+     */
     @Test
     void marketDataUnavailableException_hasCorrectProvider() {
         MarketDataUnavailableException exception = new MarketDataUnavailableException(
@@ -228,6 +276,9 @@ class RapidApiClientUnitTest {
         assertThat(exception.getMessage()).isEqualTo("Server error: 500");
     }
 
+    /**
+     * Ensures ApiRateLimitException carries HTTP 429 annotation.
+     */
     @Test
     void apiRateLimitException_hasCorrectAnnotation() {
         ResponseStatus annotation = ApiRateLimitException.class
@@ -237,6 +288,9 @@ class RapidApiClientUnitTest {
         assertThat(annotation.value()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
     }
 
+    /**
+     * ApiRateLimitException: provider-only constructor.
+     */
     @Test
     void apiRateLimitException_constructorWithProvider() {
         String provider = "Finnhub";
@@ -248,6 +302,9 @@ class RapidApiClientUnitTest {
         assertThat(exception.getMessage()).contains(provider);
     }
 
+    /**
+     * ApiRateLimitException: provider and message constructor.
+     */
     @Test
     void apiRateLimitException_constructorWithProviderAndMessage() {
         String provider = "RapidAPI";
@@ -259,6 +316,9 @@ class RapidApiClientUnitTest {
         assertThat(exception.getMessage()).isEqualTo(message);
     }
 
+    /**
+     * Ensures MarketDataUnavailableException carries HTTP 503 annotation.
+     */
     @Test
     void marketDataUnavailableException_hasCorrectAnnotation() {
         ResponseStatus annotation = MarketDataUnavailableException.class
@@ -268,6 +328,9 @@ class RapidApiClientUnitTest {
         assertThat(annotation.value()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    /**
+     * MarketDataUnavailableException: provider-only constructor.
+     */
     @Test
     void marketDataUnavailableException_constructorWithProvider() {
         String provider = "Yahoo Finance";
@@ -279,6 +342,9 @@ class RapidApiClientUnitTest {
         assertThat(exception.getMessage()).contains(provider);
     }
 
+    /**
+     * MarketDataUnavailableException: provider with custom message.
+     */
     @Test
     void marketDataUnavailableException_constructorWithProviderAndMessage() {
         String provider = "Finnhub";

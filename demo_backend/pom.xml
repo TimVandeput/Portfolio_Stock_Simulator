@@ -12,7 +12,7 @@
   </parent>
 
   <groupId>com.portfolio</groupId>
-  <artifactId>demo-backend</artifactId>
+  <artifactId>demo-backend</artifactId> 
   <version>0.0.1-SNAPSHOT</version>
   <name>demo-backend</name>
   <description>Demo project for Spring Boot</description>
@@ -104,7 +104,7 @@
     </dependency>
 
     <!-- ===== Actuator ===== -->
-    <dependency>
+    <dependency> 
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
@@ -169,5 +169,66 @@
 
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <additionalJOptions>
+            <additionalJOption>-private</additionalJOption>
+          </additionalJOptions>
+          <groups>
+            <group>
+              <title>Services</title>
+              <packages>com.portfolio.demo_backend.service:com.portfolio.demo_backend.marketdata.service</packages>
+            </group>
+            <group>
+              <title>DTOs &amp; Data</title>
+              <packages>com.portfolio.demo_backend.dto*:com.portfolio.demo_backend.*.dto*:com.portfolio.demo_backend.service.data:com.portfolio.demo_backend.marketdata.service.data</packages>
+            </group>
+            <group>
+              <title>Market Data</title>
+              <packages>com.portfolio.demo_backend.marketdata.*</packages>
+            </group>
+            <group>
+              <title>Mappers</title>
+              <packages>com.portfolio.demo_backend.mapper:com.portfolio.demo_backend.marketdata.mapper</packages>
+            </group>
+            <group>
+              <title>Exceptions</title>
+              <packages>com.portfolio.demo_backend.exception*</packages>
+            </group>
+            <group>
+              <title>Controllers</title>
+              <packages>com.portfolio.demo_backend.controller:com.portfolio.demo_backend.*.controller</packages>
+            </group>
+            <group>
+              <title>Models</title>
+              <packages>com.portfolio.demo_backend.model*</packages>
+            </group>
+          </groups>
+          <!-- Keep doclint relaxed to avoid failing on minor formatting issues during site generation -->
+          <doclint>none</doclint>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>main-javadoc</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>test-javadoc</id>
+            <reports>
+              <report>test-javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 
 </project>

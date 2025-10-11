@@ -3,6 +3,9 @@ package com.portfolio.demo_backend.dto.symbol;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Light-weight symbol representation used in API responses and lists.
+ */
 public class SymbolDTO {
     @NotNull
     public Long id;

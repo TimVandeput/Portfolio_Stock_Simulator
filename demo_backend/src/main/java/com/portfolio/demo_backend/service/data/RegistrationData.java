@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
+/**
+ * Minimal user projection used in registration responses to echo assigned
+ * roles and identifiers without exposing sensitive fields.
+ */
 public record RegistrationData(
         @NotNull Long id,
         @NotBlank String username,

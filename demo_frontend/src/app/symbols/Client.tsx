@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Administrative symbols management client component.
+ *
+ * This module provides a comprehensive administrative interface for managing
+ * the tradable symbol universe within the Stock Simulator. It includes
+ * functionality for importing symbols from various market indices, controlling
+ * symbol availability, and managing the overall trading symbol ecosystem.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useMemo, useCallback, useState } from "react";
@@ -20,6 +32,94 @@ import SymbolsTableDesktop from "@/components/overview/SymbolsTableDesktop";
 import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
 
+/**
+ * Administrative symbols management client component with role-based access control.
+ *
+ * This sophisticated client component provides comprehensive administrative
+ * controls for managing the Stock Simulator's tradable symbol universe.
+ * It implements strict role-based access control, advanced symbol management
+ * capabilities, and real-time import processing with progress monitoring.
+ *
+ * @remarks
+ * The component implements extensive administrative functionality:
+ *
+ * **Access Control & Security**:
+ * - Enforces ADMIN role requirement for all operations
+ * - Automatic access denial for unauthorized users
+ * - Secure API integration with authentication tokens
+ * - Real-time role validation and session management
+ *
+ * **Symbol Universe Management**:
+ * - Import symbols from major market indices (NASDAQ, S&P 500, etc.)
+ * - Bulk symbol operations with progress tracking
+ * - Individual symbol enable/disable controls
+ * - Real-time import status monitoring and feedback
+ *
+ * **Advanced Filtering & Search**:
+ * - Multi-criteria filtering (enabled/disabled/all symbols)
+ * - Universe-based filtering (NDX, SPX, etc.)
+ * - Real-time search with debounced input
+ * - Efficient pagination for large symbol datasets
+ *
+ * **Responsive Data Management**:
+ * - Desktop: Full-featured administrative table view
+ * - Mobile: Optimized card-based management interface
+ * - Real-time status updates and progress indicators
+ * - Error handling with user-friendly feedback
+ *
+ * **Import Processing Features**:
+ * - Asynchronous bulk symbol imports
+ * - Progress tracking with detailed status updates
+ * - Import summary reporting and analytics
+ * - Duplicate detection and conflict resolution
+ *
+ * The component manages complex state interactions between authentication,
+ * symbol data, import processes, and user interface updates, providing
+ * a seamless administrative experience for platform management.
+ *
+ * @example
+ * ```tsx
+ * // Rendered by the SymbolsPage server component (admin-only)
+ * function SymbolsClient() {
+ *   const { isAuthenticated, role } = useAuth();
+ *   const [universe, setUniverse] = useState<Universe>("NDX");
+ *   const { importStatus, startImport } = useImportStatus();
+ *
+ *   const hasAdminAccess = isAuthenticated && role === "ROLE_ADMIN";
+ *
+ *   if (!hasAdminAccess) {
+ *     return <AccessDenied />;
+ *   }
+ *
+ *   return (
+ *     <div className="symbols-admin">
+ *       <UniverseImportBar
+ *         universe={universe}
+ *         onImport={startImport}
+ *         importStatus={importStatus}
+ *       />
+ *       <SymbolsTable
+ *         data={symbolsData}
+ *         onToggle={toggleSymbolEnabled}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The comprehensive symbols management interface with import controls,
+ * symbol tables, filtering options, and administrative tools, or access
+ * denied message for non-admin users.
+ *
+ * @see {@link useAuth} - Hook managing authentication and role verification
+ * @see {@link useImportStatus} - Hook controlling symbol import processes
+ * @see {@link usePagedData} - Hook managing paginated symbol data
+ * @see {@link UniverseImportBar} - Component for universe import controls
+ * @see {@link importSymbols} - API function for bulk symbol importing
+ * @see {@link setSymbolEnabled} - API function for individual symbol control
+ *
+ * @public
+ */
 export default function SymbolsClient() {
   const { isAuthenticated, role, isLoading } = useAuth();
   const [universe, setUniverse] = useState<Universe>("NDX");

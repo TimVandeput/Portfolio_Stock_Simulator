@@ -7,6 +7,11 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
+/**
+ * Authentication token bundle returned after login/refresh containing access
+ * and refresh tokens plus user identity and role context. Immutable record
+ * used only for service-to-service data transfer.
+ */
 public record AuthTokensData(
         @NotBlank String accessToken,
         @NotBlank String refreshToken,

@@ -18,6 +18,13 @@ import java.util.EnumSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link AuthService} covering registration behavior.
+ *
+ * Conventions applied:
+ * - Class-level and method-level Javadoc
+ * - Inline Given/When/Then comments for test flow
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -36,8 +43,18 @@ class AuthServiceTest {
     @InjectMocks
     private AuthService authService;
 
+    /**
+     * Verifies that registering a new user creates the user and returns
+     * registration data.
+     *
+     * Given a valid register request and userService saving successfully
+     * When register is invoked
+     * Then the created user is passed with correct fields and a non-null response
+     * is returned
+     */
     @Test
     void register_createsUserSuccessfully() {
+        // Given: a valid registration request and mocked persistence result
         RegisterRequest req = new RegisterRequest();
         req.setUsername("newuser");
         req.setEmail("test@example.com");
@@ -52,8 +69,11 @@ class AuthServiceTest {
 
         when(userService.createUser(any(User.class))).thenReturn(saved);
 
+        // When: performing registration
         RegistrationData resp = authService.register(req);
 
+        // Then: user is persisted with expected attributes and response contains
+        // created id
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userService).createUser(captor.capture());
 

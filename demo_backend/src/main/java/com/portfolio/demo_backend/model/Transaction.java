@@ -10,6 +10,10 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * Immutable record of a trade execution (buy/sell) for a {@link User} and
+ * {@link Symbol}. Computes {@code totalAmount} on persist when absent.
+ */
 @Entity
 @Table(name = "transactions")
 @Data

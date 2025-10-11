@@ -17,6 +17,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Service fetching chart data for symbols from RapidAPI Yahoo endpoints.
+ * <p>
+ * Notes:
+ * - Network calls are synchronous per symbol; failures are logged and skipped.
+ * - Interval is derived from requested range via an internal mapping.
+ * - The returned chart payloads are raw maps compatible with the Yahoo chart schema,
+ *   augmented with a top-level "symbol" field.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,6 +40,15 @@ public class GraphService {
             .build();
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Fetches chart data for all active positions of a user for the given range.
+     * Each symbol is fetched independently; errors for a symbol are logged and skipped
+     * without failing the entire request.
+     *
+     * @param userId user id
+     * @param range  chart range, e.g., "1mo", "2y", "5y"
+     * @return list of chart payloads as {@code Map<String,Object>} (may be empty)
+     */
     public List<Map<String, Object>> getCharts(Long userId, String range) {
         log.info("Getting chart data for user portfolio: userId={}, range={}", userId, range);
 
@@ -71,11 +89,20 @@ public class GraphService {
         return allCharts;
     }
 
+    /**
+     * Fetches chart data for a single symbol.
+     *
+     * @param symbol ticker symbol
+     * @param range  chart range
+     * @return chart data container
+     * @throws IOException when the remote call fails or returns a non-successful status
+     */
     private ChartData getChartDataForSymbol(String symbol, String range) throws IOException {
         log.debug("Fetching chart data for symbol: {} with range: {}", symbol, range);
 
         String intervalParam = getIntervalForRange(range);
 
+        // Build Yahoo chart URL with explicit interval/range and deterministic params
         String url = rapidApiProperties.getBaseUrl() + "/stock/v3/get-chart?interval=" + intervalParam + "&symbol="
                 + symbol
                 + "&range=" + range
@@ -96,6 +123,7 @@ public class GraphService {
                         response.code(),
                         responseBody);
 
+                // Map common HTTP errors to actionable IOException messages
                 if (response.code() == 403) {
                     throw new IOException(
                             "RapidAPI authentication/authorization failed - 403 Forbidden. Check your subscription.");
@@ -115,6 +143,7 @@ public class GraphService {
 
             String responseBody = response.body().string();
             log.debug("RapidAPI chart response for symbol {} with range {}: {}", symbol, range,
+                    // Truncate for logs to avoid overwhelming the output
                     responseBody.substring(0, Math.min(200, responseBody.length())) + "...");
 
             @SuppressWarnings("unchecked")
@@ -126,6 +155,13 @@ public class GraphService {
         }
     }
 
+    /**
+     * Derives Yahoo chart interval parameter based on requested range.
+     * Defaults to daily if range is unknown.
+     *
+     * @param range chart range
+     * @return interval parameter accepted by Yahoo APIs
+     */
     private String getIntervalForRange(String range) {
         return switch (range) {
             case "1mo" -> "1d";

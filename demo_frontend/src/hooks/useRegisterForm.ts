@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Registration form management hook with validation and API integration.
+ *
+ * This hook provides comprehensive registration form functionality including form state
+ * management, validation, API integration, error handling, and user feedback systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,6 +15,11 @@ import { register } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import type { RegisterRequest } from "@/types";
 
+/**
+ * Hook for managing registration form state and user registration workflow.
+ *
+ * @returns Registration form control object with state, handlers, and validation
+ */
 export function useRegisterForm() {
   const [rUser, setRUser] = useState("");
   const [rEmail, setREmail] = useState("");

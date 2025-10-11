@@ -10,6 +10,12 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Authentication entry point that returns a compact JSON body for 401
+ * responses.
+ * Structure: { "status": 401, "error": "Unauthorized", "path":
+ * "/requested/path" }
+ */
 public class RestAuthEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper mapper = new ObjectMapper();
 

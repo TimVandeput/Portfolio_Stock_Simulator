@@ -1,8 +1,41 @@
+/**
+ * @fileoverview Device orientation detection hook for mobile UX optimization.
+ *
+ * This hook detects mobile devices and their orientation to provide appropriate
+ * user interface guidance, particularly for landscape-optimized content views.
+ * It helps ensure optimal user experience across different device orientations.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
+/**
+ * Hook for detecting device orientation and providing rotation guidance.
+ *
+ * Detects mobile devices and orientation changes to show appropriate UI hints
+ * for landscape-optimized views and better user experience.
+ *
+ * @returns Boolean indicating whether rotation prompt should be displayed
+ *
+ * @example
+ * ```tsx
+ * function App() {
+ *   const shouldShowRotationPrompt = useDeviceOrientation();
+ *
+ *   return (
+ *     <div>
+ *       {shouldShowRotationPrompt && <RotationPrompt />}
+ *       <MainContent />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useDeviceOrientation() {
   const [shouldShow, setShouldShow] = useState(false);
   const pathname = usePathname();

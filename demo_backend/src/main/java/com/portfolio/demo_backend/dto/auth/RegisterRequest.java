@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * Request body for user registration.
+ */
 @Data
 public class RegisterRequest {
     @NotBlank(message = "Username is required")

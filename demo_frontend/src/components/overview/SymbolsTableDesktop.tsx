@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Desktop-optimized symbols table component for comprehensive stock market data
+ *
+ * This component provides a sophisticated desktop table interface for displaying stock symbols
+ * with real-time pricing, advanced column management, and professional data presentation.
+ * Features include responsive column layouts, interactive controls, and seamless integration
+ * with administrative and trading workflows.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import type { Page } from "@/types/pagination";
@@ -7,24 +19,152 @@ import NeumorphicButton from "@/components/button/NeumorphicButton";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 import type { BaseComponentProps, Mode } from "@/types/components";
 
+/**
+ * Interface for table column configuration
+ * @interface TableColumn
+ */
 export interface TableColumn {
+  /** Unique column identifier */
   id: string;
+  /** Display label for column header */
   label: string;
+  /** Optional description for accessibility */
   description?: string;
+  /** CSS width class for column sizing */
   width?: string;
+  /** Text alignment within column */
   alignment?: "left" | "center" | "right";
+  /** Optional icon name for column header */
   icon?: string;
 }
 
+/**
+ * Props interface for SymbolsTableDesktop component configuration
+ * @interface SymbolsTableDesktopProps
+ * @extends {BaseComponentProps}
+ */
 export interface SymbolsTableDesktopProps extends BaseComponentProps {
+  /** Paginated symbols data from API */
   page: Page<SymbolDTO> | null;
+  /** Display mode: 'admin' or 'market' */
   mode: Mode;
+  /** Callback for toggling symbol enabled state (admin mode) */
   onToggle?: (symbol: SymbolDTO, enabled: boolean) => void;
+  /** Real-time price data mapped by symbol */
   prices?: Record<string, Price>;
+  /** Set of symbols currently receiving price updates */
   pulsatingSymbols?: Set<string>;
+  /** Callback for initiating buy action (market mode) */
   onBuy?: (symbol: SymbolDTO) => void;
 }
 
+/**
+ * Desktop-optimized symbols table component for comprehensive stock market data
+ *
+ * @remarks
+ * The SymbolsTableDesktop component delivers professional desktop stock symbol display with the following features:
+ *
+ * **Table Architecture:**
+ * - Professional table structure with semantic HTML
+ * - Responsive column management with fixed and flexible widths
+ * - Hidden on mobile (md:hidden) for desktop-specific optimization
+ * - Overflow handling with horizontal scrolling capability
+ *
+ * **Column Management:**
+ * - Dynamic column configuration based on display mode
+ * - Professional header styling with icons and descriptions
+ * - Consistent alignment and spacing across columns
+ * - Responsive column sizing with minimum width constraints
+ *
+ * **Real-Time Data Display:**
+ * - Live price updates with visual feedback mechanisms
+ * - Percentage change indicators with color-coded styling
+ * - Pulsing animations for active price update notifications
+ * - Recent update highlighting with timing-based logic
+ *
+ * **Dual Mode Support:**
+ * - Administrative mode with enable/disable toggle controls
+ * - Market mode with buy buttons and comprehensive price data
+ * - Conditional column rendering based on operational mode
+ * - Role-specific functionality and interaction patterns
+ *
+ * **Interactive Features:**
+ * - Toggle switches for administrative symbol management
+ * - Buy buttons with icon integration for trading actions
+ * - Hover effects and smooth transition animations
+ * - Visual feedback for all user interaction states
+ *
+ * **Data Presentation:**
+ * - Truncated text handling with full content tooltips
+ * - Monospace font for financial data consistency
+ * - Color-coded price changes (green/red/neutral scheme)
+ * - Professional typography and spacing hierarchy
+ *
+ * **Accessibility:**
+ * - ARIA labels for all interactive table elements
+ * - Semantic table structure for screen reader compatibility
+ * - Clear visual hierarchies and contrast ratios
+ * - Keyboard navigation support throughout
+ *
+ * **Visual Design:**
+ * - Neumorphic card styling with subtle shadow effects
+ * - Consistent border and spacing treatments
+ * - Theme integration with CSS custom properties
+ * - Professional color scheme for financial applications
+ *
+ * @param props - Configuration object for desktop symbols table
+ * @returns SymbolsTableDesktop component with comprehensive data display
+ *
+ * @example
+ * ```tsx
+ * // Basic market mode symbols table
+ * <SymbolsTableDesktop
+ *   page={symbolsPage}
+ *   mode="market"
+ *   prices={priceData}
+ *   pulsatingSymbols={new Set(["AAPL", "GOOGL"])}
+ *   onBuy={(symbol) => navigateToTrade(symbol)}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Administrative mode with symbol management
+ * <SymbolsTableDesktop
+ *   page={symbolsPage}
+ *   mode="admin"
+ *   onToggle={(symbol, enabled) => {
+ *     updateSymbolStatus(symbol.id, enabled);
+ *   }}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Full-featured desktop market display
+ * function DesktopMarketTable() {
+ *   const { data: symbolsPage } = useSymbols();
+ *   const { prices, pulsatingSymbols } = usePriceStream();
+ *   const navigate = useRouter();
+ *
+ *   const handleTradeAction = (symbol: SymbolDTO) => {
+ *     navigate.push(`/market/${symbol.symbol}`);
+ *   };
+ *
+ *   return (
+ *     <div className="space-y-6">
+ *       <SymbolsTableDesktop
+ *         page={symbolsPage}
+ *         mode="market"
+ *         prices={prices}
+ *         pulsatingSymbols={pulsatingSymbols}
+ *         onBuy={handleTradeAction}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export default function SymbolsTableDesktop({
   page,
   mode,

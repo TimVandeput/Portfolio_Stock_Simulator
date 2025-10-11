@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * API response DTO describing a single trade transaction with computed totals
+ * and timestamp.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
