@@ -1,3 +1,12 @@
+/**
+ * @fileoverview StockChart component for professional financial data visualization
+ *
+ * This component provides a comprehensive stock price charting solution using Recharts
+ * library, delivering interactive financial visualizations with professional formatting,
+ * data optimization, and responsive design. Features include intelligent data sampling,
+ * price validation, dynamic scaling, and themed styling integration.
+ */
+
 "use client";
 
 import {
@@ -10,19 +19,120 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { GraphData } from "@/lib/api/graphs";
+import { BaseComponentProps } from "@/types";
 
-interface StockChartProps {
+/**
+ * Props interface for StockChart component configuration
+ * @interface StockChartProps
+ * @extends {BaseComponentProps}
+ */
+export interface StockChartProps extends BaseComponentProps {
+  /** Stock price data from API with chart results */
   chartData: GraphData;
+  /** Additional CSS classes for styling customization */
   className?: string;
 }
 
-interface ChartPoint {
+/**
+ * Internal interface for processed chart data points
+ * @interface ChartPoint
+ */
+export interface ChartPoint {
+  /** Unix timestamp for data point */
   timestamp: number;
+  /** Stock price value */
   price: number;
+  /** Formatted date string for display */
   date: string;
+  /** Trading volume for data point */
   volume: number;
 }
 
+/**
+ * StockChart component for professional financial data visualization
+ *
+ * @remarks
+ * The StockChart component delivers comprehensive stock price visualization with the following features:
+ *
+ * **Data Processing:**
+ * - Intelligent data validation and filtering
+ * - Automatic data point sampling for performance optimization
+ * - Price validation with null/NaN/infinite value handling
+ * - Chronological sorting and timestamp normalization
+ *
+ * **Chart Features:**
+ * - Interactive line chart with hover tooltips
+ * - Dynamic Y-axis scaling with padding calculations
+ * - Time-based X-axis with proper date formatting
+ * - Professional grid overlay with theme integration
+ *
+ * **Performance Optimization:**
+ * - Maximum 300 data points with intelligent sampling
+ * - Disabled animations for smooth interactions
+ * - Efficient data processing and filtering
+ * - Responsive container with automatic sizing
+ *
+ * **Visual Design:**
+ * - CSS custom properties integration for theming
+ * - Professional color scheme with blue accent
+ * - Rounded line caps and joins for smooth appearance
+ * - Consistent typography and spacing
+ *
+ * **Error Handling:**
+ * - Graceful fallbacks for missing or invalid data
+ * - User-friendly error messages with consistent styling
+ * - Multiple validation layers for data integrity
+ * - Robust null and undefined value handling
+ *
+ * **Accessibility:**
+ * - Semantic chart structure with proper labeling
+ * - High contrast colors for better visibility
+ * - Responsive design for various screen sizes
+ * - Screen reader friendly tooltip formatting
+ *
+ * @param props - Configuration object for chart behavior and styling
+ * @returns StockChart component with interactive price visualization
+ *
+ * @example
+ * ```tsx
+ * // Basic stock chart with financial data
+ * <StockChart
+ *   chartData={stockDataResponse}
+ *   className="border rounded-lg shadow-sm"
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Chart in portfolio dashboard with custom styling
+ * <div className="bg-white p-6 rounded-xl">
+ *   <h3 className="text-lg font-semibold mb-4">Price History</h3>
+ *   <StockChart
+ *     chartData={priceHistory}
+ *     className="h-80"
+ *   />
+ * </div>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Responsive chart with loading state
+ * function PriceChart({ symbol }: { symbol: string }) {
+ *   const { data: chartData, isLoading } = useStockChart(symbol);
+ *
+ *   if (isLoading) {
+ *     return <div className="h-64 animate-pulse bg-gray-200 rounded-lg" />;
+ *   }
+ *
+ *   return (
+ *     <StockChart
+ *       chartData={chartData}
+ *       className="w-full h-64 lg:h-80"
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export default function StockChart({
   chartData,
   className = "",
