@@ -1,21 +1,172 @@
+/**
+ * @fileoverview Interactive dashboard navigation card component.
+ *
+ * This module provides an advanced dashboard card component that serves as the
+ * primary navigation interface for the Stock Simulator platform. It features
+ * dynamic content generation, gradient backgrounds, hover effects, and
+ * contextual information display for each major application section.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useRouter } from "next/navigation";
 import type { NavItem } from "@/types";
+import type { BaseComponentProps } from "@/types/components";
 import DynamicIcon from "@/components/ui/DynamicIcon";
 
-interface DashboardCardProps {
+/**
+ * Props interface for the DashboardCard component.
+ * @interface DashboardCardProps
+ * @extends BaseComponentProps
+ */
+export interface DashboardCardProps extends BaseComponentProps {
+  /** Navigation item containing route and display information */
   item: NavItem;
+  /** Card index for styling and animation purposes */
   index: number;
+  /** Callback function triggered when card is clicked for navigation */
   onNavigate: (href: string) => void;
+  /** Function to generate dynamic styling based on card index */
   getItemStyle: (index: number) => React.CSSProperties;
+  /** Optional notification status for notification-specific cards */
   notificationStatus?: {
+    /** Current status text description */
     statusText: string;
+    /** Total number of notifications */
     total: number;
+    /** Number of unread notifications */
     unread: number;
   };
 }
 
+/**
+ * Interactive dashboard navigation card with dynamic content and styling.
+ *
+ * This sophisticated card component serves as the primary navigation interface
+ * for the Stock Simulator platform's dashboard. It provides contextual content,
+ * dynamic gradient backgrounds, interactive hover effects, and specialized
+ * handling for different application sections including markets, portfolio,
+ * orders, analytics, and more.
+ *
+ * @remarks
+ * The component delivers comprehensive dashboard navigation through:
+ *
+ * **Dynamic Content Generation**:
+ * - **Section-Specific Content**: Customized titles, descriptions, and gradients for each app section
+ * - **Market Section**: Live streaming data and real-time market information
+ * - **Portfolio Section**: Holdings overview and performance tracking details
+ * - **Orders Section**: Transaction history and trade analysis information
+ * - **Analytics Section**: Performance charts and data visualization features
+ * - **Notifications Section**: Alert counts and status integration
+ *
+ * **Visual Design System**:
+ * - **Gradient Backgrounds**: Unique color gradients for visual section identification
+ * - **Interactive Hover Effects**: Scale animations and shadow enhancements
+ * - **Icon Integration**: Contextual icons with background decoration elements
+ * - **Responsive Layout**: Adaptive sizing for mobile, tablet, and desktop viewing
+ *
+ * **Advanced Styling Features**:
+ * - **Dynamic Styling**: Index-based style generation for layout variations
+ * - **Backdrop Effects**: Glass-morphism effects with backdrop blur
+ * - **Animation States**: Smooth transitions for hover and active states
+ * - **Shadow Systems**: Multi-layer shadow effects for depth perception
+ *
+ * **Notification Integration**:
+ * - **Status Badges**: Unread notification counts with visual indicators
+ * - **Dynamic Descriptions**: Context-aware content based on notification status
+ * - **Real-time Updates**: Live notification count integration
+ * - **Visual Emphasis**: Enhanced styling for active notification states
+ *
+ * **Accessibility Features**:
+ * - **Keyboard Navigation**: Full keyboard accessibility support
+ * - **Screen Reader Support**: Semantic HTML with descriptive content
+ * - **Focus Management**: Proper focus indicators and navigation
+ * - **Color Contrast**: High contrast ratios for visual accessibility
+ *
+ * **Interactive Behavior**:
+ * - **Click Navigation**: Single-click navigation to target sections
+ * - **Hover Feedback**: Visual feedback for interactive elements
+ * - **Touch Optimization**: Mobile-friendly touch interactions
+ * - **Loading States**: Smooth transitions during navigation
+ *
+ * **Content Customization**:
+ * - **Markets**: Live data streaming and security trading features
+ * - **Portfolio**: Holdings management and performance analytics
+ * - **Orders**: Transaction oversight and history analysis
+ * - **Analytics**: Interactive charts and visualization tools
+ * - **Notifications**: Alert management and status tracking
+ * - **Help Center**: Comprehensive guides and tutorials
+ * - **Symbol Management**: Administrative controls for market data
+ *
+ * The component serves as the central hub for platform navigation, providing
+ * users with intuitive access to all major features while delivering rich
+ * visual feedback and contextual information for enhanced user experience
+ * within the Stock Simulator platform.
+ *
+ * @example
+ * ```tsx
+ * // Basic dashboard card usage
+ * function Dashboard() {
+ *   const navItems = [
+ *     { name: 'MARKETS', href: '/market', icon: 'trending-up' },
+ *     { name: 'PORTFOLIO', href: '/portfolio', icon: 'briefcase' }
+ *   ];
+ *
+ *   const handleNavigation = (href: string) => {
+ *     router.push(href);
+ *   };
+ *
+ *   const getItemStyle = (index: number) => ({
+ *     animationDelay: `${index * 100}ms`
+ *   });
+ *
+ *   return (
+ *     <div className="dashboard-grid">
+ *       {navItems.map((item, index) => (
+ *         <DashboardCard
+ *           key={item.name}
+ *           item={item}
+ *           index={index}
+ *           onNavigate={handleNavigation}
+ *           getItemStyle={getItemStyle}
+ *         />
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ *
+ * // Dashboard card with notification integration
+ * function NotificationDashboard() {
+ *   const notificationStatus = {
+ *     statusText: "New alerts available",
+ *     total: 12,
+ *     unread: 3
+ *   };
+ *
+ *   return (
+ *     <DashboardCard
+ *       item={{ name: 'NOTIFICATIONS', href: '/notifications', icon: 'bell' }}
+ *       index={0}
+ *       onNavigate={handleNav}
+ *       getItemStyle={getStyle}
+ *       notificationStatus={notificationStatus}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @param props - Component properties for dashboard card functionality and styling
+ * @returns An interactive dashboard navigation card with dynamic content,
+ * gradient backgrounds, hover effects, and contextual information display
+ *
+ * @see {@link NavItem} - TypeScript interface for navigation item data
+ * @see {@link DynamicIcon} - Icon component for visual elements
+ *
+ * @public
+ */
 export default function DashboardCard({
   item,
   index,

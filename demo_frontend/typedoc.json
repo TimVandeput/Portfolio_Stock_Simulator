@@ -30,6 +30,9 @@
   "excludeProtected": false,
   "excludeExternals": false,
   "excludeInternal": false,
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "skipErrorChecking": true,
   "githubPages": false,
   "tsconfig": "tsconfig.typedoc.json"
 }
