@@ -69,3 +69,9 @@
 .DS_Store
 Thumbs.db
 *.pem
+
+# -------------------------
+# Generated docs
+# -------------------------
+demo_frontend/docs/
+demo_frontend/docs-site/

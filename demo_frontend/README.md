@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend – Run & Docs Guide (Windows)
 
-## Getting Started
+This guide shows how to run the Next.js frontend locally on Windows and how to lint/build, plus where interactive and generated docs would live.
 
-First, run the development server:
+Stack: Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS 4.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Prerequisites
+
+- Node.js 18+ (LTS recommended)
+- pnpm or npm (examples use npm); PowerShell as your shell
+
+## Environment variables
+
+Only one environment variable is required by the frontend:
+
+- NEXT_PUBLIC_API_BASE_URL – base URL of the backend API (used for HTTP and the price event stream)
+
+PowerShell example:
+
+```powershell
+$env:NEXT_PUBLIC_API_BASE_URL = 'http://localhost:8000'
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run the app
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Development (with Fast Refresh):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm run dev
+```
 
-## Learn More
+Open http://localhost:3000 to view the app.
 
-To learn more about Next.js, take a look at the following resources:
+Production build and start:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+npm run build
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Quality checks
 
-## Deploy on Vercel
+ESLint:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```powershell
+npm run lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+TypeScript typecheck is executed during `next build`.
+
+## Project notes
+
+- Co-located Client components live under `src/app/<route>/Client.tsx`.
+- Shared UI is under `src/components/**`, hooks under `src/hooks/**`, and API clients in `src/lib/api/**`.
+- Status messaging uses a single `StatusMessage` instance per form/page; it defaults to `type="error"`.
+- Responsive behavior relies on Tailwind classes (we avoid a custom breakpoints file).
+
+## Generated documentation (TypeDoc)
+
+We generate API/reference docs from TSDoc comments using TypeDoc. Output is written to `/docs`.
+
+Install (one-time):
+
+```powershell
+npm i -D typedoc typedoc-plugin-markdown
+```
+
+Generate docs:
+
+```powershell
+npm run docs
+```
+
+Configuration: `typedoc.json` (entry points: `src/components`, `src/hooks`, `src/contexts`, `src/lib/api`, `src/types`).
+
+Authoring guidelines:
+
+- Add TSDoc to exported functions/components/hooks. Example:
+  ```ts
+  /**
+   * Renders a single status message.
+   * @param message The text to show.
+   * @param type Render style, defaults to "error".
+   */
+  export default function StatusMessage(...) {}
+  ```
+
+## Troubleshooting
+
+- If the frontend can’t reach the backend, verify `NEXT_PUBLIC_API_BASE_URL` matches your backend URL (e.g., `http://localhost:8000`).
+- If you see CORS issues, make sure the backend allows the frontend origin.
+- If `next build` fails on types, resolve the TypeScript errors or run `npm run lint` for hints.
+- If `npm run docs` fails, ensure `typedoc` is installed and `typedoc.json` entry points exist.
