@@ -13,7 +13,6 @@ import SymbolsListMobile from "@/components/overview/SymbolsListMobile";
 import SymbolsPagination from "@/components/button/SymbolsPagination";
 
 import { listSymbols } from "@/lib/api/symbols";
-import type { Page } from "@/types/pagination";
 import type { SymbolDTO } from "@/types/symbol";
 import type { SortOption } from "@/components/ui/SortDropdown";
 
@@ -28,14 +27,12 @@ export default function MarketClient() {
 
   const fetchFn = useCallback(
     async ({ q, page, size }: { q?: string; page: number; size: number }) => {
-      console.log("🔍 Fetching page", page);
       const res = await listSymbols({
         q: q || undefined,
         enabled: true,
         page,
         size,
       });
-      console.log("✅ Loaded page", page, "with", res.content.length, "items");
       return res;
     },
     []

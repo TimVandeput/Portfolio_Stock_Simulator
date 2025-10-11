@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SellSymbolClient from "@/components/pageComponents/SellSymbolClient";
+import SellSymbolClient from "./Client";
 
 interface Props {
   params: Promise<{ symbol: string }>;

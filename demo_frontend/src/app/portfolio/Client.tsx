@@ -239,9 +239,9 @@ export default function PortfolioClient() {
                 value={`${
                   portfolioStats.totalPnL >= 0 ? "+" : ""
                 }$${portfolioStats.totalPnL.toFixed(2)}`}
-                subValue={`(${
-                  portfolioStats.totalPnLPercent >= 0 ? "+" : ""
-                }${portfolioStats.totalPnLPercent.toFixed(2)}%)`}
+                subValue={`(${`
+									${portfolioStats.totalPnLPercent >= 0 ? "+" : ""}
+								`}${portfolioStats.totalPnLPercent.toFixed(2)}%)`}
                 iconName="dollar-sign"
                 valueColor={
                   portfolioStats.totalPnL >= 0

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SymbolsClient from "@/components/pageComponents/SymbolsClient";
+import SymbolsClient from "./Client";
 
 export const metadata: Metadata = {
   title: "Symbols",

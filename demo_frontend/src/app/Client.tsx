@@ -41,13 +41,13 @@ export default function LoginClient() {
         <div className="login-perspective">
           <div
             className={`
-              relative
-              w-[340px] h-[500px] sm:w-[320px] sm:h-[480px] xs:w-[300px] xs:h-[460px]
-              transition-transform duration-500
-              [transform-style:preserve-3d]
-              rounded-2xl
-              ${isFlipped ? "rotate-y-180" : ""}
-            `}
+							relative
+							w-[340px] h-[500px] sm:w-[320px] sm:h-[480px] xs:w-[300px] xs:h-[460px]
+							transition-transform duration-500
+							[transform-style:preserve-3d]
+							rounded-2xl
+							${isFlipped ? "rotate-y-180" : ""}
+						`}
           >
             <LoginForm
               usernameOrEmail={loginForm.usernameOrEmail}

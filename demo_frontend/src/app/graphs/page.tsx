@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import GraphClient from "@/components/pageComponents/GraphClient";
+import GraphClient from "./Client";
 
 export const metadata: Metadata = {
   title: "Analytics",

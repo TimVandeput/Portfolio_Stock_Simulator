@@ -69,8 +69,8 @@ export default function AboutClient() {
                 capabilities. As a portfolio piece, certain technical
                 limitations were accepted for budget considerations, including
                 the 15-minute data delay from Finnhub, a curated selection of 50
-                symbols rather than the full market catalog, and graphs only
-                available for currently held shares.
+                symbols rather than the full market catalog, American stock only
+                and graphs only available for currently held shares.
               </p>
             </div>
           </div>

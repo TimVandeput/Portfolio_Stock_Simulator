@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import LoginClient from "@/components/pageComponents/LoginClient";
+import LoginClient from "./Client";
 
 export const metadata: Metadata = {
   title: "Login",

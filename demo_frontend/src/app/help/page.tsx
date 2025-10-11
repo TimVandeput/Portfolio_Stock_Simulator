@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import HelpClient from "@/components/pageComponents/HelpClient";
+import HelpClient from "./Client";
 
 export const metadata: Metadata = {
   title: "Help",
