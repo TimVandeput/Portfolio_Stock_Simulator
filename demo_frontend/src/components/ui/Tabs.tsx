@@ -1,19 +1,228 @@
+/**
+ * @fileoverview Professional tabs component with responsive design and adaptive interface
+ *
+ * This component provides comprehensive tab navigation with responsive design patterns,
+ * featuring desktop tab interface and mobile dropdown selector. Includes professional
+ * styling, smooth transitions, theme integration, and flexible content management
+ * for optimal user experience across all device sizes.
+ */
+
 "use client";
 
 import { useState } from "react";
+import type { BaseComponentProps } from "@/types/components";
 
-interface Tab {
+/**
+ * Tab configuration interface
+ * @interface Tab
+ */
+export interface Tab {
+  /** Unique identifier for the tab */
   id: string;
+  /** Display label for the tab */
   label: string;
+  /** React content to render when tab is active */
   content: React.ReactNode;
 }
 
-interface TabsProps {
+/**
+ * Props interface for Tabs component configuration
+ * @interface TabsProps
+ * @extends {BaseComponentProps}
+ */
+export interface TabsProps extends BaseComponentProps {
+  /** Array of tab configurations */
   tabs: Tab[];
+  /** ID of the tab that should be active by default */
   defaultActiveTab?: string;
+  /** Additional CSS classes for styling */
   className?: string;
 }
 
+/**
+ * Professional tabs component with responsive design and adaptive interface
+ *
+ * @remarks
+ * The Tabs component delivers comprehensive tab navigation with the following features:
+ *
+ * **Responsive Design:**
+ * - Desktop: Traditional horizontal tab buttons
+ * - Mobile: Dropdown selector for space efficiency
+ * - Adaptive interface based on screen size
+ * - Professional breakpoint management
+ *
+ * **Tab Management:**
+ * - Active tab state management with useState
+ * - Default tab selection with fallback logic
+ * - Dynamic tab switching with smooth transitions
+ * - Professional state synchronization
+ *
+ * **Visual Design:**
+ * - Neumorphic card styling for mobile dropdown
+ * - Professional tab button styling with hover states
+ * - Active tab highlighting with accent border
+ * - Clean border and spacing management
+ *
+ * **Mobile Interface:**
+ * - Full-width dropdown selector
+ * - Custom dropdown arrow icon
+ * - Professional select styling
+ * - Theme-integrated colors and backgrounds
+ *
+ * **Desktop Interface:**
+ * - Horizontal tab layout with gap spacing
+ * - Professional hover and active states
+ * - Border bottom for active tab indication
+ * - Clean typography and spacing
+ *
+ * **Content Management:**
+ * - Dynamic content rendering based on active tab
+ * - Efficient tab lookup and content display
+ * - Clean content container styling
+ * - Professional content presentation
+ *
+ * **Theme Integration:**
+ * - CSS custom properties for consistent theming
+ * - Primary and secondary background colors
+ * - Text color variables for hierarchy
+ * - Professional color palette usage
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure
+ * - Screen reader compatible labels
+ * - Keyboard navigation support
+ * - Professional accessibility patterns
+ *
+ * **Interactive Features:**
+ * - Smooth transition animations (200ms duration)
+ * - Professional hover states
+ * - Clean click handlers
+ * - Responsive touch targets
+ *
+ * **Performance:**
+ * - Efficient tab lookup with find method
+ * - Optimized re-render patterns
+ * - Clean component lifecycle
+ * - Professional state management
+ *
+ * @param props - Configuration object for tabs functionality
+ * @returns Tabs component with responsive tab navigation interface
+ *
+ * @example
+ * ```tsx
+ * // Basic tabs usage
+ * <Tabs
+ *   tabs={[
+ *     {
+ *       id: 'overview',
+ *       label: 'Overview',
+ *       content: <OverviewContent />
+ *     },
+ *     {
+ *       id: 'details',
+ *       label: 'Details',
+ *       content: <DetailsContent />
+ *     }
+ *   ]}
+ *   defaultActiveTab="overview"
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Portfolio management tabs
+ * function PortfolioTabs() {
+ *   const portfolioTabs = [
+ *     {
+ *       id: 'holdings',
+ *       label: 'Holdings',
+ *       content: <HoldingsTable />
+ *     },
+ *     {
+ *       id: 'transactions',
+ *       label: 'Transactions',
+ *       content: <TransactionHistory />
+ *     },
+ *     {
+ *       id: 'performance',
+ *       label: 'Performance',
+ *       content: <PerformanceCharts />
+ *     }
+ *   ];
+ *
+ *   return (
+ *     <Tabs
+ *       tabs={portfolioTabs}
+ *       defaultActiveTab="holdings"
+ *       className="portfolio-tabs"
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Dynamic tabs with data loading
+ * function DynamicTabs() {
+ *   const { data: symbols } = useWatchlistSymbols();
+ *
+ *   const symbolTabs = symbols?.map(symbol => ({
+ *     id: symbol.id,
+ *     label: symbol.symbol,
+ *     content: <SymbolDetails symbol={symbol} />
+ *   })) || [];
+ *
+ *   return symbolTabs.length > 0 ? (
+ *     <Tabs
+ *       tabs={symbolTabs}
+ *       defaultActiveTab={symbolTabs[0]?.id}
+ *     />
+ *   ) : (
+ *     <EmptyState
+ *       icon="briefcase"
+ *       title="No Symbols"
+ *       description="Add symbols to your watchlist to see them here."
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Advanced tabs with analytics
+ * function AnalyticsTabs() {
+ *   const analytics = useAnalytics();
+ *
+ *   const handleTabChange = (tabId: string) => {
+ *     analytics.track('tab_switched', {
+ *       tab_id: tabId,
+ *       section: 'dashboard'
+ *     });
+ *   };
+ *
+ *   const dashboardTabs = [
+ *     {
+ *       id: 'overview',
+ *       label: 'Overview',
+ *       content: <DashboardOverview />
+ *     },
+ *     {
+ *       id: 'analytics',
+ *       label: 'Analytics',
+ *       content: <AnalyticsDashboard />
+ *     }
+ *   ];
+ *
+ *   return (
+ *     <Tabs
+ *       tabs={dashboardTabs}
+ *       defaultActiveTab="overview"
+ *       onTabChange={handleTabChange}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export default function Tabs({
   tabs,
   defaultActiveTab,

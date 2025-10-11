@@ -1,13 +1,130 @@
+/**
+ * @fileoverview Mobile-optimized transactions list component for trading history display
+ *
+ * This component provides a comprehensive mobile interface for displaying trading transaction
+ * history with detailed financial information, profit/loss calculations, and intuitive
+ * card-based layouts. Features include responsive design patterns, loading states, and
+ * professional financial data presentation optimized for mobile interactions.
+ */
+
 "use client";
 
 import type { Transaction } from "@/types/trading";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import { BaseComponentProps } from "@/types";
 
-interface TransactionsListMobileProps {
+/**
+ * Props interface for TransactionsListMobile component configuration
+ * @interface TransactionsListMobileProps
+ * @extends {BaseComponentProps}
+ */
+export interface TransactionsListMobileProps extends BaseComponentProps {
+  /** Array of transaction records to display */
   transactions: Transaction[];
+  /** Loading state for async data fetching */
   loading?: boolean;
 }
 
+/**
+ * Mobile-optimized transactions list component for trading history display
+ *
+ * @remarks
+ * The TransactionsListMobile component delivers comprehensive mobile transaction display with the following features:
+ *
+ * **Mobile Optimization:**
+ * - Card-based layout optimized for touch interactions
+ * - Responsive design with md:hidden for mobile-only display
+ * - Touch-friendly spacing and element sizing
+ * - Swipe-friendly list navigation patterns
+ *
+ * **Transaction Display:**
+ * - Buy/Sell transaction type indicators with color coding
+ * - Symbol name and company information presentation
+ * - Transaction amount and execution date display
+ * - Quantity and price per share breakdown
+ *
+ * **Financial Data Presentation:**
+ * - Profit and loss calculations with color-coded indicators
+ * - Monospace fonts for numerical data consistency
+ * - Tabular number formatting for alignment
+ * - Professional currency formatting with proper decimals
+ *
+ * **Visual Design:**
+ * - Neumorphic card styling with subtle shadows
+ * - Color-coded transaction types (green for buy, red for sell)
+ * - Icon integration for visual transaction type identification
+ * - Consistent spacing and typography hierarchy
+ *
+ * **State Management:**
+ * - Loading state with animated spinner feedback
+ * - Empty state with helpful guidance messages
+ * - Error handling with user-friendly fallbacks
+ * - Responsive data updates and state transitions
+ *
+ * **Interactive Elements:**
+ * - Clean card interactions with hover states
+ * - Visual feedback for touch interactions
+ * - Accessible icon usage with proper sizing
+ * - Consistent interaction patterns throughout
+ *
+ * **Data Organization:**
+ * - Chronological transaction listing
+ * - Grid-based detail sections for key metrics
+ * - Hierarchical information presentation
+ * - Clear visual separation between data sections
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure for screen readers
+ * - Color coding complemented by icons and text
+ * - Clear visual hierarchies and contrast ratios
+ * - Touch-accessible element sizing and spacing
+ *
+ * @param props - Configuration object for mobile transactions list
+ * @returns TransactionsListMobile component with comprehensive trading history
+ *
+ * @example
+ * ```tsx
+ * // Basic transactions list with loading state
+ * <TransactionsListMobile
+ *   transactions={userTransactions}
+ *   loading={isLoadingTransactions}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with transaction filtering
+ * function MobileTransactionHistory() {
+ *   const { data: transactions, isLoading } = useTransactions();
+ *   const filteredTransactions = filterTransactionsByDateRange(transactions);
+ *
+ *   return (
+ *     <TransactionsListMobile
+ *       transactions={filteredTransactions}
+ *       loading={isLoading}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Portfolio integration with profit/loss tracking
+ * function PortfolioTransactions({ userId }: { userId: string }) {
+ *   const { data: transactions, isLoading } = useUserTransactions(userId);
+ *
+ *   return (
+ *     <div className="space-y-4">
+ *       <h2 className="text-lg font-semibold">Recent Transactions</h2>
+ *       <TransactionsListMobile
+ *         transactions={transactions || []}
+ *         loading={isLoading}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export default function TransactionsListMobile({
   transactions,
   loading = false,

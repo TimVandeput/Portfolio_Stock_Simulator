@@ -1,13 +1,144 @@
+/**
+ * @fileoverview Desktop-optimized transactions table component for comprehensive trading history
+ *
+ * This component provides a sophisticated desktop table interface for displaying detailed
+ * trading transaction history with comprehensive financial data, profit/loss calculations,
+ * and professional table layouts. Features include advanced column management, responsive
+ * design patterns, and seamless integration with financial data workflows.
+ */
+
 "use client";
 
 import type { Transaction } from "@/types/trading";
 import DynamicIcon from "@/components/ui/DynamicIcon";
+import { BaseComponentProps } from "@/types";
 
-interface TransactionsTableDesktopProps {
+/**
+ * Props interface for TransactionsTableDesktop component configuration
+ * @interface TransactionsTableDesktopProps
+ * @extends {BaseComponentProps}
+ */
+export interface TransactionsTableDesktopProps extends BaseComponentProps {
+  /** Array of transaction records to display */
   transactions: Transaction[];
+  /** Loading state for async data fetching */
   loading?: boolean;
 }
 
+/**
+ * Desktop-optimized transactions table component for comprehensive trading history
+ *
+ * @remarks
+ * The TransactionsTableDesktop component delivers professional desktop transaction display with the following features:
+ *
+ * **Table Architecture:**
+ * - Professional table structure with semantic HTML elements
+ * - Responsive column management with fixed and flexible widths
+ * - Hidden on mobile (md:hidden) for desktop-specific optimization
+ * - Overflow handling with horizontal scrolling capabilities
+ *
+ * **Comprehensive Data Display:**
+ * - Complete transaction history with date and time information
+ * - Symbol identification with company name display
+ * - Transaction type indicators with color-coded styling
+ * - Quantity, price, and total amount calculations
+ *
+ * **Financial Data Presentation:**
+ * - Profit and loss calculations with visual indicators
+ * - Monospace fonts for numerical data consistency
+ * - Tabular number formatting for perfect alignment
+ * - Professional currency formatting with decimal precision
+ *
+ * **Column Management:**
+ * - Fixed-width columns for consistent data alignment
+ * - Responsive header styling with descriptive labels
+ * - Proper text alignment (left/right) based on data type
+ * - Truncation handling with full content tooltips
+ *
+ * **Interactive Features:**
+ * - Hover effects on table rows for better user experience
+ * - Color-coded transaction types (buy/sell indicators)
+ * - Icon integration for visual transaction identification
+ * - Smooth transitions and visual feedback
+ *
+ * **State Management:**
+ * - Loading state with animated spinner and messaging
+ * - Empty state with helpful user guidance
+ * - Error handling with graceful fallback displays
+ * - Responsive data updates and state transitions
+ *
+ * **Visual Design:**
+ * - Neumorphic card styling with professional shadows
+ * - Consistent border and spacing treatments
+ * - Theme integration with CSS custom properties
+ * - Color-coded profit/loss indicators (green/red scheme)
+ *
+ * **Accessibility:**
+ * - Semantic table structure for screen reader compatibility
+ * - Clear column headers with descriptive labels
+ * - Proper color contrast and visual hierarchies
+ * - Keyboard navigation support throughout
+ *
+ * **Data Organization:**
+ * - Chronological transaction ordering with date/time
+ * - Clear separation between different data types
+ * - Hierarchical information presentation
+ * - Professional financial data formatting standards
+ *
+ * @param props - Configuration object for desktop transactions table
+ * @returns TransactionsTableDesktop component with comprehensive trading data
+ *
+ * @example
+ * ```tsx
+ * // Basic transactions table with loading state
+ * <TransactionsTableDesktop
+ *   transactions={userTransactions}
+ *   loading={isLoadingTransactions}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with transaction filtering and sorting
+ * function DesktopTransactionHistory() {
+ *   const { data: transactions, isLoading } = useTransactions();
+ *   const filteredTransactions = useMemo(() =>
+ *     filterAndSortTransactions(transactions),
+ *     [transactions]
+ *   );
+ *
+ *   return (
+ *     <TransactionsTableDesktop
+ *       transactions={filteredTransactions}
+ *       loading={isLoading}
+ *     />
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Portfolio dashboard integration with comprehensive data
+ * function PortfolioTransactionsTable({ userId }: { userId: string }) {
+ *   const { data: transactions, isLoading } = useUserTransactions(userId);
+ *   const { data: portfolio } = usePortfolio(userId);
+ *
+ *   return (
+ *     <div className="space-y-6">
+ *       <div className="flex justify-between items-center">
+ *         <h2 className="text-xl font-semibold">Transaction History</h2>
+ *         <TransactionFilters />
+ *       </div>
+ *
+ *       <TransactionsTableDesktop
+ *         transactions={transactions || []}
+ *         loading={isLoading}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export default function TransactionsTableDesktop({
   transactions,
   loading = false,

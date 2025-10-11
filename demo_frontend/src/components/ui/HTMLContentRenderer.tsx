@@ -1,11 +1,141 @@
+/**
+ * @fileoverview Secure HTML content renderer with safe parsing and interactive elements
+ *
+ * This component provides secure HTML content rendering with custom parsing for links,
+ * styling, and formatting. Features include XSS protection through controlled parsing,
+ * interactive link handling, professional styling, and seamless Next.js navigation
+ * integration for safe and engaging content presentation.
+ */
+
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { BaseComponentProps } from "@/types/components";
 
-interface HTMLContentRendererProps {
+/**
+ * Props interface for HTMLContentRenderer component configuration
+ * @interface HTMLContentRendererProps
+ * @extends {BaseComponentProps}
+ */
+export interface HTMLContentRendererProps extends BaseComponentProps {
+  /** HTML content string to parse and render safely */
   htmlContent: string;
 }
 
+/**
+ * Secure HTML content renderer with safe parsing and interactive elements
+ *
+ * @remarks
+ * The HTMLContentRenderer component delivers secure HTML rendering with the following features:
+ *
+ * **Security Features:**
+ * - Safe HTML parsing without dangerouslySetInnerHTML
+ * - Controlled element rendering through regex parsing
+ * - XSS protection through whitelist approach
+ * - Professional security-first implementation
+ *
+ * **Supported Elements:**
+ * - Links with click handling and Next.js routing
+ * - Strong text with professional bold styling
+ * - Colored spans with inline styling
+ * - Line breaks converted to proper spacing
+ *
+ * **Link Handling:**
+ * - Interactive button-style links
+ * - Professional hover states and transitions
+ * - Next.js router integration for SPA navigation
+ * - Accessible button styling with focus states
+ *
+ * **Text Formatting:**
+ * - Bold text with theme-integrated colors
+ * - Custom colored text with inline styles
+ * - Professional typography integration
+ * - Clean spacing and line height management
+ *
+ * **Parsing Engine:**
+ * - Regex-based HTML element parsing
+ * - Placeholder-based content processing
+ * - Multi-element support on single lines
+ * - Professional content transformation
+ *
+ * **Layout Management:**
+ * - Line-by-line content processing
+ * - Professional spacing between elements
+ * - Clean empty line handling
+ * - Responsive content presentation
+ *
+ * **Performance:**
+ * - Efficient regex processing
+ * - Optimized component rendering
+ * - Clean key management for React
+ * - Professional memory management
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure
+ * - Proper button implementation for links
+ * - Screen reader compatible content
+ * - Professional accessibility patterns
+ *
+ * **Theme Integration:**
+ * - CSS custom properties for text colors
+ * - Professional color palette integration
+ * - Consistent styling with design system
+ * - Theme-aware text rendering
+ *
+ * **Use Cases:**
+ * - Help documentation rendering
+ * - Rich text content display
+ * - User-generated content with limited HTML
+ * - Professional content management
+ *
+ * @param props - Configuration object for HTML content rendering
+ * @returns HTMLContentRenderer component with safely parsed HTML content
+ *
+ * @example
+ * ```tsx
+ * // Basic HTML content rendering
+ * <HTMLContentRenderer
+ *   htmlContent="Welcome to our <strong>portfolio management</strong> platform!"
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Content with links and styling
+ * <HTMLContentRenderer
+ *   htmlContent={`
+ *     Learn more about <a href="/help">trading basics</a><br/>
+ *     <span style="color: #10b981">Success!</span> Your account is active.
+ *   `}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Help content integration
+ * function HelpSection({ content }: { content: string }) {
+ *   return (
+ *     <div className="help-content">
+ *       <HTMLContentRenderer htmlContent={content} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Dynamic content from CMS
+ * function DynamicContent() {
+ *   const { data: content } = useCMSContent('homepage');
+ *
+ *   return content ? (
+ *     <HTMLContentRenderer htmlContent={content.html} />
+ *   ) : (
+ *     <Loader cover="content" />
+ *   );
+ * }
+ * ```
+ */
 export default function HTMLContentRenderer({
   htmlContent,
 }: HTMLContentRendererProps) {
