@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Interactive dashboard client component for the Stock Simulator.
+ *
+ * This module provides the main dashboard interface featuring role-based navigation,
+ * responsive design, animated card transitions, and real-time status indicators.
+ * It serves as the central hub for authenticated users to access all application features.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -11,6 +22,77 @@ import { useNotificationStatus } from "@/hooks/useNotificationStatus";
 import DashboardCard from "@/components/cards/DashboardCard";
 import Loader from "@/components/ui/Loader";
 
+/**
+ * Interactive dashboard client component with role-based navigation.
+ *
+ * This client component provides a comprehensive dashboard interface that adapts
+ * to user roles, screen sizes, and authentication state. It features animated
+ * navigation cards, real-time status indicators, and responsive grid layouts
+ * for optimal user experience across all devices.
+ *
+ * @remarks
+ * The component implements several sophisticated features:
+ *
+ * **Authentication & Authorization**:
+ * - Enforces user authentication with automatic redirects
+ * - Filters navigation cards based on user roles and permissions
+ * - Provides loading states during authentication checks
+ *
+ * **Responsive Design**:
+ * - Adaptive grid layout (1-4 columns based on screen size)
+ * - Flexible card sizing and spacing
+ * - Mobile-first responsive typography and layouts
+ *
+ * **Animation & UX**:
+ * - Entrance animations with staggered timing
+ * - Smooth transitions between states
+ * - Loading indicators for better perceived performance
+ *
+ * **Real-time Features**:
+ * - Live notification status indicators
+ * - Dynamic card filtering based on user permissions
+ * - Immediate navigation with Next.js router integration
+ *
+ * The dashboard serves as the central navigation hub, providing quick access
+ * to portfolio management, market data, order history, symbols library,
+ * and other key application features.
+ *
+ * @example
+ * ```tsx
+ * // Rendered by the HomePage server component
+ * function HomeClient() {
+ *   const { isLoading, hasAccess, role } = useAccessControl({
+ *     requireAuth: true
+ *   });
+ *
+ *   const filteredItems = filterNavItemsByRole(navItems, role);
+ *   const { gridStyle } = useResponsiveGrid(filteredItems.length);
+ *
+ *   return (
+ *     <div className="page-container">
+ *       <div className="dashboard-grid" style={gridStyle}>
+ *         {filteredItems.map((item, index) => (
+ *           <DashboardCard key={item.href} item={item} index={index} />
+ *         ))}
+ *       </div>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The interactive dashboard interface with animated navigation cards,
+ * welcome header, and responsive grid layout, or a loading state during
+ * authentication checks.
+ *
+ * @see {@link useAccessControl} - Hook managing authentication and authorization
+ * @see {@link useAnimationSequence} - Hook controlling card entrance animations
+ * @see {@link useResponsiveGrid} - Hook managing responsive grid layouts
+ * @see {@link useNotificationStatus} - Hook providing real-time notification status
+ * @see {@link DashboardCard} - Individual navigation card component
+ * @see {@link filterNavItemsByRole} - Utility for role-based navigation filtering
+ *
+ * @public
+ */
 export default function HomeClient() {
   const router = useRouter();
   const notificationStatus = useNotificationStatus();

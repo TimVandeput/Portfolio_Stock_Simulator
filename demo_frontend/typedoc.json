@@ -20,7 +20,6 @@
     ".next/**",
     "src/hooks/useIsMobile.ts",
     "src/lib/constants/breakpoints.ts",
-    "src/app/**/page.tsx",
     "src/app/**/layout.tsx",
     "src/app/**/template.tsx",
     "src/app/**/loading.tsx",

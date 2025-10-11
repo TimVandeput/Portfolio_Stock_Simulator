@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Interactive portfolio management client component for investment tracking.
+ *
+ * This module provides comprehensive portfolio management capabilities that enable users
+ * to track, analyze, and manage their investment holdings through an advanced interface
+ * featuring real-time portfolio analytics, detailed holdings tracking, profit/loss
+ * calculations, and interactive selling capabilities within the Stock Simulator platform.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -16,6 +28,174 @@ import EmptyPortfolio from "@/components/ui/EmptyPortfolio";
 import type { WalletBalanceResponse } from "@/types/wallet";
 import type { Transaction } from "@/types/trading";
 
+/**
+ * Interactive portfolio management client component for comprehensive investment tracking.
+ *
+ * This sophisticated client component provides comprehensive portfolio management
+ * capabilities with advanced analytics, real-time performance tracking, detailed
+ * holdings analysis, profit/loss calculations, and interactive selling functionality.
+ * It delivers a professional-grade investment tracking experience within the Stock
+ * Simulator platform.
+ *
+ * @remarks
+ * The component delivers comprehensive portfolio management functionality through:
+ *
+ * **Real-time Portfolio Analytics**:
+ * - **Live Portfolio Valuation**: Real-time market value calculations across all holdings
+ * - **Performance Metrics**: Total return, gain/loss percentages, and performance indicators
+ * - **Market Data Integration**: Live price feeds for accurate portfolio valuation
+ * - **Historical Performance**: Transaction-based performance analysis and tracking
+ *
+ * **Advanced Holdings Processing**:
+ * - **Transaction Aggregation**: Processes all buy/sell transactions for accurate holdings
+ * - **Cost Basis Calculations**: Weighted average cost basis for each position
+ * - **FIFO Position Management**: First-in-first-out selling logic for accurate accounting
+ * - **Position Tracking**: Individual purchase tracking with detailed cost analysis
+ *
+ * **Comprehensive Portfolio Statistics**:
+ * - **Total Portfolio Value**: Combined cash and stock holdings valuation
+ * - **Stock Market Value**: Current worth of all equity positions
+ * - **Total Gain/Loss**: Absolute and percentage returns on investments
+ * - **Available Cash**: Liquid funds available for new investments
+ * - **Holdings Count**: Number of unique positions in portfolio
+ *
+ * **Interactive Holdings Management**:
+ * - **Detailed Holdings Display**: Symbol, quantity, current price, and market value
+ * - **Profit/Loss Analysis**: Individual position performance with visual indicators
+ * - **Sell Integration**: Direct navigation to position-specific selling interface
+ * - **Position Sorting**: Intelligent ordering for optimal user experience
+ *
+ * **Advanced Data Processing**:
+ * - **Transaction History Analysis**: Complete chronological transaction processing
+ * - **Holdings Consolidation**: Aggregates multiple purchases into unified positions
+ * - **Sell Order Processing**: Accurately reduces positions based on sell transactions
+ * - **Cost Basis Adjustments**: Proportional cost basis updates for partial sales
+ *
+ * **User Experience Features**:
+ * - **Responsive Design**: Optimized layouts for desktop and mobile viewing
+ * - **Loading States**: Smooth transitions during data loading operations
+ * - **Error Handling**: Graceful fallbacks with retry mechanisms
+ * - **Empty State Management**: Helpful guidance when portfolio is empty
+ * - **Visual Performance Indicators**: Color-coded profit/loss indicators
+ *
+ * **Performance Optimizations**:
+ * - **Memoized Calculations**: Optimized portfolio statistics and holdings processing
+ * - **Efficient Data Loading**: Parallel API calls for portfolio and transaction data
+ * - **Smart Re-rendering**: Minimal updates through React optimization patterns
+ * - **Price Context Integration**: Efficient real-time price data consumption
+ *
+ * **Portfolio Analysis Features**:
+ * - **Individual Position Analysis**: Detailed performance metrics per holding
+ * - **Portfolio Diversification**: Holdings distribution and concentration analysis
+ * - **Return Calculations**: Accurate profit/loss calculations with percentage returns
+ * - **Market Value Tracking**: Real-time portfolio valuation updates
+ *
+ * **Navigation and Actions**:
+ * - **Sell Order Navigation**: Direct routing to position-specific selling interface
+ * - **Market Integration**: Seamless navigation to market for new purchases
+ * - **Position Management**: Complete buy/sell workflow integration
+ * - **Portfolio Overview**: Comprehensive dashboard for investment tracking
+ *
+ * **Data Integrity and Security**:
+ * - **Authentication Verification**: Secure user session validation
+ * - **Data Consistency**: Ensures accurate holdings through transaction processing
+ * - **Error Recovery**: Robust error handling with user-friendly messages
+ * - **Real-time Synchronization**: Live updates with market data changes
+ *
+ * The component serves as a complete portfolio management solution, providing users
+ * with professional-grade investment tracking capabilities while maintaining
+ * accuracy, performance, and user experience standards expected in modern
+ * financial applications.
+ *
+ * @example
+ * ```tsx
+ * // Comprehensive portfolio management interface usage
+ * function PortfolioClient() {
+ *   const [transactions, setTransactions] = useState<Transaction[]>([]);
+ *   const [walletBalance, setWalletBalance] = useState<WalletBalanceResponse>({
+ *     cashBalance: 0,
+ *     totalMarketValue: 0,
+ *     totalPortfolioValue: 0
+ *   });
+ *   const { prices } = usePrices();
+ *
+ *   // Process transactions into consolidated holdings
+ *   const processedHoldings = useMemo(() => {
+ *     const holdingsMap = new Map();
+ *
+ *     transactions.forEach(transaction => {
+ *       if (transaction.type === "BUY") {
+ *         const existing = holdingsMap.get(transaction.symbol);
+ *         if (existing) {
+ *           existing.totalQuantity += transaction.quantity;
+ *           existing.totalCost += transaction.totalAmount;
+ *           existing.avgCostBasis = existing.totalCost / existing.totalQuantity;
+ *         } else {
+ *           holdingsMap.set(transaction.symbol, {
+ *             symbol: transaction.symbol,
+ *             totalQuantity: transaction.quantity,
+ *             totalCost: transaction.totalAmount,
+ *             avgCostBasis: transaction.pricePerShare
+ *           });
+ *         }
+ *       }
+ *     });
+ *
+ *     return Array.from(holdingsMap.values());
+ *   }, [transactions]);
+ *
+ *   // Calculate portfolio statistics
+ *   const portfolioStats = useMemo(() => {
+ *     let totalValue = 0;
+ *     let totalCost = 0;
+ *
+ *     processedHoldings.forEach(holding => {
+ *       const currentPrice = prices[holding.symbol]?.last ?? 0;
+ *       totalValue += currentPrice * holding.totalQuantity;
+ *       totalCost += holding.totalCost;
+ *     });
+ *
+ *     return {
+ *       totalValue,
+ *       totalCost,
+ *       totalPnL: totalValue - totalCost,
+ *       totalPnLPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0
+ *     };
+ *   }, [processedHoldings, prices]);
+ *
+ *   return (
+ *     <div className="portfolio-container">
+ *       <PortfolioStatsCard title="Total Portfolio" value={portfolioStats.totalValue} />
+ *       {processedHoldings.map(holding => (
+ *         <div key={holding.symbol} className="holding-card">
+ *           <h3>{holding.symbol}</h3>
+ *           <p>{holding.totalQuantity} shares @ ${holding.avgCostBasis.toFixed(2)}</p>
+ *           <button onClick={() => router.push(`/portfolio/${holding.symbol}`)}>
+ *             Sell
+ *           </button>
+ *         </div>
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns A comprehensive portfolio management interface with real-time analytics,
+ * detailed holdings tracking, performance metrics, and interactive selling
+ * capabilities for complete investment portfolio management
+ *
+ * @see {@link usePrices} - Real-time price data context provider
+ * @see {@link getUserPortfolio} - API function for fetching portfolio data
+ * @see {@link getTransactionHistory} - API function for retrieving transaction history
+ * @see {@link PortfolioStatsCard} - Portfolio statistics display component
+ * @see {@link TableHeader} - Holdings table header component
+ * @see {@link EmptyPortfolio} - Empty state component for new users
+ * @see {@link MarketStatus} - Market status indicator component
+ * @see {@link Transaction} - TypeScript interface for transaction data
+ * @see {@link WalletBalanceResponse} - TypeScript interface for wallet data
+ *
+ * @public
+ */
 export default function PortfolioClient() {
   const router = useRouter();
   const { prices, hasInitialPrices } = usePrices();

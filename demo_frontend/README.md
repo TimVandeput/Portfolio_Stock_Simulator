@@ -69,6 +69,7 @@ Generate docs:
 
 ```powershell
 npm run docs
+npm run docs:html
 ```
 
 Configuration: `typedoc.json` (entry points: `src/components`, `src/hooks`, `src/contexts`, `src/lib/api`, `src/types`).
