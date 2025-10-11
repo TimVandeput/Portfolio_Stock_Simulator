@@ -13,7 +13,6 @@ import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
-import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
 import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 import { useLogoutFlow } from "@/hooks/useLogoutFlow";
@@ -36,7 +35,6 @@ export default function ClientLayout({
   const logoutFlow = useLogoutFlow();
 
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
-  const [isSmallPhone, setIsSmallPhone] = useState(false);
 
   useEffect(() => {
     loadTokensFromStorage();
@@ -69,18 +67,6 @@ export default function ClientLayout({
   const handleTrailChange = (enabled: boolean) => {
     setCursorTrailEnabled(enabled);
   };
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const smallPhone = window.matchMedia(
-        BREAKPOINTS.SMALL_PHONE_DOWN
-      ).matches;
-      setIsSmallPhone(smallPhone);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     if (
@@ -144,7 +130,9 @@ export default function ClientLayout({
           </div>
         </main>
 
-        {!isSmallPhone && <Footer />}
+        <div className="hidden [@media(min-width:351px)]:block w-full">
+          <Footer />
+        </div>
       </PriceProvider>
     </ThemeProvider>
   );
