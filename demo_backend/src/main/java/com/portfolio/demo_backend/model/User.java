@@ -10,6 +10,16 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+/**
+ * Represents an application user with credentials, contact information,
+ * assigned roles, and relationships to wallet, portfolios, and transactions.
+ * <p>
+ * Invariants and mapping notes:
+ * - {@code username} and {@code email} are unique and non-null.
+ * - {@code roles} defaults to {@code ROLE_USER} and is eagerly loaded.
+ * - One-to-one {@link Wallet} uses the user as owner; one-to-many relationships
+ * to {@link Portfolio} and {@link Transaction} are cascaded.
+ */
 @Entity
 @Table(name = "users")
 @Data

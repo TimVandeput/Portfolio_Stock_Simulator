@@ -32,6 +32,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Unit tests for {@link PortfolioService} covering portfolio aggregation,
+ * holding lookup, validation, and error propagation behaviors.
+ */
 class PortfolioServiceUnitTest {
 
     @Mock
@@ -98,14 +102,20 @@ class PortfolioServiceUnitTest {
         googlePortfolio.setUpdatedAt(Instant.parse("2025-09-19T14:15:00Z"));
     }
 
+    /**
+     * Returns empty portfolios list and computes derived fields with only wallet.
+     */
     @Test
     void getUserPortfolio_withEmptyPortfolio_returnsCorrectStructure() {
+        // Given: User exists, wallet exists, no portfolio entries
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
 
+        // When: Fetching user portfolio
         UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
+        // Then: Structure contains wallet and empty holdings
         assertThat(result).isNotNull();
         assertThat(result.getPortfolios()).isEmpty();
 
@@ -121,15 +131,21 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserId(1L);
     }
 
+    /**
+     * Aggregates multiple holdings and computes invested totals.
+     */
     @Test
     void getUserPortfolio_withMultipleHoldings_returnsCorrectCalculations() {
+        // Given: Two holdings for AAPL and GOOGL
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio);
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(portfolios);
 
+        // When: Fetching
         UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
+        // Then: Holdings present with computed invested amounts
         assertThat(result).isNotNull();
         assertThat(result.getPortfolios()).hasSize(2);
 
@@ -165,14 +181,20 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserId(1L);
     }
 
+    /**
+     * Finds existing holding and returns populated UserHoldingData.
+     */
     @Test
     void getUserHolding_existingSymbol_returnsCorrectHolding() {
+        // Given: AAPL holding exists
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
                 .thenReturn(Optional.of(applePortfolio));
 
+        // When
         UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");
         assertThat(result.isHasHolding()).isTrue();
@@ -187,13 +209,19 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "AAPL");
     }
 
+    /**
+     * Returns no holding when symbol isn't found.
+     */
     @Test
     void getUserHolding_nonExistentSymbol_returnsEmptyHolding() {
+        // Given: No holding for symbol
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "NONEXISTENT")).thenReturn(Optional.empty());
 
+        // When
         UserHoldingData result = portfolioService.getUserHolding(1L, "NONEXISTENT");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("NONEXISTENT");
         assertThat(result.isHasHolding()).isFalse();
@@ -203,15 +231,21 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "NONEXISTENT");
     }
 
+    /**
+     * Handles null updatedAt in portfolio gracefully.
+     */
     @Test
     void getUserHolding_portfolioWithNullUpdatedAt_returnsNullLastTradeDate() {
+        // Given: AAPL holding without updatedAt timestamp
         applePortfolio.setUpdatedAt(null);
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
                 .thenReturn(Optional.of(applePortfolio));
 
+        // When
         UserHoldingData result = portfolioService.getUserHolding(1L, "AAPL");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");
         assertThat(result.isHasHolding()).isTrue();
@@ -226,8 +260,12 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "AAPL");
     }
 
+    /**
+     * Validates mathematical calculations for a single holding.
+     */
     @Test
     void getUserPortfolio_singleHolding_correctMathematicalCalculations() {
+        // Given: Single AAPL holding with specific average cost
         Portfolio singlePortfolio = new Portfolio();
         singlePortfolio.setId(1L);
         singlePortfolio.setUserId(1L);
@@ -240,8 +278,10 @@ class PortfolioServiceUnitTest {
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenReturn(Collections.singletonList(singlePortfolio));
 
+        // When
         UserPortfolioData result = portfolioService.getUserPortfolio(1L);
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.getPortfolios()).hasSize(1);
 
@@ -261,8 +301,12 @@ class PortfolioServiceUnitTest {
         verify(portfolioRepository).findByUserId(1L);
     }
 
+    /**
+     * Validates input constraints for getUserPortfolio.
+     */
     @Test
     void getUserPortfolio_invalidUserId_throwsIllegalArgumentException() {
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User ID cannot be null");
@@ -276,45 +320,68 @@ class PortfolioServiceUnitTest {
                 .hasMessage("Portfolio data error: Failed to retrieve portfolio data");
     }
 
+    /**
+     * Propagates UserNotFoundException from underlying service.
+     */
     @Test
     void getUserPortfolio_userNotFound_throwsUserNotFoundException() {
+        // Given
         when(userService.getUserById(999L)).thenThrow(new UserNotFoundException(999L));
 
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(999L))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found with id: 999");
     }
 
+    /**
+     * Throws when wallet is missing for a user.
+     */
     @Test
     void getUserPortfolio_walletNotFound_throwsWalletNotFoundException() {
+        // Given
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(null);
 
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(1L))
                 .isInstanceOf(WalletNotFoundException.class)
                 .hasMessage("Wallet not found for user: testuser");
     }
 
+    /**
+     * Wraps repository exceptions with a PortfolioDataException.
+     */
     @Test
     void getUserPortfolio_repositoryException_throwsPortfolioDataException() {
+        // Given
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
         when(portfolioRepository.findByUserId(1L)).thenThrow(new RuntimeException("Database error"));
 
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserPortfolio(1L))
                 .isInstanceOf(PortfolioDataException.class)
                 .hasMessage("Portfolio data error: Failed to retrieve portfolio data");
     }
 
+    /**
+     * Validates input constraints for getUserHolding userId.
+     */
     @Test
     void getUserHolding_invalidUserId_throwsIllegalArgumentException() {
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserHolding(null, "AAPL"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User ID cannot be null");
     }
 
+    /**
+     * Validates input constraints for getUserHolding symbol.
+     */
     @Test
     void getUserHolding_invalidSymbol_throwsIllegalArgumentException() {
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserHolding(1L, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Symbol cannot be null or empty");
@@ -328,34 +395,50 @@ class PortfolioServiceUnitTest {
                 .hasMessage("Symbol cannot be null or empty");
     }
 
+    /**
+     * Propagates UserNotFoundException when user lookup fails.
+     */
     @Test
     void getUserHolding_userNotFound_throwsUserNotFoundException() {
+        // Given
         when(userService.getUserById(999L)).thenThrow(new UserNotFoundException(999L));
 
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserHolding(999L, "AAPL"))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found with id: 999");
     }
 
+    /**
+     * Wraps repository exceptions for holding lookup in PortfolioDataException.
+     */
     @Test
     void getUserHolding_repositoryException_throwsPortfolioDataException() {
+        // Given
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
                 .thenThrow(new RuntimeException("Database error"));
 
+        // When/Then
         assertThatThrownBy(() -> portfolioService.getUserHolding(1L, "AAPL"))
                 .isInstanceOf(PortfolioDataException.class)
                 .hasMessage("Portfolio data error: Failed to retrieve holding data for symbol: AAPL");
     }
 
+    /**
+     * Normalizes symbol input to uppercase and trims spaces.
+     */
     @Test
     void getUserHolding_symbolNormalization_worksCorrectly() {
+        // Given
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL"))
                 .thenReturn(Optional.of(applePortfolio));
 
+        // When
         UserHoldingData result = portfolioService.getUserHolding(1L, "  aapl  ");
 
+        // Then
         assertThat(result).isNotNull();
         assertThat(result.getSymbol()).isEqualTo("AAPL");
         verify(portfolioRepository).findByUserIdAndSymbol_Symbol(1L, "AAPL");

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Market data endpoints for chart time-series per portfolio symbols.
+ */
 @RestController
 @RequestMapping("/api/market/charts")
 @RequiredArgsConstructor
@@ -17,6 +20,10 @@ public class GraphController {
 
     private final GraphService graphService;
 
+    /**
+     * Get chart time-series for all symbols in a user's portfolio with a
+     * specified time range (e.g., 1d, 5d, 1mo).
+     */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getChartsForUserPortfolio(
             @PathVariable Long userId,

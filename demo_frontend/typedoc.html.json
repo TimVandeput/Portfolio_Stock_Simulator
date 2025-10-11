@@ -1,0 +1,32 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/components",
+    "src/hooks",
+    "src/contexts",
+    "src/lib/api",
+    "src/types",
+    "src/app"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs-site",
+  "readme": "none",
+  "hideGenerator": true,
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**",
+    ".next/**",
+    "src/hooks/useIsMobile.ts",
+    "src/lib/constants/breakpoints.ts",
+    "src/lib/**/index.ts",
+    "src/types/index.ts",
+    "src/app/**/layout.tsx",
+    "src/app/**/template.tsx",
+    "src/app/**/loading.tsx",
+    "src/app/**/error.tsx",
+    "src/app/**/not-found.tsx"
+  ],
+  "excludeReferences": true,
+  "tsconfig": "tsconfig.typedoc.json"
+}

@@ -18,6 +18,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Unit tests for {@link NotificationMapper} verifying mapping from
+ * {@link com.portfolio.demo_backend.model.Notification} to
+ * {@link com.portfolio.demo_backend.dto.notification.NotificationResponse},
+ * including sender name resolution and preview generation.
+ */
 class NotificationMapperTest {
 
     @Mock
@@ -31,8 +37,13 @@ class NotificationMapperTest {
         ReflectionTestUtils.setField(notificationMapper, "userService", userService);
     }
 
+    /**
+     * Maps all fields correctly including preview truncation and sender name
+     * resolution.
+     */
     @Test
     void toDTO_mapsAllFieldsCorrectly() {
+        // Given: Sender user exists and a populated notification
         User sender = new User();
         sender.setId(1L);
         sender.setUsername("john_doe");
@@ -48,8 +59,10 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.parse("2025-10-06T10:15:30.00Z"));
         notification.setRead(false);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: All fields and preview are mapped correctly
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(123L);
         assertThat(result.getSenderName()).isEqualTo("john_doe");
@@ -65,8 +78,13 @@ class NotificationMapperTest {
         verify(userService).getUserById(1L);
     }
 
+    /**
+     * Maps to "System" sender when senderUserId is null, without calling
+     * userService.
+     */
     @Test
     void toDTO_nullSenderUserId_returnsSystemSender() {
+        // Given: Notification without sender user id
         Notification notification = new Notification();
         notification.setId(123L);
         notification.setSenderUserId(null);
@@ -76,14 +94,21 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.now());
         notification.setRead(true);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: Sender is set to System and no userService call made
         assertThat(result.getSenderName()).isEqualTo("System");
         verifyNoInteractions(userService);
     }
 
+    /**
+     * Maps to "Unknown User" sender when userService throws exception looking up
+     * sender.
+     */
     @Test
     void toDTO_userServiceThrowsException_returnsUnknownUser() {
+        // Given: userService throws when looking up sender
         when(userService.getUserById(999L)).thenThrow(new RuntimeException("User not found"));
 
         Notification notification = new Notification();
@@ -95,14 +120,20 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.now());
         notification.setRead(false);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: Sender name falls back to Unknown User
         assertThat(result.getSenderName()).isEqualTo("Unknown User");
         verify(userService).getUserById(999L);
     }
 
+    /**
+     * Cleans HTML tags from body in preview, but leaves body intact.
+     */
     @Test
     void toDTO_bodyWithHtmlTags_previewCleansHtml() {
+        // Given: Body contains HTML and sender exists
         User sender = new User();
         sender.setUsername("admin");
         when(userService.getUserById(1L)).thenReturn(sender);
@@ -117,16 +148,22 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.now());
         notification.setRead(false);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: Body remains as is, preview strips HTML and truncates
         assertThat(result.getBody()).contains("<br>").contains("<a href").contains("<strong>");
         assertThat(result.getPreview())
                 .isEqualTo("Welcome to our platform! Here are some links:• Dashboard• Important!");
         assertThat(result.getPreview()).doesNotContain("<").doesNotContain(">");
     }
 
+    /**
+     * If body is shorter than 100 chars, preview equals body without ellipsis.
+     */
     @Test
     void toDTO_shortBody_previewEqualsBody() {
+        // Given: Short body and sender exists
         User sender = new User();
         sender.setUsername("user1");
         when(userService.getUserById(1L)).thenReturn(sender);
@@ -140,14 +177,20 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.now());
         notification.setRead(false);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: Preview equals full body without ellipsis
         assertThat(result.getPreview()).isEqualTo("Short message");
         assertThat(result.getPreview()).doesNotContain("...");
     }
 
+    /**
+     * If body is empty, preview is also empty string.
+     */
     @Test
     void toDTO_emptyBody_emptyPreview() {
+        // Given: Empty body and sender exists
         User sender = new User();
         sender.setUsername("user1");
         when(userService.getUserById(1L)).thenReturn(sender);
@@ -161,13 +204,19 @@ class NotificationMapperTest {
         notification.setCreatedAt(Instant.now());
         notification.setRead(false);
 
+        // When: Mapping to DTO
         NotificationResponse result = notificationMapper.toDTO(notification);
 
+        // Then: Empty preview string
         assertThat(result.getPreview()).isEmpty();
     }
 
+    /**
+     * Maps a list of notifications correctly, resolving sender names.
+     */
     @Test
     void toDTOList_mapsAllNotifications() {
+        // Given: Two notifications with different senders
         User sender1 = new User();
         sender1.setUsername("user1");
         User sender2 = new User();
@@ -196,8 +245,10 @@ class NotificationMapperTest {
 
         List<Notification> notifications = List.of(notification1, notification2);
 
+        // When: Mapping list to responses
         List<NotificationResponse> result = notificationMapper.toDTOList(notifications);
 
+        // Then: Both notifications mapped correctly with sender names
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getSenderName()).isEqualTo("user1");
         assertThat(result.get(0).getSubject()).isEqualTo("First");

@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Interactive orders and trading history client component.
+ *
+ * This module provides comprehensive trading history management and analysis
+ * capabilities through an advanced interface featuring transaction filtering,
+ * sorting, searching, and export functionality. It enables users to effectively
+ * track, analyze, and manage their complete trading history within the Stock Simulator.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -18,6 +30,113 @@ import TransactionExporter from "@/components/ui/TransactionExporter";
 import type { Transaction } from "@/types/trading";
 import type { SortOption } from "@/components/ui/SortDropdown";
 
+/**
+ * Interactive orders and trading history client component with advanced filtering.
+ *
+ * This sophisticated client component provides comprehensive trading history
+ * management with advanced filtering, sorting, searching, and analysis capabilities.
+ * It implements professional-grade transaction management features that enable
+ * users to effectively track, analyze, and export their complete trading history
+ * within the Stock Simulator platform.
+ *
+ * @remarks
+ * The component delivers comprehensive trading history management through:
+ *
+ * **Authentication & Data Access**:
+ * - Requires user authentication for transaction access
+ * - Automatically loads complete user trading history
+ * - Integrates with secure transaction API endpoints
+ * - Provides personalized trading analytics and insights
+ *
+ * **Advanced Filtering & Search**:
+ * - **Text Search**: Symbol names, company names, and transaction details
+ * - **Date Range Filtering**: Custom date ranges for temporal analysis
+ * - **Transaction Type Filtering**: Buy/sell transaction categorization
+ * - **Status Filtering**: Completed, pending, or failed transaction states
+ * - **Real-time Filtering**: Immediate results as filters change
+ *
+ * **Multi-criteria Sorting**:
+ * - **Date Sorting**: Chronological ordering (newest/oldest first)
+ * - **Amount Sorting**: Transaction value ordering (high/low)
+ * - **Symbol Sorting**: Alphabetical ordering by stock symbol
+ * - **Type Sorting**: Grouped by transaction type (buy/sell)
+ * - **Performance Impact**: Gain/loss impact sorting
+ *
+ * **Data Visualization & Analytics**:
+ * - **Desktop View**: Comprehensive table with all transaction details
+ * - **Mobile View**: Optimized card-based transaction display
+ * - **Transaction Statistics**: Summary metrics and performance indicators
+ * - **Visual Indicators**: Color-coded buy/sell actions and profit/loss
+ * - **Pagination**: Efficient handling of large transaction datasets
+ *
+ * **Export & Reporting**:
+ * - **CSV Export**: Complete transaction history for external analysis
+ * - **PDF Reports**: Formatted trading summaries and statements
+ * - **Custom Date Ranges**: Selective export based on filtering criteria
+ * - **Performance Reports**: Gain/loss analysis and trading insights
+ *
+ * **Performance Optimizations**:
+ * - **Efficient Data Loading**: Lazy loading and pagination for large datasets
+ * - **Memoized Calculations**: Optimized filtering and sorting performance
+ * - **Search Debouncing**: Reduced API calls during text input
+ * - **Client-side Caching**: Improved performance for repeated operations
+ *
+ * **User Experience Features**:
+ * - **Responsive Design**: Optimized layouts for all device types
+ * - **Loading States**: Smooth transitions during data operations
+ * - **Error Handling**: Graceful fallbacks with retry mechanisms
+ * - **Empty States**: Helpful guidance when no transactions exist
+ * - **Accessibility**: Full keyboard navigation and screen reader support
+ *
+ * The component serves as a comprehensive trading analysis and management tool,
+ * providing users with professional-grade capabilities to understand their
+ * trading patterns, analyze performance, and maintain detailed records of
+ * their simulation trading activity.
+ *
+ * @example
+ * ```tsx
+ * // Rendered by the OrdersPage server component
+ * function OrdersClient() {
+ *   const [transactions, setTransactions] = useState<Transaction[]>([]);
+ *   const [loading, setLoading] = useState(true);
+ *   const [q, setQ] = useState("");
+ *   const [dateRange, setDateRange] = useState<DateRange>({
+ *     startDate: "", endDate: ""
+ *   });
+ *   const [sortBy, setSortBy] = useState("date-desc");
+ *
+ *   const filteredTransactions = useMemo(() => {
+ *     return filterAndSortTransactions(transactions, q, dateRange, sortBy);
+ *   }, [transactions, q, dateRange, sortBy]);
+ *
+ *   return (
+ *     <div className="orders-container">
+ *       <TransactionStats transactions={transactions} />
+ *       <div className="filters-section">
+ *         <NeumorphicInput value={q} onChange={setQ} placeholder="Search..." />
+ *         <DateRangeFilter dateRange={dateRange} onChange={setDateRange} />
+ *         <SortDropdown value={sortBy} onChange={setSortBy} />
+ *       </div>
+ *       <TransactionsTableDesktop transactions={filteredTransactions} />
+ *       <TransactionExporter transactions={filteredTransactions} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @returns The comprehensive orders management interface with advanced filtering,
+ * sorting, analytics, and export capabilities for complete trading history
+ * management and analysis.
+ *
+ * @see {@link getTransactionHistory} - API function for fetching trading history
+ * @see {@link TransactionsTableDesktop} - Desktop transaction table component
+ * @see {@link TransactionsListMobile} - Mobile transaction list component
+ * @see {@link TransactionStats} - Transaction analytics and statistics component
+ * @see {@link TransactionExporter} - Export functionality component
+ * @see {@link Transaction} - TypeScript interface for transaction data
+ *
+ * @public
+ */
 export default function OrdersClient() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);

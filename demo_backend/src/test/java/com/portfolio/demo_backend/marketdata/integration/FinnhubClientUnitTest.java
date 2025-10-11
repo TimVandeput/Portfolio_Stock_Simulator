@@ -19,6 +19,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Unit tests for {@link FinnhubClient} validating HTTP response handling for
+ * constituents and symbols endpoints, throttling, and error propagation.
+ */
 class FinnhubClientUnitTest {
 
     @Mock
@@ -46,8 +50,12 @@ class FinnhubClientUnitTest {
         ReflectionTestUtils.setField(finnhubClient, "http", mockHttpClient);
     }
 
+    /**
+     * Parses constituents list successfully.
+     */
     @Test
     void getIndexConstituents_success_returnsList() throws IOException {
+        // Given: Successful API response with three constituents
         String jsonResponse = "{\"constituents\":[\"AAPL\",\"MSFT\",\"GOOGL\"]}";
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
         when(mockCall.execute()).thenReturn(mockResponse);
@@ -55,12 +63,17 @@ class FinnhubClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         List<String> result = finnhubClient.getIndexConstituents("NDX");
 
+        // Then
         assertThat(result).containsExactly("AAPL", "MSFT", "GOOGL");
         verify(mockHttpClient).newCall(any(Request.class));
     }
 
+    /**
+     * Returns empty list when constituents array is null.
+     */
     @Test
     void getIndexConstituents_emptyResponse_returnsEmptyList() throws IOException {
         String jsonResponse = "{\"constituents\":null}";
@@ -70,11 +83,16 @@ class FinnhubClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         List<String> result = finnhubClient.getIndexConstituents("INVALID");
 
+        // Then
         assertThat(result).isEmpty();
     }
 
+    /**
+     * Throws ApiRateLimitException when HTTP 429 is returned.
+     */
     @Test
     void getIndexConstituents_rateLimitError_throwsApiRateLimitException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -87,6 +105,9 @@ class FinnhubClientUnitTest {
                 .hasMessageContaining("Finnhub");
     }
 
+    /**
+     * Throws MarketDataUnavailableException for server errors.
+     */
     @Test
     void getIndexConstituents_serverError_throwsMarketDataUnavailableException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -99,6 +120,9 @@ class FinnhubClientUnitTest {
                 .hasMessageContaining("Server error: 500");
     }
 
+    /**
+     * Parses symbol list successfully for a given exchange.
+     */
     @Test
     void listSymbolsByExchange_success_returnsList() throws IOException {
         String jsonResponse = """
@@ -125,8 +149,10 @@ class FinnhubClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         List<FinnhubClient.SymbolItem> result = finnhubClient.listSymbolsByExchange("US");
 
+        // Then
         assertThat(result).hasSize(2);
         assertThat(result.get(0).symbol).isEqualTo("AAPL");
         assertThat(result.get(0).description).isEqualTo("Apple Inc");
@@ -135,6 +161,9 @@ class FinnhubClientUnitTest {
         assertThat(result.get(1).symbol).isEqualTo("MSFT");
     }
 
+    /**
+     * Throws ApiRateLimitException when HTTP 429 for symbols endpoint.
+     */
     @Test
     void listSymbolsByExchange_rateLimitError_throwsApiRateLimitException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -147,6 +176,9 @@ class FinnhubClientUnitTest {
                 .hasMessageContaining("Finnhub");
     }
 
+    /**
+     * Throws MarketDataUnavailableException on server error for symbols endpoint.
+     */
     @Test
     void listSymbolsByExchange_serverError_throwsMarketDataUnavailableException() throws IOException {
         when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
@@ -159,6 +191,9 @@ class FinnhubClientUnitTest {
                 .hasMessageContaining("Server error: 500");
     }
 
+    /**
+     * Returns empty list when response body is null for symbols endpoint.
+     */
     @Test
     void listSymbolsByExchange_nullResponse_returnsEmptyList() throws IOException {
         String jsonResponse = "null";
@@ -168,13 +203,19 @@ class FinnhubClientUnitTest {
         when(mockResponse.body()).thenReturn(mockResponseBody);
         when(mockResponseBody.string()).thenReturn(jsonResponse);
 
+        // When
         List<FinnhubClient.SymbolItem> result = finnhubClient.listSymbolsByExchange("INVALID");
 
+        // Then
         assertThat(result).isEmpty();
     }
 
+    /**
+     * Enforces a minimum delay for throttled calls.
+     */
     @Test
     void throttled_executesSupplierAfterDelay() throws IOException {
+        // Given: A supplier returning a string
         String expectedResult = "test result";
         FinnhubClient.CallSupplier<String> supplier = () -> expectedResult;
 
@@ -182,6 +223,7 @@ class FinnhubClientUnitTest {
         String result = finnhubClient.throttled(supplier);
         long endTime = System.currentTimeMillis();
 
+        // Then: At least ~1.6s elapsed
         assertThat(result).isEqualTo(expectedResult);
         assertThat(endTime - startTime).isGreaterThanOrEqualTo(1600);
     }

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docs": "typedoc",
+    "docs:html": "typedoc --options typedoc.html.json"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
@@ -29,6 +31,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
     "tailwindcss": "^4",
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-markdown": "^4.9.0",
     "typescript": "^5"
   }
 }

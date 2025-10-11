@@ -12,6 +12,10 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Unit tests for {@link JwtService} covering token generation and claim
+ * extraction.
+ */
 class JwtServiceUnitTest {
 
     private JwtService newSvc(long expMs) {
@@ -22,11 +26,16 @@ class JwtServiceUnitTest {
         return new JwtService(props);
     }
 
+    /**
+     * Generates a token and validates subject, role, and expiry claims.
+     */
     @Test
     void generate_and_extract_username_and_role() {
+        // Given: A JWT service with a short expiration
         JwtService svc = newSvc(900_000);
         String token = svc.generateAccessToken("alice", Role.ROLE_ADMIN);
 
+        // When: Parsing the generated token
         assertThat(token).isNotBlank();
 
         Claims claims = Jwts.parserBuilder()
@@ -36,6 +45,7 @@ class JwtServiceUnitTest {
                 .parseClaimsJws(token)
                 .getBody();
 
+        // Then: Claims match the inputs and temporal constraints
         assertThat(claims.getSubject()).isEqualTo("alice");
         assertThat(claims.get("role", String.class)).isEqualTo("ROLE_ADMIN");
         assertThat(claims.getIssuedAt()).isBefore(claims.getExpiration());
@@ -44,19 +54,23 @@ class JwtServiceUnitTest {
 
     @Test
     void extractUsername_works() {
+        // Given: A valid token for user bob
         JwtService svc = newSvc(900_000);
         String token = svc.generateAccessToken("bob", Role.ROLE_USER);
 
+        // When/Then: Username can be extracted
         assertThat(svc.extractUsername(token)).isEqualTo("bob");
     }
 
     @Test
     void extractUsername_fails_for_tampered_token() {
+        // Given: A valid token that is then tampered with
         JwtService svc = newSvc(900_000);
         String token = svc.generateAccessToken("eve", Role.ROLE_USER);
 
         String broken = token.substring(0, token.length() - 2) + "xx";
 
+        // When/Then: Extraction throws due to signature mismatch
         assertThatThrownBy(() -> svc.extractUsername(broken))
                 .isInstanceOf(Exception.class);
     }

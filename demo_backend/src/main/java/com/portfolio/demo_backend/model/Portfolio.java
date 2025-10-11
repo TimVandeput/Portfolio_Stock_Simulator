@@ -8,6 +8,10 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * A user's position in a particular {@link Symbol}, tracking shares owned and
+ * average cost basis. Unique per (user, symbol) pair.
+ */
 @Entity
 @Table(name = "portfolios", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "user_id", "symbol_id" })
@@ -56,10 +60,23 @@ public class Portfolio {
         this.updatedAt = Instant.now();
     }
 
+    /**
+     * Calculates current position value.
+     *
+     * @param currentPrice the latest price per share; must be non-null
+     * @return {@code currentPrice * sharesOwned}
+     */
     public BigDecimal getTotalValue(BigDecimal currentPrice) {
         return currentPrice.multiply(new BigDecimal(this.sharesOwned));
     }
 
+    /**
+     * Calculates unrealized P/L:
+     * {@code (currentPrice * shares) - (avgCost * shares)}.
+     *
+     * @param currentPrice the latest price per share; must be non-null
+     * @return unrealized gain or loss (may be negative)
+     */
     public BigDecimal getUnrealizedGainLoss(BigDecimal currentPrice) {
         BigDecimal totalCost = this.averageCostBasis.multiply(new BigDecimal(this.sharesOwned));
         BigDecimal currentValue = getTotalValue(currentPrice);

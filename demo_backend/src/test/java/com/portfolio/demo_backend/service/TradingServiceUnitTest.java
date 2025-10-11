@@ -1,17 +1,21 @@
 package com.portfolio.demo_backend.service;
 
+import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
+import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
+import com.portfolio.demo_backend.exception.price.PriceUnavailableException;
+import com.portfolio.demo_backend.exception.symbol.SymbolNotFoundException;
+import com.portfolio.demo_backend.exception.trading.InsufficientFundsException;
+import com.portfolio.demo_backend.exception.trading.InsufficientSharesException;
+import com.portfolio.demo_backend.exception.trading.PositionNotFoundException;
+import com.portfolio.demo_backend.exception.user.UserNotFoundException;
 import com.portfolio.demo_backend.marketdata.dto.YahooQuoteDTO;
 import com.portfolio.demo_backend.marketdata.service.PriceService;
 import com.portfolio.demo_backend.model.*;
 import com.portfolio.demo_backend.model.enums.TransactionType;
-import com.portfolio.demo_backend.dto.trading.BuyOrderRequest;
-import com.portfolio.demo_backend.dto.trading.SellOrderRequest;
-import com.portfolio.demo_backend.dto.trading.TradeExecutionResponse;
-import com.portfolio.demo_backend.exception.trading.*;
-import com.portfolio.demo_backend.mapper.TradingMapper;
 import com.portfolio.demo_backend.repository.PortfolioRepository;
-import com.portfolio.demo_backend.repository.TransactionRepository;
 import com.portfolio.demo_backend.repository.SymbolRepository;
+import com.portfolio.demo_backend.repository.TransactionRepository;
+import com.portfolio.demo_backend.service.data.TradeExecutionData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,10 +27,19 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link TradingService}.
+ * 
+ * These tests verify individual methods in isolation using mocked dependencies.
+ * Focuses on business logic validation without database interactions.
+ *
+ * @author Portfolio Team
+ * @since 1.0
+ */
 @ExtendWith(MockitoExtension.class)
 class TradingServiceUnitTest {
 
@@ -49,18 +62,16 @@ class TradingServiceUnitTest {
     private WalletService walletService;
 
     @Mock
-    private TradingMapper tradingMapper;
-
-    @Mock
     private NotificationService notificationService;
 
     @InjectMocks
     private TradingService tradingService;
 
     private User testUser;
-    private Wallet testWallet;
-    private YahooQuoteDTO testQuote;
     private Symbol testSymbol;
+    private Wallet testWallet;
+    private Portfolio testPortfolio;
+    private YahooQuoteDTO testQuote;
 
     @BeforeEach
     void setUp() {
@@ -68,455 +79,421 @@ class TradingServiceUnitTest {
         testUser.setId(1L);
         testUser.setUsername("testuser");
 
+        testSymbol = new Symbol();
+        testSymbol.setId(1L);
+        testSymbol.setSymbol("AAPL");
+        testSymbol.setName("Apple Inc.");
+
         testWallet = new Wallet();
         testWallet.setUserId(1L);
         testWallet.setCashBalance(new BigDecimal("5000.00"));
 
+        testPortfolio = new Portfolio();
+        testPortfolio.setUserId(1L);
+        testPortfolio.setSymbol(testSymbol);
+        testPortfolio.setSharesOwned(10);
+        testPortfolio.setAverageCostBasis(new BigDecimal("150.00"));
+
         testQuote = new YahooQuoteDTO();
         testQuote.setSymbol("AAPL");
-        testQuote.setPrice(150.0);
-
-        testSymbol = new Symbol();
-        testSymbol.setSymbol("AAPL");
-        testSymbol.setName("Apple Inc.");
-        testSymbol.setEnabled(true);
+        testQuote.setPrice(160.0);
     }
 
-    private void stubTradeExecutionResponse() {
-        when(tradingMapper.toTradeExecutionResponse(any(Transaction.class), any(BigDecimal.class), anyInt()))
-                .thenAnswer(invocation -> {
-                    Transaction tx = invocation.getArgument(0);
-                    BigDecimal newCash = invocation.getArgument(1);
-                    Integer shares = invocation.getArgument(2);
-                    TradeExecutionResponse resp = new TradeExecutionResponse();
-                    if (tx.getSymbol() != null) {
-                        resp.setSymbol(tx.getSymbol().getSymbol());
-                    }
-                    resp.setQuantity(tx.getQuantity());
-                    resp.setExecutionPrice(tx.getPricePerShare());
-                    resp.setTotalAmount(tx.getTotalAmount());
-                    resp.setTransactionType(tx.getType());
-                    resp.setExecutedAt(tx.getExecutedAt());
-                    resp.setNewCashBalance(newCash);
-                    resp.setNewSharesOwned(shares);
-                    String verb = tx.getType() == TransactionType.BUY ? "bought" : "sold";
-                    String sym = tx.getSymbol() != null ? tx.getSymbol().getSymbol() : "";
-                    resp.setMessage("Successfully " + verb + " " + tx.getQuantity() + " shares of " + sym);
-                    return resp;
-                });
-    }
+    // ================ EXECUTE BUY - HAPPY PATH ================
 
+    /**
+     * Tests successful execution of a buy order with sufficient funds.
+     */
     @Test
-    void executeBuyOrder_withSufficientFunds_completesSuccessfully() {
-        stubTradeExecutionResponse();
+    void executeBuy_withSufficientFunds_completesSuccessfully() {
+        // Given: User with sufficient funds and valid symbol
+        Long userId = 1L;
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
+        request.setQuantity(5);
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.of(testPortfolio));
 
-        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
+        Transaction savedTransaction = new Transaction();
+        savedTransaction.setId(1L);
+        savedTransaction.setUserId(userId);
+        savedTransaction.setSymbol(testSymbol);
+        savedTransaction.setType(TransactionType.BUY);
+        savedTransaction.setQuantity(5);
+        savedTransaction.setPricePerShare(new BigDecimal("160.00"));
+        savedTransaction.setTotalAmount(new BigDecimal("800.00"));
 
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully bought 10 shares of AAPL"));
-        assertEquals("AAPL", response.getSymbol());
-        assertEquals(10, response.getQuantity());
-        assertEquals(new BigDecimal("150.0"), response.getExecutionPrice());
-        assertEquals(new BigDecimal("1500.0"), response.getTotalAmount());
-        assertEquals(TransactionType.BUY, response.getTransactionType());
-        assertEquals(new BigDecimal("3500.00"), response.getNewCashBalance());
-        assertEquals(10, response.getNewSharesOwned());
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
-        verify(walletService).updateWalletBalance(eq(1L), eq(new BigDecimal("3500.00")));
+        // When: Buy order is executed
+        TradeExecutionData result = tradingService.executeBuy(userId, request);
+
+        // Then: Transaction is created and portfolio is updated
+        assertThat(result).isNotNull();
+        assertThat(result.getTransaction()).isNotNull();
+        assertThat(result.getTransaction().getType()).isEqualTo(TransactionType.BUY);
+        assertThat(result.getTransaction().getQuantity()).isEqualTo(5);
+        assertThat(result.getTransaction().getPricePerShare()).isEqualByComparingTo(new BigDecimal("160.00"));
+        assertThat(result.getNewCashBalance()).isEqualByComparingTo(new BigDecimal("4200.00"));
+        assertThat(result.getNewSharesOwned()).isEqualTo(15);
+
+        verify(walletService).updateWalletBalance(userId, new BigDecimal("4200.00"));
         verify(portfolioRepository).save(any(Portfolio.class));
         verify(transactionRepository).save(any(Transaction.class));
     }
 
+    /**
+     * Verifies a buy order creates a new portfolio position when none exists.
+     */
     @Test
-    void executeBuyOrder_withInsufficientFunds_throws() {
+    void executeBuy_newPosition_createsPortfolio() {
+        // Given: Valid user, symbol and no existing portfolio position
+        Long userId = 1L;
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(10);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.empty());
+
+        Transaction savedTransaction = new Transaction();
+        savedTransaction.setId(1L);
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
+
+        // When: Buy order is executed
+        TradeExecutionData result = tradingService.executeBuy(userId, request);
+
+        // Then: A new portfolio is created and persisted
+        assertThat(result).isNotNull();
+        verify(portfolioRepository).save(argThat(portfolio -> portfolio.getUserId().equals(userId) &&
+                portfolio.getSymbol().equals(testSymbol) &&
+                portfolio.getSharesOwned() == 10 &&
+                portfolio.getAverageCostBasis().compareTo(new BigDecimal("160.0000")) == 0));
+    }
+
+    // ================ EXECUTE BUY - UNHAPPY PATH ================
+
+    /**
+     * Ensures buy order fails when wallet cash balance is insufficient.
+     */
+    @Test
+    void executeBuy_withInsufficientFunds_throwsException() {
+        // Given: User with insufficient funds
+        Long userId = 1L;
         BuyOrderRequest request = new BuyOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(100);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
 
+        testWallet.setCashBalance(new BigDecimal("1000.00"));
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
 
-        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
-            tradingService.executeBuyOrder(userId, request);
-        });
+        // When/Then: Buy order execution throws InsufficientFundsException
+        assertThatThrownBy(() -> tradingService.executeBuy(userId, request))
+                .isInstanceOf(InsufficientFundsException.class);
 
-        assertTrue(exception.getMessage().contains("Insufficient funds"));
+        verify(walletService, never()).updateWalletBalance(anyLong(), any(BigDecimal.class));
+        verify(portfolioRepository, never()).save(any(Portfolio.class));
+        verify(transactionRepository, never()).save(any(Transaction.class));
     }
 
+    /**
+     * Ensures buy order fails for a non-existing user.
+     */
     @Test
-    void executeSellOrder_withSufficientShares_completesSuccessfully() {
-        stubTradeExecutionResponse();
+    void executeBuy_withInvalidUser_throwsException() {
+        // Given: Invalid user id
+        Long userId = 999L;
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+
+        when(userService.getUserById(userId))
+                .thenThrow(new UserNotFoundException("User with id " + userId + " not found"));
+
+        // When/Then: Buy order execution throws UserNotFoundException
+        assertThatThrownBy(() -> tradingService.executeBuy(userId, request))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(priceService, never()).getCurrentPrice(anyString());
+    }
+
+    /**
+     * Ensures buy order fails when the provided symbol cannot be resolved.
+     */
+    @Test
+    void executeBuy_withInvalidSymbol_throwsException() {
+        Long userId = 1L;
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("INVALID");
+        request.setQuantity(5);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("INVALID")).thenReturn(testQuote);
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
+        when(symbolRepository.findBySymbol("INVALID")).thenReturn(Optional.empty());
+
+        // When/Then: Buy order execution throws SymbolNotFoundException
+        assertThatThrownBy(() -> tradingService.executeBuy(userId, request))
+                .isInstanceOf(SymbolNotFoundException.class);
+    }
+
+    /**
+     * Ensures price provider failures are mapped to PriceUnavailableException on
+     * buy.
+     */
+    @Test
+    void executeBuy_withPriceUnavailable_throwsException() {
+        // Given: Price service throws an error
+        Long userId = 1L;
+        BuyOrderRequest request = new BuyOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenThrow(new RuntimeException("Price service error"));
+
+        // When/Then: Execution throws PriceUnavailableException
+        assertThatThrownBy(() -> tradingService.executeBuy(userId, request))
+                .isInstanceOf(PriceUnavailableException.class);
+    }
+
+    // ================ EXECUTE SELL - HAPPY PATH ================
+
+    /**
+     * Tests successful sell order execution when the user has enough shares.
+     */
+    @Test
+    void executeSell_withSufficientShares_completesSuccessfully() {
+        // Given: Existing portfolio with sufficient shares
+        Long userId = 1L;
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.of(testPortfolio));
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
+                .thenReturn(List.of());
 
-        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
+        Transaction savedTransaction = new Transaction();
+        savedTransaction.setId(1L);
+        savedTransaction.setType(TransactionType.SELL);
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
-        assertEquals("AAPL", response.getSymbol());
-        assertEquals(5, response.getQuantity());
-        assertEquals(new BigDecimal("150.0"), response.getExecutionPrice());
-        assertEquals(new BigDecimal("750.0"), response.getTotalAmount());
-        assertEquals(TransactionType.SELL, response.getTransactionType());
-        assertEquals(new BigDecimal("5750.00"), response.getNewCashBalance());
-        assertEquals(5, response.getNewSharesOwned());
+        // When: Sell order is executed
+        TradeExecutionData result = tradingService.executeSell(userId, request);
 
-        verify(walletService).updateWalletBalance(eq(1L), eq(new BigDecimal("5750.00")));
+        // Then: Cash balance increases and shares owned decrease
+        assertThat(result).isNotNull();
+        assertThat(result.getTransaction().getType()).isEqualTo(TransactionType.SELL);
+        assertThat(result.getNewCashBalance()).isEqualByComparingTo(new BigDecimal("5800.00"));
+        assertThat(result.getNewSharesOwned()).isEqualTo(5);
+
+        verify(walletService).updateWalletBalance(userId, new BigDecimal("5800.00"));
         verify(portfolioRepository).save(any(Portfolio.class));
         verify(transactionRepository).save(any(Transaction.class));
     }
 
+    /**
+     * Verifies selling all shares deletes the portfolio position.
+     */
     @Test
-    void executeSellOrder_withInsufficientShares_throws() {
+    void executeSell_allShares_deletesPortfolio() {
+        // Given: Existing portfolio where requested quantity equals owned shares
+        Long userId = 1L;
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
-        request.setQuantity(15);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
+        request.setQuantity(10); // Sell all shares
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-
-        InsufficientSharesException exception = assertThrows(InsufficientSharesException.class, () -> {
-            tradingService.executeSellOrder(userId, request);
-        });
-
-        assertTrue(exception.getMessage().contains("Insufficient shares"));
-    }
-
-    @Test
-    void getTransactionHistory_returnsCorrectHistory() {
-        Long userId = 1L;
-
-        Transaction transaction1 = new Transaction();
-        transaction1.setUserId(userId);
-        transaction1.setSymbol(testSymbol);
-        transaction1.setType(TransactionType.BUY);
-        transaction1.setQuantity(10);
-
-        Transaction transaction2 = new Transaction();
-        transaction2.setUserId(userId);
-        transaction2.setSymbol(testSymbol);
-        transaction2.setType(TransactionType.SELL);
-        transaction2.setQuantity(5);
-
-        List<Transaction> expectedHistory = List.of(transaction1, transaction2);
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(transactionRepository.findByUserIdWithSymbolOrderByExecutedAtDesc(userId)).thenReturn(expectedHistory);
-
-        List<Transaction> actualHistory = tradingService.getTransactionHistory(userId);
-
-        assertNotNull(actualHistory);
-        assertEquals(2, actualHistory.size());
-        assertEquals(expectedHistory, actualHistory);
-        verify(transactionRepository).findByUserIdWithSymbolOrderByExecutedAtDesc(userId);
-    }
-
-    @Test
-    void executeSellOrder_withTransactionHistory_calculatesCorrectProfitLoss() {
-        stubTradeExecutionResponse();
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
-
-        Transaction buyTransaction = new Transaction();
-        buyTransaction.setUserId(userId);
-        buyTransaction.setSymbol(testSymbol);
-        buyTransaction.setType(TransactionType.BUY);
-        buyTransaction.setQuantity(10);
-        buyTransaction.setPricePerShare(new BigDecimal("120.00"));
-        buyTransaction.setTotalAmount(new BigDecimal("1200.00"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
-                .thenReturn(List.of(buyTransaction));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
-            Transaction saved = invocation.getArgument(0);
-            assertEquals(new BigDecimal("150.00"), saved.getProfitLoss());
-            return saved;
-        });
-
-        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
-
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
-
-        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
-        verify(transactionRepository).save(any(Transaction.class));
-    }
-
-    @Test
-    void executeSellOrder_withMultipleBuyTransactions_usesFIFOForProfitLoss() {
-        stubTradeExecutionResponse();
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(8);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(15);
-        portfolio.setAverageCostBasis(new BigDecimal("115.00"));
-
-        Transaction buyTransaction1 = new Transaction();
-        buyTransaction1.setUserId(userId);
-        buyTransaction1.setSymbol(testSymbol);
-        buyTransaction1.setType(TransactionType.BUY);
-        buyTransaction1.setQuantity(5);
-        buyTransaction1.setPricePerShare(new BigDecimal("100.00"));
-
-        Transaction buyTransaction2 = new Transaction();
-        buyTransaction2.setUserId(userId);
-        buyTransaction2.setSymbol(testSymbol);
-        buyTransaction2.setType(TransactionType.BUY);
-        buyTransaction2.setQuantity(10);
-        buyTransaction2.setPricePerShare(new BigDecimal("120.00"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
-                .thenReturn(List.of(buyTransaction1, buyTransaction2));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
-            Transaction saved = invocation.getArgument(0);
-
-            assertEquals(new BigDecimal("340.00"), saved.getProfitLoss());
-            return saved;
-        });
-
-        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
-
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully sold 8 shares of AAPL"));
-
-        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
-        verify(transactionRepository).save(any(Transaction.class));
-    }
-
-    @Test
-    void executeSellOrder_withNoTransactionHistory_setsNullProfitLoss() {
-        stubTradeExecutionResponse();
-        SellOrderRequest request = new SellOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
-
-        Portfolio portfolio = new Portfolio();
-        portfolio.setUserId(1L);
-        portfolio.setSymbol(testSymbol);
-        portfolio.setSharesOwned(10);
-        portfolio.setAverageCostBasis(new BigDecimal("140.00"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(portfolio));
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.of(testPortfolio));
+        when(walletService.getUserWallet(userId, "testuser")).thenReturn(testWallet);
         when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
         when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL"))
                 .thenReturn(List.of());
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
-            Transaction saved = invocation.getArgument(0);
-            assertNull(saved.getProfitLoss());
-            return saved;
-        });
 
-        TradeExecutionResponse response = tradingService.executeSellOrder(userId, request);
+        Transaction savedTransaction = new Transaction();
+        savedTransaction.setId(1L);
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully sold 5 shares of AAPL"));
+        // When: Sell order is executed
+        TradeExecutionData result = tradingService.executeSell(userId, request);
 
-        verify(transactionRepository).findByUserIdAndSymbolOrderByExecutedAtAsc(userId, "AAPL");
-        verify(transactionRepository).save(any(Transaction.class));
+        // Then: Portfolio position is removed
+        assertThat(result).isNotNull();
+        assertThat(result.getNewSharesOwned()).isEqualTo(0);
+        verify(portfolioRepository).delete(testPortfolio);
+        verify(portfolioRepository, never()).save(any(Portfolio.class));
     }
 
+    // ================ EXECUTE SELL - UNHAPPY PATH ================
+
+    /**
+     * Ensures sell order fails when user attempts to sell more shares than owned.
+     */
     @Test
-    void executeBuyOrder_doesNotCalculateProfitLoss() {
-        stubTradeExecutionResponse();
-        BuyOrderRequest request = new BuyOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
+    void executeSell_withInsufficientShares_throwsException() {
+        // Given: Existing portfolio with fewer shares than requested
         Long userId = 1L;
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(20); // More than owned
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
-            Transaction saved = invocation.getArgument(0);
-            assertNull(saved.getProfitLoss());
-            return saved;
-        });
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.of(testPortfolio));
 
-        TradeExecutionResponse response = tradingService.executeBuyOrder(userId, request);
+        // When/Then: Execution throws InsufficientSharesException
+        assertThatThrownBy(() -> tradingService.executeSell(userId, request))
+                .isInstanceOf(InsufficientSharesException.class);
 
-        assertNotNull(response);
-        assertTrue(response.getMessage().contains("Successfully bought 10 shares of AAPL"));
-
-        verify(transactionRepository).save(any(Transaction.class));
-        verify(transactionRepository, never()).findByUserIdAndSymbolOrderByExecutedAtAsc(anyLong(), anyString());
+        verify(walletService, never()).updateWalletBalance(anyLong(), any(BigDecimal.class));
+        verify(transactionRepository, never()).save(any(Transaction.class));
     }
 
+    /**
+     * Ensures sell order fails when the user has no position for the symbol.
+     */
     @Test
-    void executeBuy_sendsTradeNotification() {
-        BuyOrderRequest request = new BuyOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
+    void executeSell_withNoPosition_throwsException() {
+        // Given: No existing portfolio for the symbol
         Long userId = 1L;
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getAllUsers()).thenReturn(List.of(testUser)); // For getSystemUserId()
-
-        tradingService.executeBuy(userId, request);
-
-        verify(notificationService).sendToUser(
-                eq(1L),
-                eq(1L),
-                eq("📈 Trade Executed - AAPL"),
-                argThat(body -> body.contains("buy order has been successfully executed") &&
-                        body.contains("Symbol: <strong>AAPL</strong>") &&
-                        body.contains("Quantity: 10 shares") &&
-                        body.contains("Price per Share: $150") &&
-                        body.contains("Total Amount: $1500") &&
-                        body.contains("<a href='/portfolio'>Portfolio</a>")));
-    }
-
-    @Test
-    void executeSell_sendsTradeNotificationWithProfitLoss() {
         SellOrderRequest request = new SellOrderRequest();
         request.setSymbol("AAPL");
         request.setQuantity(5);
-        request.setExpectedPrice(new BigDecimal("160.0"));
-        Long userId = 1L;
-
-        Portfolio existingPortfolio = new Portfolio();
-        existingPortfolio.setUserId(userId);
-        existingPortfolio.setSymbol(testSymbol);
-        existingPortfolio.setSharesOwned(10);
-        existingPortfolio.setAverageCostBasis(new BigDecimal("140.0"));
-
-        Transaction buyTransaction = new Transaction();
-        buyTransaction.setUserId(userId);
-        buyTransaction.setSymbol(testSymbol);
-        buyTransaction.setType(TransactionType.BUY);
-        buyTransaction.setQuantity(10);
-        buyTransaction.setPricePerShare(new BigDecimal("140.0"));
-
-        when(userService.getUserById(userId)).thenReturn(testUser);
-        YahooQuoteDTO sellQuote = new YahooQuoteDTO();
-        sellQuote.setSymbol("AAPL");
-        sellQuote.setPrice(160.0);
-        sellQuote.setChange(10.0);
-        sellQuote.setChangePercent(6.67);
-        when(priceService.getCurrentPrice("AAPL")).thenReturn(sellQuote);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.of(existingPortfolio));
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.findByUserIdAndSymbolOrderByExecutedAtAsc(1L, "AAPL"))
-                .thenReturn(List.of(buyTransaction));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getAllUsers()).thenReturn(List.of(testUser)); // For getSystemUserId()
-
-        tradingService.executeSell(userId, request);
-
-        verify(notificationService).sendToUser(
-                eq(1L),
-                eq(1L),
-                eq("📉 Trade Executed - AAPL"),
-                argThat(body -> body.contains("sell order has been successfully executed") &&
-                        body.contains("Symbol: <strong>AAPL</strong>") &&
-                        body.contains("Quantity: 5 shares") &&
-                        body.contains("Price per Share: $160") &&
-                        body.contains("Total Amount: $800") &&
-                        body.contains("Profit/Loss: +$100") &&
-                        body.contains("<a href='/portfolio'>Portfolio</a>")));
-    }
-
-    @Test
-    void executeBuy_notificationFails_doesNotThrowException() {
-        BuyOrderRequest request = new BuyOrderRequest();
-        request.setSymbol("AAPL");
-        request.setQuantity(10);
-        request.setExpectedPrice(new BigDecimal("150.0"));
-        Long userId = 1L;
 
         when(userService.getUserById(userId)).thenReturn(testUser);
         when(priceService.getCurrentPrice("AAPL")).thenReturn(testQuote);
-        when(walletService.getUserWallet(1L, "testuser")).thenReturn(testWallet);
-        when(portfolioRepository.findByUserIdAndSymbol_Symbol(1L, "AAPL")).thenReturn(Optional.empty());
-        when(symbolRepository.findBySymbol("AAPL")).thenReturn(Optional.of(testSymbol));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getAllUsers()).thenReturn(List.of(testUser));
+        when(portfolioRepository.findByUserIdAndSymbol_Symbol(userId, "AAPL"))
+                .thenReturn(Optional.empty());
 
-        doThrow(new RuntimeException("Notification failed")).when(notificationService)
-                .sendToUser(anyLong(), anyLong(), anyString(), anyString());
+        // When/Then: Execution throws PositionNotFoundException
+        assertThatThrownBy(() -> tradingService.executeSell(userId, request))
+                .isInstanceOf(PositionNotFoundException.class);
+    }
 
-        assertDoesNotThrow(() -> tradingService.executeBuy(userId, request));
+    /**
+     * Ensures sell order fails for a non-existing user.
+     */
+    @Test
+    void executeSell_withInvalidUser_throwsException() {
+        // Given: Invalid user id
+        Long userId = 999L;
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
 
-        verify(transactionRepository).save(any(Transaction.class));
-        verify(notificationService).sendToUser(anyLong(), anyLong(), anyString(), anyString());
+        when(userService.getUserById(userId)).thenThrow(new UserNotFoundException("User not found"));
+
+        // When/Then: Execution throws UserNotFoundException
+        assertThatThrownBy(() -> tradingService.executeSell(userId, request))
+                .isInstanceOf(UserNotFoundException.class);
+    }
+
+    /**
+     * Ensures price provider failures are mapped to PriceUnavailableException on
+     * sell.
+     */
+    @Test
+    void executeSell_withPriceUnavailable_throwsException() {
+        // Given: Price service returns null/invalid
+        Long userId = 1L;
+        SellOrderRequest request = new SellOrderRequest();
+        request.setSymbol("AAPL");
+        request.setQuantity(5);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(priceService.getCurrentPrice("AAPL")).thenReturn(null);
+
+        // When/Then: Execution throws PriceUnavailableException
+        assertThatThrownBy(() -> tradingService.executeSell(userId, request))
+                .isInstanceOf(PriceUnavailableException.class);
+    }
+
+    // ================ GET TRANSACTION HISTORY ================
+
+    /**
+     * Verifies transaction history returns a list of transactions for a valid user.
+     */
+    @Test
+    void getTransactionHistory_returnsTransactions() {
+        // Given: Existing transactions for user
+        Long userId = 1L;
+        Transaction transaction1 = new Transaction();
+        transaction1.setId(1L);
+        transaction1.setUserId(userId);
+        transaction1.setType(TransactionType.BUY);
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setId(2L);
+        transaction2.setUserId(userId);
+        transaction2.setType(TransactionType.SELL);
+
+        List<Transaction> expectedTransactions = List.of(transaction1, transaction2);
+
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(transactionRepository.findByUserIdWithSymbolOrderByExecutedAtDesc(userId))
+                .thenReturn(expectedTransactions);
+
+        // When: Fetching transaction history
+        List<Transaction> result = tradingService.getTransactionHistory(userId);
+
+        // Then: Returns expected ordered list
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactly(transaction1, transaction2);
+    }
+
+    /**
+     * Ensures fetching history fails for a non-existing user.
+     */
+    @Test
+    void getTransactionHistory_withInvalidUser_throwsException() {
+        // Given: Invalid user id
+        Long userId = 999L;
+        when(userService.getUserById(userId)).thenThrow(new UserNotFoundException("User not found"));
+
+        // When/Then: Fetching history throws UserNotFoundException
+        assertThatThrownBy(() -> tradingService.getTransactionHistory(userId))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(transactionRepository, never()).findByUserIdWithSymbolOrderByExecutedAtDesc(anyLong());
+    }
+
+    /**
+     * Verifies empty history returns an empty list for a valid user.
+     */
+    @Test
+    void getTransactionHistory_emptyHistory_returnsEmptyList() {
+        // Given: No transactions for user
+        Long userId = 1L;
+        when(userService.getUserById(userId)).thenReturn(testUser);
+        when(transactionRepository.findByUserIdWithSymbolOrderByExecutedAtDesc(userId))
+                .thenReturn(List.of());
+
+        // When: Fetching transaction history
+        List<Transaction> result = tradingService.getTransactionHistory(userId);
+
+        // Then: Returns empty list
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
     }
 }

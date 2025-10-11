@@ -5,6 +5,10 @@ import lombok.Data;
 
 import java.time.Instant;
 
+/**
+ * System message exchanged between users or sent by the system.
+ * Captures sender/receiver, subject/body, creation time and read status.
+ */
 @Data
 @Entity
 @Table(name = "notifications")

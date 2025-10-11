@@ -8,6 +8,11 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * User wallet holding available cash balance. Uses shared primary key mapping
+ * (MapsId) with {@link User} and maintains created/updated timestamps via
+ * JPA lifecycle callbacks.
+ */
 @Entity
 @Table(name = "wallets")
 @Data

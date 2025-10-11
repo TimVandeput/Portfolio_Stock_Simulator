@@ -16,6 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Lightweight Yahoo Finance client using the RapidAPI marketplace.
+ *
+ * Responsibilities:
+ * - Batch quotes requests (50 symbols per HTTP call) to respect request limits.
+ * - Translate HTTP/JSON responses into a small Quote view suited for the app.
+ * - Map common HTTP error codes to domain exceptions (rate limit, unavailable).
+ *
+ * Notes:
+ * - Uses an internal OkHttpClient with conservative timeouts; no connection
+ * pooling customizations.
+ * - Parsing uses ObjectMapper in tree mode to tolerate missing fields.
+ * - This component does not cache; upstream services may add caching if needed.
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -56,6 +70,16 @@ public class RapidApiClient {
         public Double previousClose;
     }
 
+    /**
+     * Fetches current quotes for a list of symbols via RapidAPI Yahoo Finance.
+     * The call is internally chunked into batches of up to 50 symbols per HTTP
+     * request.
+     *
+     * @param symbols list of tickers (e.g. AAPL, MSFT). Empty or null returns an
+     *                empty list.
+     * @return parsed quotes for symbols that returned valid data
+     * @throws IOException when network/HTTP/JSON issues occur or auth is invalid
+     */
     public List<Quote> getQuotes(List<String> symbols) throws IOException {
         if (symbols == null || symbols.isEmpty()) {
             return List.of();
@@ -77,6 +101,7 @@ public class RapidApiClient {
                     .header("User-Agent", "Portfolio-Backend/1.0")
                     .build();
 
+            // Execute a single batch request and translate the response body
             try (Response resp = http.newCall(req).execute()) {
                 if (!resp.isSuccessful()) {
                     String responseBody = resp.body() != null ? resp.body().string() : "No response body";
@@ -104,6 +129,7 @@ public class RapidApiClient {
                 String responseBody = resp.body().string();
                 log.debug("RapidAPI response for {}: {}", symbolsParam, responseBody);
 
+                // Parse leniently; unknown fields are ignored by consumers
                 var response = mapper.readTree(responseBody);
                 var quoteResponse = response.get("quoteResponse");
                 var results = quoteResponse.get("result");
@@ -130,6 +156,7 @@ public class RapidApiClient {
                                 ? result.get("regularMarketPreviousClose").asDouble()
                                 : null;
 
+                        // Only keep minimally valid quotes
                         if (quote.symbol != null && quote.price != null && quote.price > 0) {
                             allQuotes.add(quote);
                             log.debug("Successfully parsed quote for {}: ${}", quote.symbol, quote.price);
@@ -137,6 +164,7 @@ public class RapidApiClient {
                     }
                 }
 
+                // Gentle pacing between batches to avoid hitting shared-rate limits
                 Thread.sleep(250);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -153,6 +181,13 @@ public class RapidApiClient {
         return allQuotes;
     }
 
+    /**
+     * Convenience method to fetch a single symbol's quote.
+     *
+     * @param symbol the ticker (e.g. AAPL, MSFT)
+     * @return the quote or null if not found
+     * @throws IOException when network/HTTP/JSON issues occur or auth is invalid
+     */
     public Quote getQuote(String symbol) throws IOException {
         List<Quote> quotes = getQuotes(List.of(symbol));
         return quotes.isEmpty() ? null : quotes.get(0);

@@ -1,8 +1,49 @@
+/**
+ * @fileoverview Dropdown menu management hook with accessibility and navigation integration.
+ *
+ * This hook provides comprehensive dropdown menu functionality including state management,
+ * keyboard navigation, click-outside detection, and automatic closure on route changes.
+ * It ensures accessibility compliance and smooth user interactions.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 
+/**
+ * Hook for managing dropdown menu state and interactions.
+ *
+ * Provides complete dropdown functionality with accessibility support,
+ * keyboard navigation, and automatic cleanup on route changes.
+ *
+ * @returns Dropdown control object with state, refs, and handlers
+ *
+ * @example
+ * ```tsx
+ * function UserMenu() {
+ *   const { open, toggle, panelRef, btnRef } = useDropdownMenu();
+ *
+ *   return (
+ *     <div className="relative">
+ *       <button ref={btnRef} onClick={toggle}>
+ *         Menu
+ *       </button>
+ *       {open && (
+ *         <div ref={panelRef} className="dropdown-panel">
+ *           <a href="/profile">Profile</a>
+ *           <a href="/settings">Settings</a>
+ *           <button onClick={logout}>Logout</button>
+ *         </div>
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useDropdownMenu() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);

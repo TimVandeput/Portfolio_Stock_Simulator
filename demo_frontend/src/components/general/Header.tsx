@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Header component providing unified navigation, branding, and user controls
+ *
+ * This component serves as the main header for the Stock Simulator application, delivering
+ * a comprehensive navigation solution with adaptive layout, professional branding, and
+ * integrated user controls. Features responsive design patterns, dynamic content rendering,
+ * and seamless integration with the application's theming and authentication systems.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -12,21 +24,123 @@ import LogoutButton from "@/components/button/LogoutButton";
 import CursorTrailButton from "@/components/button/CursorTrailButton";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useHeaderState } from "@/hooks/useHeaderState";
+import { BaseComponentProps } from "@/types";
 
-export default function Header({
-  onShowConfirmation,
-  onUpdateConfirmationLoading,
-  onTrailChange,
-}: {
+/**
+ * Props interface for Header component configuration
+ * @interface HeaderProps
+ * @extends {BaseComponentProps}
+ */
+export interface HeaderProps extends BaseComponentProps {
+  /** Callback to show logout confirmation dialog */
   onShowConfirmation: (
     show: boolean,
     loggingOut: boolean,
     onConfirm: () => void,
     onCancel: () => void
   ) => void;
+  /** Optional callback to update confirmation loading state */
   onUpdateConfirmationLoading?: (loading: boolean) => void;
+  /** Optional callback when cursor trail setting changes */
   onTrailChange?: (enabled: boolean) => void;
-}) {
+}
+
+/**
+ * Header component providing unified navigation, branding, and user controls
+ *
+ * @remarks
+ * The Header component delivers a comprehensive navigation solution with the following capabilities:
+ *
+ * **Navigation Features:**
+ * - Adaptive desktop and mobile navigation systems
+ * - Responsive hamburger menu with slide-out drawer
+ * - Page-specific navigation visibility control
+ * - Integrated breadcrumb and page title display
+ *
+ * **Branding Elements:**
+ * - Dynamic logo display with desktop/mobile variants
+ * - Contextual logo behavior (static on home, linked elsewhere)
+ * - Professional brand positioning and sizing
+ * - High-priority image loading for optimal performance
+ *
+ * **Layout System:**
+ * - Sticky positioning with z-index layering
+ * - Three-column grid layout (navigation, title, controls)
+ * - Responsive spacing and sizing adaptations
+ * - Surface background integration with theming
+ *
+ * **User Controls:**
+ * - Integrated theme toggle functionality
+ * - Cursor trail effects control
+ * - Logout button with confirmation handling
+ * - Loading state management for async operations
+ *
+ * **State Management:**
+ * - Path-based header state determination
+ * - Dynamic page title generation and display
+ * - Mobile drawer state management
+ * - Conditional component visibility controls
+ *
+ * **Accessibility:**
+ * - ARIA labels for navigation elements
+ * - Semantic HTML structure with proper headings
+ * - Keyboard navigation support
+ * - Screen reader friendly component labeling
+ *
+ * @param props - Configuration object for header behavior
+ * @returns Header component with integrated navigation and controls
+ *
+ * @example
+ * ```tsx
+ * // Basic header with confirmation handling
+ * <Header
+ *   onShowConfirmation={(show, loggingOut, onConfirm, onCancel) => {
+ *     setShowDialog(show);
+ *     setDialogConfig({ loggingOut, onConfirm, onCancel });
+ *   }}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Header with loading states and trail controls
+ * <Header
+ *   onShowConfirmation={handleConfirmation}
+ *   onUpdateConfirmationLoading={(loading) => setIsLoading(loading)}
+ *   onTrailChange={(enabled) => setCursorTrailEnabled(enabled)}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Full featured header in layout component
+ * function Layout({ children }: { children: React.ReactNode }) {
+ *   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+ *   const [confirmationLoading, setConfirmationLoading] = useState(false);
+ *   const [trailEnabled, setTrailEnabled] = useState(false);
+ *
+ *   return (
+ *     <div className="min-h-screen">
+ *       <Header
+ *         onShowConfirmation={(show, loggingOut, onConfirm, onCancel) => {
+ *           setShowConfirmDialog(show);
+ *           // Handle confirmation logic
+ *         }}
+ *         onUpdateConfirmationLoading={setConfirmationLoading}
+ *         onTrailChange={setTrailEnabled}
+ *       />
+ *       <main>{children}</main>
+ *       <CursorTrail enabled={trailEnabled} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
+export default function Header({
+  onShowConfirmation,
+  onUpdateConfirmationLoading,
+  onTrailChange,
+}: HeaderProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname() || "/";
 

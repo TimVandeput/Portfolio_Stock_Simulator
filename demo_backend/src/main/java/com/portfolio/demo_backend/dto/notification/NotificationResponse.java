@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * Notification view model returned by the API layer.
+ */
 @Data
 public class NotificationResponse {
     @NotNull

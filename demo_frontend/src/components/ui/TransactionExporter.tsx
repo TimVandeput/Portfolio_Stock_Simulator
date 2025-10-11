@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Professional transaction export component with multiple format support
+ *
+ * This component provides comprehensive data export functionality with CSV, Excel,
+ * and PDF format support. Features include dropdown interface, loading states,
+ * professional styling, and seamless integration with transaction data management
+ * for complete portfolio and trading history export capabilities.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -8,11 +20,182 @@ import { exportToPDF } from "@/components/files/PDFExporter";
 import type { Transaction } from "@/types/trading";
 import type { BaseComponentProps } from "@/types/components";
 
+/**
+ * Props interface for TransactionExporter component configuration
+ * @interface TransactionExporterProps
+ * @extends {BaseComponentProps}
+ */
 export interface TransactionExporterProps extends BaseComponentProps {
+  /** Array of transactions to export */
   transactions: Transaction[];
+  /** Base filename for exported files */
   filename?: string;
 }
 
+/**
+ * Professional transaction export component with multiple format support
+ *
+ * @remarks
+ * The TransactionExporter component delivers comprehensive export functionality with the following features:
+ *
+ * **Export Formats:**
+ * - CSV export for spreadsheet compatibility
+ * - Excel export with advanced formatting
+ * - PDF export for professional reports
+ * - Seamless integration with export modules
+ *
+ * **User Interface:**
+ * - Professional dropdown interface
+ * - Transaction count display in button
+ * - Loading states with spinner animation
+ * - Responsive text for mobile devices
+ *
+ * **Interactive Features:**
+ * - Click-outside dismissal for dropdown
+ * - Disabled state during export operations
+ * - Professional hover animations
+ * - Smooth transition effects
+ *
+ * **Visual Design:**
+ * - Gradient button styling with professional appearance
+ * - Neumorphic design integration
+ * - Professional shadow and lighting effects
+ * - Icon-based format identification
+ *
+ * **State Management:**
+ * - Export progress tracking
+ * - Dropdown visibility management
+ * - Error handling with console logging
+ * - Clean state transitions
+ *
+ * **Accessibility:**
+ * - Semantic HTML structure
+ * - Screen reader compatible labels
+ * - Keyboard navigation support
+ * - Professional accessibility patterns
+ *
+ * **Responsive Design:**
+ * - Mobile-optimized text display
+ * - Adaptive dropdown positioning
+ * - Flexible width constraints
+ * - Professional mobile experience
+ *
+ * **Error Handling:**
+ * - Try-catch error management
+ * - Console error logging
+ * - Graceful failure handling
+ * - User-friendly error experience
+ *
+ * **Performance:**
+ * - Conditional rendering for empty data
+ * - Efficient state updates
+ * - Optimized export operations
+ * - Clean component lifecycle
+ *
+ * **Integration Features:**
+ * - Transaction data compatibility
+ * - Flexible filename configuration
+ * - Professional export workflow
+ * - Seamless data management integration
+ *
+ * @param props - Configuration object for transaction export functionality
+ * @returns TransactionExporter component with multi-format export capabilities
+ *
+ * @example
+ * ```tsx
+ * // Basic transaction exporter
+ * <TransactionExporter
+ *   transactions={userTransactions}
+ *   filename="portfolio-transactions"
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with transaction dashboard
+ * function TransactionsDashboard() {
+ *   const { data: transactions } = useTransactionHistory();
+ *
+ *   return (
+ *     <div className="dashboard-header">
+ *       <h1>Transaction History</h1>
+ *
+ *       <TransactionExporter
+ *         transactions={transactions || []}
+ *         filename={`transactions-${format(new Date(), 'yyyy-MM-dd')}`}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Filtered transaction export
+ * function FilteredTransactionExporter() {
+ *   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+ *   const { data: allTransactions } = useTransactionHistory();
+ *
+ *   const filteredTransactions = useMemo(() => {
+ *     return filterTransactionsByDateRange(allTransactions, dateRange);
+ *   }, [allTransactions, dateRange]);
+ *
+ *   return (
+ *     <div className="export-section">
+ *       <DateRangeFilter
+ *         dateRange={dateRange}
+ *         onDateRangeChange={setDateRange}
+ *       />
+ *
+ *       <TransactionExporter
+ *         transactions={filteredTransactions}
+ *         filename={`transactions-${dateRange.start}-to-${dateRange.end}`}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Symbol-specific transaction export
+ * function SymbolTransactionExporter({ symbol }: { symbol: string }) {
+ *   const { data: symbolTransactions } = useSymbolTransactions(symbol);
+ *
+ *   return symbolTransactions?.length > 0 ? (
+ *     <TransactionExporter
+ *       transactions={symbolTransactions}
+ *       filename={`${symbol}-transactions`}
+ *       className="ml-auto"
+ *     />
+ *   ) : null;
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Advanced export with analytics tracking
+ * function AnalyticsTransactionExporter({ transactions }: { transactions: Transaction[] }) {
+ *   const analytics = useAnalytics();
+ *
+ *   const handleExportAnalytics = (format: string) => {
+ *     analytics.track('transaction_export', {
+ *       format,
+ *       transaction_count: transactions.length,
+ *       date_range: getDateRange(transactions)
+ *     });
+ *   };
+ *
+ *   return (
+ *     <TransactionExporter
+ *       transactions={transactions}
+ *       filename="portfolio-analysis"
+ *       onExportStart={handleExportAnalytics}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export default function TransactionExporter({
   transactions,
   filename = "transactions",

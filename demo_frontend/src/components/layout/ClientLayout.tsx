@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Main client-side layout component providing application structure and context
+ *
+ * This component serves as the root layout for the client-side application, orchestrating
+ * global providers, navigation components, authentication flows, and modal systems.
+ * Features comprehensive state management, responsive design patterns, and seamless
+ * integration of all application-wide concerns including theming, pricing, and access control.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,16 +25,129 @@ import { PriceProvider } from "@/contexts/PriceContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import Loader from "@/components/ui/Loader";
 import { loadTokensFromStorage } from "@/lib/auth/tokenStorage";
-import { BREAKPOINTS } from "@/lib/constants/breakpoints";
 import { useLayoutAccessControl } from "@/hooks/useLayoutAccessControl";
 import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 import { useLogoutFlow } from "@/hooks/useLogoutFlow";
+import { BaseComponentProps } from "@/types";
 
-export default function ClientLayout({
-  children,
-}: {
+/**
+ * Props interface for ClientLayout component configuration
+ * @interface ClientLayoutProps
+ * @extends {BaseComponentProps}
+ */
+export interface ClientLayoutProps extends BaseComponentProps {
+  /** React children to render within the layout */
   children: React.ReactNode;
-}) {
+}
+
+/**
+ * Main client-side layout component providing application structure and context
+ *
+ * @remarks
+ * The ClientLayout component orchestrates the entire client-side application with the following capabilities:
+ *
+ * **Context Providers:**
+ * - ThemeProvider for dark/light mode and visual theming
+ * - PriceProvider for real-time stock price streaming
+ * - Global state management and context distribution
+ * - Nested provider architecture for optimal performance
+ *
+ * **Layout Structure:**
+ * - Header component with navigation and user controls
+ * - Main content area with flexible child rendering
+ * - Footer component with responsive visibility
+ * - Fullscreen modal and overlay systems
+ *
+ * **Authentication Integration:**
+ * - Token loading and validation on application start
+ * - Access control modal system for unauthorized access
+ * - Logout flow management with confirmation dialogs
+ * - Route-based authentication state handling
+ *
+ * **Modal Systems:**
+ * - Confirmation modal for logout and critical actions
+ * - Access control modal for permission violations
+ * - Loading overlays for async operations
+ * - Responsive modal positioning and styling
+ *
+ * **Interactive Features:**
+ * - Cursor trail effects with toggle capability
+ * - Device rotation prompts for mobile optimization
+ * - Dynamic content loading with proper loading states
+ * - Smooth transitions between application states
+ *
+ * **State Management:**
+ * - Comprehensive hook integration for layout concerns
+ * - Path-based state cleanup and management
+ * - Modal state coordination and conflict resolution
+ * - Loading state management across components
+ *
+ * **Responsive Design:**
+ * - Mobile-first layout with breakpoint considerations
+ * - Footer visibility control based on screen size
+ * - Adaptive modal sizing and positioning
+ * - Cross-device compatibility and optimization
+ *
+ * **Error Handling:**
+ * - Access error display with user-friendly messages
+ * - Graceful fallbacks for authentication failures
+ * - Proper error state management and recovery
+ * - User feedback for all error conditions
+ *
+ * @param props - Configuration object containing child components
+ * @returns ClientLayout component with complete application structure
+ *
+ * @example
+ * ```tsx
+ * // Basic usage wrapping application pages
+ * function RootLayout({ children }: { children: React.ReactNode }) {
+ *   return (
+ *     <html>
+ *       <body>
+ *         <ClientLayout>
+ *           {children}
+ *         </ClientLayout>
+ *       </body>
+ *     </html>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with Next.js App Router
+ * export default function Layout({
+ *   children,
+ * }: {
+ *   children: React.ReactNode;
+ * }) {
+ *   return (
+ *     <ClientLayout>
+ *       <div className="container mx-auto px-4">
+ *         {children}
+ *       </div>
+ *     </ClientLayout>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Custom layout with additional providers
+ * function AppLayout({ children }: { children: React.ReactNode }) {
+ *   return (
+ *     <QueryProvider>
+ *       <ClientLayout>
+ *         <ErrorBoundary>
+ *           {children}
+ *         </ErrorBoundary>
+ *       </ClientLayout>
+ *     </QueryProvider>
+ *   );
+ * }
+ * ```
+ */
+export default function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname();
 
   const {
@@ -36,7 +161,6 @@ export default function ClientLayout({
   const logoutFlow = useLogoutFlow();
 
   const [cursorTrailEnabled, setCursorTrailEnabled] = useState(false);
-  const [isSmallPhone, setIsSmallPhone] = useState(false);
 
   useEffect(() => {
     loadTokensFromStorage();
@@ -69,18 +193,6 @@ export default function ClientLayout({
   const handleTrailChange = (enabled: boolean) => {
     setCursorTrailEnabled(enabled);
   };
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const smallPhone = window.matchMedia(
-        BREAKPOINTS.SMALL_PHONE_DOWN
-      ).matches;
-      setIsSmallPhone(smallPhone);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     if (
@@ -144,7 +256,9 @@ export default function ClientLayout({
           </div>
         </main>
 
-        {!isSmallPhone && <Footer />}
+        <div className="hidden [@media(min-width:351px)]:block w-full">
+          <Footer />
+        </div>
       </PriceProvider>
     </ThemeProvider>
   );

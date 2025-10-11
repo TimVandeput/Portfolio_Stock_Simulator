@@ -1,9 +1,25 @@
+/**
+ * @fileoverview Comprehensive pagination and data fetching hook for table management.
+ *
+ * This hook provides complete pagination functionality with search, filtering,
+ * loading states, error handling, and performance optimizations for large datasets.
+ * It's designed for data tables, lists, and any paginated content.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import type { Page } from "@/types/pagination";
 
+/**
+ * Configuration options for paginated data management.
+ *
+ * @template T The type of data items being paginated
+ */
 export interface UsePagedDataOptions<T> {
   fetchFn: (params: {
     q?: string;

@@ -5,6 +5,10 @@ import lombok.Data;
 
 import java.time.Instant;
 
+/**
+ * Reference data for a tradable instrument identified by its unique symbol.
+ * Maintains created/updated timestamps and an enabled flag for filtering.
+ */
 @Entity
 @Table(name = "symbols", indexes = {
         @Index(name = "ix_symbols_symbol", columnList = "symbol", unique = true),

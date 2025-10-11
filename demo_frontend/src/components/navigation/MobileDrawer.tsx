@@ -1,15 +1,149 @@
+/**
+ * @fileoverview Mobile slide-out navigation drawer with sophisticated animations
+ *
+ * This component provides a comprehensive mobile navigation solution with smooth
+ * slide-out animations, backdrop overlay, and responsive behavior. Features include
+ * automatic desktop hiding, route-based filtering, and professional mobile-first
+ * navigation patterns with accessibility and touch interaction support.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { NavItem } from "@/types";
+import { BaseComponentProps } from "@/types";
 
-interface MobileDrawerProps {
+/**
+ * Props interface for MobileDrawer component configuration
+ * @interface MobileDrawerProps
+ * @extends {BaseComponentProps}
+ */
+export interface MobileDrawerProps extends BaseComponentProps {
+  /** Whether the drawer is currently open */
   isOpen: boolean;
+  /** Array of navigation items to display */
   navItems: NavItem[];
+  /** Callback function when drawer should close */
   onClose: () => void;
+  /** Whether to hide navigation items */
   hideNav?: boolean;
 }
 
+/**
+ * Mobile slide-out navigation drawer with sophisticated animations
+ *
+ * @remarks
+ * The MobileDrawer component delivers comprehensive mobile navigation with the following features:
+ *
+ * **Animation System:**
+ * - Smooth slide-in/slide-out transitions with timing controls
+ * - Backdrop fade animations with opacity transitions
+ * - State-managed rendering for performance optimization
+ * - Professional easing curves for natural motion
+ *
+ * **Mobile Optimization:**
+ * - Touch-friendly interface with appropriate sizing
+ * - Gesture support with backdrop tap-to-close
+ * - Responsive behavior with desktop auto-hiding
+ * - Mobile-first design with swipe-friendly interactions
+ *
+ * **Navigation Features:**
+ * - Dynamic navigation filtering based on current route
+ * - Active route highlighting with visual feedback
+ * - Auto-close on navigation selection
+ * - Conditional item display with dashboard filtering
+ *
+ * **Visual Design:**
+ * - Neumorphic styling with consistent design language
+ * - Professional shadows and surface treatments
+ * - Theme integration with CSS custom properties
+ * - Clean typography and spacing hierarchy
+ *
+ * **Accessibility:**
+ * - ARIA labels for screen reader compatibility
+ * - Semantic HTML structure with proper navigation roles
+ * - Keyboard navigation support
+ * - Focus management and visual indicators
+ *
+ * **State Management:**
+ * - Complex animation state tracking
+ * - Render optimization with conditional rendering
+ * - Window resize handling for responsive behavior
+ * - Proper cleanup and event listener management
+ *
+ * **Interactive Features:**
+ * - Backdrop overlay with click-to-close functionality
+ * - Close button with custom SVG icon
+ * - Touch and mouse interaction support
+ * - Smooth transitions between open/closed states
+ *
+ * @param props - Configuration object for drawer behavior
+ * @returns MobileDrawer component with slide-out navigation
+ *
+ * @example
+ * ```tsx
+ * // Basic mobile drawer with navigation items
+ * const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+ * const navItems = [
+ *   { name: "Home", href: "/home" },
+ *   { name: "Portfolio", href: "/portfolio" },
+ *   { name: "Market", href: "/market" }
+ * ];
+ *
+ * <MobileDrawer
+ *   isOpen={isDrawerOpen}
+ *   navItems={navItems}
+ *   onClose={() => setIsDrawerOpen(false)}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Integration with hamburger button
+ * function MobileNavigation() {
+ *   const [drawerOpen, setDrawerOpen] = useState(false);
+ *   const { navItems } = useNavigation();
+ *
+ *   return (
+ *     <>
+ *       <HamburgerButton
+ *         onClick={() => setDrawerOpen(true)}
+ *       />
+ *
+ *       <MobileDrawer
+ *         isOpen={drawerOpen}
+ *         navItems={navItems}
+ *         onClose={() => setDrawerOpen(false)}
+ *         hideNav={false}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Advanced usage with authentication and filtering
+ * function AuthenticatedMobileNav() {
+ *   const [drawerOpen, setDrawerOpen] = useState(false);
+ *   const { user } = useAuth();
+ *   const { hideNav } = useHeaderState();
+ *   const navItems = filterNavItemsByRole(user?.role);
+ *
+ *   return (
+ *     <MobileDrawer
+ *       isOpen={drawerOpen}
+ *       navItems={navItems}
+ *       onClose={() => setDrawerOpen(false)}
+ *       hideNav={hideNav || !user}
+ *     />
+ *   );
+ * }
+ * ```
+ */
 export default function MobileDrawer({
   isOpen,
   navItems,

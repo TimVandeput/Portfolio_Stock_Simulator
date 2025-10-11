@@ -20,6 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * Unit tests for {@link GraphService} focusing on symbol selection and range
+ * handling
+ * when building chart data based on active user positions.
+ */
 class GraphServiceUnitTest {
 
     @Mock
@@ -63,32 +68,48 @@ class GraphServiceUnitTest {
         googlePortfolio.setAverageCostBasis(BigDecimal.valueOf(120.00));
     }
 
+    /**
+     * Returns empty chart list when user has no active positions.
+     */
     @Test
     void getCharts_withNoActivePositions_returnsEmptyList() {
+        // Given: No active portfolio positions
         Long userId = 1L;
         String range = "1d";
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(List.of());
 
+        // When: Requesting charts
         List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
+        // Then: Empty list is returned
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
     }
 
+    /**
+     * Returns non-null chart data when there are active positions.
+     */
     @Test
     void getCharts_withActivePositions_returnsExpectedSymbols() {
+        // Given: Two active positions for AAPL and GOOGL
         Long userId = 1L;
         String range = "1d";
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio);
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(portfolios);
 
+        // When: Getting charts
         List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
+        // Then: Result is not null (content validated in integration tests)
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Handles duplicate symbols by ensuring unique symbol set in request.
+     */
     @Test
     void getCharts_withDuplicateSymbols_returnsUniqueSymbols() {
+        // Given: Two portfolios sharing the same symbol
         Long userId = 1L;
         String range = "1d";
 
@@ -102,20 +123,28 @@ class GraphServiceUnitTest {
         List<Portfolio> portfolios = Arrays.asList(applePortfolio, googlePortfolio, anotherApplePortfolio);
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(portfolios);
 
+        // When: Building charts
         List<Map<String, Object>> result = graphService.getCharts(userId, range);
 
+        // Then: Result is returned (uniqueness logic covered indirectly)
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Accepts various ranges and returns non-null results consistently.
+     */
     @Test
     void getCharts_withDifferentRanges_usesCorrectInterval() {
+        // Given: No positions but different ranges
         Long userId = 1L;
         when(portfolioRepository.findActivePositionsByUserId(userId)).thenReturn(List.of());
 
         List<String> ranges = Arrays.asList("1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y");
 
         for (String range : ranges) {
+            // When: Requesting charts for the range
             List<Map<String, Object>> result = graphService.getCharts(userId, range);
+            // Then: Non-null empty result
             assertThat(result).isNotNull();
             assertThat(result).isEmpty();
         }

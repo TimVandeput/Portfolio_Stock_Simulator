@@ -6,11 +6,16 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
+/**
+ * Registration confirmation payload echoing user id, username and roles.
+ */
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class RegistrationResponse {
     @NotNull
     private Long id;

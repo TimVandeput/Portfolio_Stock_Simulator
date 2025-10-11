@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO reporting wallet cash and derived totals.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

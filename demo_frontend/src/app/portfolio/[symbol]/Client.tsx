@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Interactive stock selling client component for portfolio holdings.
+ *
+ * This module provides a comprehensive stock selling interface that enables users
+ * to sell shares from their existing portfolio holdings through an advanced trading
+ * interface with real-time price integration, holdings validation, profit/loss
+ * calculations, order confirmation, and secure transaction execution within the
+ * Stock Simulator platform.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -20,10 +33,159 @@ import type { WalletBalanceResponse } from "@/types/wallet";
 import type { TradeExecutionResponse } from "@/types/trading";
 import type { PortfolioHolding } from "@/types";
 
+/**
+ * Props interface for the SellSymbolClient component.
+ * @interface SellSymbolClientProps
+ */
 interface SellSymbolClientProps {
+  /** The stock symbol to sell from portfolio holdings (e.g., "AAPL", "GOOGL") */
   symbol: string;
 }
 
+/**
+ * Interactive stock selling client component for portfolio holdings management.
+ *
+ * This sophisticated client component provides a comprehensive stock selling
+ * interface with advanced trading capabilities including real-time price monitoring,
+ * portfolio holdings validation, profit/loss calculations, quantity management,
+ * order confirmations, and secure transaction execution. It delivers a professional-grade
+ * portfolio management experience within the Stock Simulator platform.
+ *
+ * @remarks
+ * The component delivers comprehensive stock selling functionality through:
+ *
+ * **Portfolio Holdings Integration**:
+ * - **Real-time Holdings Data**: Live portfolio position information
+ * - **Available Shares Validation**: Prevents overselling of positions
+ * - **Cost Basis Tracking**: Average purchase price and total investment display
+ * - **Position Management**: Partial and complete position closure capabilities
+ *
+ * **Advanced Selling Interface**:
+ * - **Holdings-based Quantity Limits**: Maximum sellable shares calculation
+ * - **Flexible Quantity Selection**: Partial or complete position selling options
+ * - **Maximum Available Selection**: One-click maximum quantity setting
+ * - **Real-time Value Calculations**: Current market value and proceeds estimation
+ *
+ * **Profit/Loss Analysis**:
+ * - **Cost Basis Display**: Original purchase price and total investment
+ * - **Current Market Value**: Real-time position valuation
+ * - **Gain/Loss Calculations**: Unrealized profit/loss on holdings
+ * - **Performance Metrics**: Return on investment and percentage gains
+ *
+ * **Real-time Market Data Integration**:
+ * - **Live Price Feeds**: Real-time stock price updates via PriceContext
+ * - **Market State Monitoring**: Current bid/ask spreads and volume data
+ * - **Price Movement Indicators**: Visual indicators for price changes
+ * - **Market Hours Awareness**: Trading availability status integration
+ *
+ * **Order Execution & Confirmation**:
+ * - **Two-step Confirmation**: Modal confirmation before execution
+ * - **Order Summary Display**: Complete transaction details preview
+ * - **Holdings Impact Preview**: Remaining position after sale visualization
+ * - **Execution Progress**: Real-time processing status indicators
+ *
+ * **Transaction Management**:
+ * - **Secure Order Execution**: Authenticated API calls with error handling
+ * - **Portfolio Updates**: Real-time holdings synchronization post-sale
+ * - **Wallet Integration**: Cash balance updates after successful transactions
+ * - **Transaction History**: Automatic order tracking and recording
+ *
+ * **User Experience Enhancements**:
+ * - **Responsive Design**: Optimized layouts for all device types
+ * - **Loading States**: Smooth transitions during data operations
+ * - **Error Recovery**: Graceful handling with retry mechanisms
+ * - **Navigation Integration**: Seamless routing after successful transactions
+ * - **Scroll Position Management**: Preserved scroll state during modal interactions
+ *
+ * **Input Validation & Security**:
+ * - **Holdings Validation**: Cannot sell more shares than owned
+ * - **Quantity Sanitization**: Numeric input validation and bounds checking
+ * - **Price Verification**: Expected price matching for order security
+ * - **Authentication Verification**: Secure user session validation
+ * - **Transaction Integrity**: Comprehensive error handling and rollback
+ *
+ * **Performance Optimizations**:
+ * - **Memoized Calculations**: Optimized quantity and value computations
+ * - **Efficient State Management**: Minimal re-renders through useMemo hooks
+ * - **Parallel Data Loading**: Concurrent wallet and holdings data retrieval
+ * - **Smart Loading States**: Targeted loading indicators for specific operations
+ *
+ * **Professional Portfolio Features**:
+ * - **Market Order Execution**: Immediate execution at current market price
+ * - **Position Reduction**: Partial position selling capabilities
+ * - **Complete Exit Strategy**: Full position closure options
+ * - **Portfolio Optimization**: Strategic selling tools and guidance
+ *
+ * The component serves as a complete portfolio management solution, providing users
+ * with professional-grade selling capabilities while maintaining security,
+ * performance, and user experience standards expected in modern portfolio
+ * management applications.
+ *
+ * @example
+ * ```tsx
+ * // Comprehensive stock selling interface usage
+ * function SellSymbolClient({ symbol }: SellSymbolClientProps) {
+ *   const [quantity, setQuantity] = useState<string>("1");
+ *   const [holding, setHolding] = useState<PortfolioHolding | null>(null);
+ *   const { prices } = usePrices();
+ *
+ *   const currentPrice = prices[symbol];
+ *   const totalValue = useMemo(() => {
+ *     const qty = parseFloat(quantity) || 0;
+ *     return qty * (currentPrice?.last || 0);
+ *   }, [quantity, currentPrice]);
+ *
+ *   const handleSell = async () => {
+ *     const response = await executeSellOrder(userId, {
+ *       symbol,
+ *       quantity: parseFloat(quantity),
+ *       expectedPrice: currentPrice?.last || 0
+ *     });
+ *
+ *     // Update portfolio holdings after successful sale
+ *     setHolding(prev => prev ? {
+ *       ...prev,
+ *       quantity: prev.quantity - parseFloat(quantity)
+ *     } : null);
+ *   };
+ *
+ *   return (
+ *     <div className="sell-interface">
+ *       <PriceCard symbol={symbol} currentPrice={currentPrice} />
+ *       <div className="holdings-display">
+ *         <p>{holding?.quantity} shares @ ${holding?.avgCostBasis.toFixed(2)}</p>
+ *       </div>
+ *       <QuantityInput
+ *         quantity={quantity}
+ *         onChange={setQuantity}
+ *         max={holding?.quantity || 0}
+ *       />
+ *       <OrderSummary totalValue={totalValue} mode="sell" />
+ *       <NeumorphicButton onClick={handleSell}>
+ *         Sell {quantity} shares
+ *       </NeumorphicButton>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @param props - Component properties containing the stock symbol to sell
+ * @returns A comprehensive stock selling interface with real-time data integration,
+ * portfolio holdings validation, profit/loss analysis, confirmation, and secure
+ * transaction execution capabilities
+ *
+ * @see {@link usePrices} - Real-time price data context provider
+ * @see {@link executeSellOrder} - API function for executing stock sales
+ * @see {@link getUserHolding} - API function for retrieving portfolio holdings
+ * @see {@link getWalletBalance} - API function for retrieving wallet balance
+ * @see {@link PriceCard} - Real-time stock price display component
+ * @see {@link QuantityInput} - Share quantity input component
+ * @see {@link OrderSummary} - Transaction summary display component
+ * @see {@link ConfirmationModal} - Order confirmation modal component
+ * @see {@link PortfolioHolding} - TypeScript interface for holdings data
+ *
+ * @public
+ */
 export default function SellSymbolClient({ symbol }: SellSymbolClientProps) {
   const router = useRouter();
   const { prices } = usePrices();

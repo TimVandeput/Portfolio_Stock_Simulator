@@ -10,12 +10,22 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
+/**
+ * Service for authenticating websocket stream sessions using JWT access tokens.
+ */
 @Service
 @RequiredArgsConstructor
 public class StreamAuthenticationService {
 
     private final JwtService jwtService;
 
+    /**
+     * Validates the token and returns the username encoded in it.
+     *
+     * @param token bearer token
+     * @return username
+     * @throws StreamAuthenticationException if token is missing or invalid
+     */
     public String validateToken(String token) {
         if (!StringUtils.hasText(token)) {
             throw new StreamAuthenticationException("Token is required");
@@ -34,11 +44,17 @@ public class StreamAuthenticationService {
         }
     }
 
+    /**
+     * Builds a {@link StreamAuthData} after validation.
+     */
     public StreamAuthData createStreamAuthData(String token, Long userId, List<String> subscribedSymbols) {
         String username = validateToken(token);
         return StreamAuthData.of(username, token, userId, subscribedSymbols);
     }
 
+    /**
+     * Lightweight validity check for stream auth container.
+     */
     public boolean isValidStreamAuth(StreamAuthData authData) {
         if (ObjectUtils.isEmpty(authData)) {
             return false;

@@ -21,6 +21,18 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
+/**
+ * Per-request filter that extracts a JWT access token and populates Spring
+ * Security context.
+ *
+ * Token sources (checked in order):
+ * - Authorization: Bearer <token>
+ * - access_token query parameter
+ * - auth.access cookie
+ *
+ * Requests under /api/auth/** are excluded from authentication to allow
+ * login/registration.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -85,6 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (fromQuery != null && !fromQuery.isBlank()) {
             return fromQuery;
         }
+        // Cookie-based fallback to support browser flows using HttpOnly cookies
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
