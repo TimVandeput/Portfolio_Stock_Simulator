@@ -38,7 +38,7 @@ export const PAGE_ACCESS_CONFIG: Record<string, PageAccessConfig> = {
     requireAuth: true,
     allowedRoles: ["ROLE_USER"],
   },
-  "/live": {
+  "/graphs": {
     requireAuth: true,
     allowedRoles: ["ROLE_USER"],
   },
@@ -53,10 +53,6 @@ export const PAGE_ACCESS_CONFIG: Record<string, PageAccessConfig> = {
 
   // Admin-specific pages
   "/symbols": {
-    requireAuth: true,
-    allowedRoles: ["ROLE_ADMIN"],
-  },
-  "/users": {
     requireAuth: true,
     allowedRoles: ["ROLE_ADMIN"],
   },
