@@ -1,7 +1,25 @@
+/**
+ * @fileoverview Professional PDF export functionality with advanced formatting and branding.
+ *
+ * This module provides comprehensive PDF export capabilities for transaction data
+ * within the Stock Simulator platform. It features professional document generation
+ * with branded headers, advanced table formatting, financial summaries, multi-page
+ * support, and enterprise-grade presentation optimized for reporting and documentation.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Transaction } from "@/types/trading";
 
+/**
+ * Format currency values with proper USD formatting and localization.
+ *
+ * @param amount - Numeric amount to format as currency
+ * @returns Formatted currency string with USD symbol and proper separators
+ */
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -9,6 +27,12 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+/**
+ * Format date strings with consistent localized formatting for PDF display.
+ *
+ * @param dateString - ISO date string to format
+ * @returns Formatted date string with month abbreviation and time
+ */
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
@@ -19,6 +43,130 @@ const formatDate = (dateString: string) => {
   });
 };
 
+/**
+ * Export transaction data to professional PDF format with branding and advanced features.
+ *
+ * This comprehensive export function generates a professionally formatted PDF
+ * document with branded headers, high-quality logo integration, advanced table
+ * formatting, financial summaries, multi-page support, and enterprise-grade
+ * presentation. It provides complete transaction reporting suitable for business
+ * documentation, client reports, and financial analysis.
+ *
+ * @remarks
+ * The function delivers professional PDF export through:
+ *
+ * **Professional Branding**:
+ * - **Logo Integration**: High-resolution logo rendering with fallback text branding
+ * - **Brand Colors**: Consistent blue color scheme (#60A5FA) throughout document
+ * - **Header Design**: Professional document header with title and metadata
+ * - **Footer Information**: Branded footer with platform identification
+ * - **Page Numbering**: Professional page numbering for multi-page documents
+ *
+ * **Advanced Document Structure**:
+ * - **Multi-page Support**: Automatic page breaks with consistent headers/footers
+ * - **Professional Layout**: Optimized margins and spacing for business documents
+ * - **Table Formatting**: Advanced table styling with alternating row colors
+ * - **Column Optimization**: Intelligent column widths for optimal data display
+ * - **Responsive Design**: Automatic content flow and page management
+ *
+ * **Financial Data Presentation**:
+ * - **Currency Formatting**: Professional USD formatting with proper symbols
+ * - **Date Formatting**: Consistent date/time display with localization
+ * - **Profit/Loss Indicators**: Color-coded P&L values with +/- indicators
+ * - **Data Truncation**: Smart truncation of long company names for layout
+ * - **Summary Section**: Comprehensive financial summary with key metrics
+ *
+ * **High-Quality Table Features**:
+ * - **Professional Headers**: Branded blue headers with white text
+ * - **Alternating Rows**: Light gray alternating rows for readability
+ * - **Optimized Columns**: Pre-configured column widths for data types
+ * - **Text Wrapping**: Automatic line breaks for long content
+ * - **Consistent Styling**: Uniform font sizing and cell padding
+ *
+ * **Comprehensive Summary Analytics**:
+ * - **Transaction Counts**: Separate buy and sell transaction tallies
+ * - **Total Amounts**: Sum of buy and sell transaction values
+ * - **Net Investment**: Calculated net investment amount
+ * - **Profit/Loss Analysis**: Color-coded total profit/loss calculation
+ * - **Visual Indicators**: Green/red color coding for financial performance
+ *
+ * **Technical Excellence**:
+ * - **Image Processing**: High-resolution logo processing with canvas scaling
+ * - **Error Handling**: Graceful fallback for missing or failed logo loading
+ * - **Memory Management**: Efficient image processing and cleanup
+ * - **Cross-platform**: Compatible PDF generation across all platforms
+ * - **Print Optimization**: Professional layout optimized for printing
+ *
+ * **Use Case Applications**:
+ * - **Client Reports**: Professional client-facing transaction reports
+ * - **Business Documentation**: Formal business records and documentation
+ * - **Financial Analysis**: Comprehensive portfolio performance reports
+ * - **Regulatory Compliance**: Formatted reports for regulatory requirements
+ * - **Executive Summaries**: High-level transaction summaries for management
+ *
+ * **Visual Enhancement Features**:
+ * - **Logo Quality**: High-DPI logo rendering with 2x scaling for clarity
+ * - **Color Consistency**: Professional color scheme throughout document
+ * - **Typography**: Clean, readable font sizing and hierarchy
+ * - **White Space**: Optimal spacing for professional appearance
+ * - **Print Ready**: Optimized layout for high-quality printing
+ *
+ * The function serves as an enterprise-grade PDF generation solution providing
+ * users with professionally formatted documents suitable for business reporting,
+ * client presentations, and comprehensive financial documentation within the
+ * Stock Simulator platform.
+ *
+ * @example
+ * ```typescript
+ * // Basic PDF export
+ * async function generateTransactionReport() {
+ *   const transactions = await getTransactionHistory();
+ *   await exportToPDF(transactions, 'transaction_report');
+ * }
+ *
+ * // Monthly report generation
+ * async function generateMonthlyPDF() {
+ *   const transactions = await getMonthlyTransactions();
+ *   const filename = `monthly_report_${new Date().toISOString().slice(0, 7)}`;
+ *   await exportToPDF(transactions, filename);
+ * }
+ *
+ * // Client portfolio report
+ * async function generateClientReport() {
+ *   const transactions = await getClientTransactions(clientId);
+ *   await exportToPDF(transactions, `client_${clientId}_portfolio`);
+ * }
+ *
+ * // Component integration
+ * function PDFExportButton({ transactions }: { transactions: Transaction[] }) {
+ *   const handleExport = async () => {
+ *     try {
+ *       await exportToPDF(transactions, 'portfolio_analysis');
+ *       toast.success('PDF report generated successfully');
+ *     } catch (error) {
+ *       toast.error('PDF generation failed');
+ *     }
+ *   };
+ *
+ *   return (
+ *     <button onClick={handleExport} className="pdf-export-btn">
+ *       <PDFIcon />
+ *       Generate PDF Report
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @param transactions - Array of transaction objects to include in PDF report
+ * @param filename - Base filename for the PDF file (without .pdf extension)
+ * @returns Promise that resolves when the PDF generation and download is complete
+ *
+ * @throws {Error} When transaction data is malformed or PDF generation fails
+ *
+ * @see {@link Transaction} - TypeScript interface for transaction data structure
+ *
+ * @public
+ */
 export const exportToPDF = async (
   transactions: Transaction[],
   filename: string

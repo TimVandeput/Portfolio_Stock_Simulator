@@ -1,5 +1,137 @@
+/**
+ * @fileoverview Excel export functionality with advanced formatting and professional styling.
+ *
+ * This module provides comprehensive Excel export capabilities for transaction data
+ * within the Stock Simulator platform. It features advanced XML-based Excel format
+ * generation, professional styling, automatic filtering, frozen panes, currency
+ * formatting, and enterprise-grade data presentation optimized for financial analysis.
+ *
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 import type { Transaction } from "@/types/trading";
 
+/**
+ * Export transaction data to Excel format with professional styling and advanced features.
+ *
+ * This comprehensive export function generates a professionally formatted Excel
+ * workbook using XML formatting with advanced features including custom styling,
+ * currency formatting, automatic filtering, frozen header panes, and optimized
+ * column widths. It provides enterprise-grade data presentation suitable for
+ * financial analysis, reporting, and professional documentation.
+ *
+ * @remarks
+ * The function delivers professional Excel export through:
+ *
+ * **Advanced Excel Features**:
+ * - **XML-based Format**: Native Excel XML format for full feature compatibility
+ * - **Custom Styling**: Professional color scheme with branded header styling
+ * - **Auto-filtering**: Built-in Excel filtering capabilities for data analysis
+ * - **Frozen Panes**: Header row remains visible during scrolling
+ * - **Column Optimization**: Pre-configured column widths for optimal display
+ *
+ * **Professional Styling System**:
+ * - **Header Style**: Branded blue background (#6366F1) with white bold text
+ * - **Data Borders**: Professional gray borders (#E5E7EB) for clean appearance
+ * - **Font Standards**: Arial font family with appropriate sizing
+ * - **Cell Alignment**: Center alignment for headers, appropriate data alignment
+ * - **Row Height**: Optimized 25px header height for professional appearance
+ *
+ * **Financial Formatting**:
+ * - **Currency Display**: Automatic $#,##0.00 formatting for monetary values
+ * - **Number Formatting**: Right-aligned numbers with thousand separators
+ * - **Precision Control**: Two decimal places for financial accuracy
+ * - **Null Handling**: Professional em-dash (—) for missing P&L data
+ * - **Data Types**: Proper Excel data type assignment for calculations
+ *
+ * **Data Processing**:
+ * - **XML Escaping**: Safe handling of special characters in company names
+ * - **Date Formatting**: Localized date formatting for consistency
+ * - **Type Safety**: TypeScript interface validation for data integrity
+ * - **Error Handling**: Robust processing of malformed transaction data
+ *
+ * **Enterprise Features**:
+ * - **Document Properties**: Professional metadata including title, author, timestamp
+ * - **Print Optimization**: Configured for professional printing with proper margins
+ * - **Page Layout**: Fit-to-page settings for optimal print presentation
+ * - **Worksheet Naming**: Descriptive "Transactions" worksheet name
+ *
+ * **Excel Compatibility**:
+ * - **Native Format**: .xls format compatible with all Excel versions
+ * - **Feature Support**: Full support for filtering, sorting, and calculations
+ * - **Cross-platform**: Compatible with Excel on Windows, Mac, and Excel Online
+ * - **Import Ready**: Direct Excel import without conversion requirements
+ *
+ * **Use Case Applications**:
+ * - **Financial Reports**: Professional financial reporting and analysis
+ * - **Tax Documentation**: Formatted for tax preparation and IRS requirements
+ * - **Audit Trails**: Complete transaction documentation for compliance
+ * - **Portfolio Analysis**: Ready for advanced Excel-based portfolio analysis
+ * - **Client Reporting**: Professional client-facing transaction reports
+ *
+ * **Visual Enhancements**:
+ * - **Professional Branding**: Consistent color scheme with platform identity
+ * - **Clean Layout**: Organized data presentation with proper spacing
+ * - **Easy Navigation**: Frozen panes and filtering for large datasets
+ * - **Print Ready**: Optimized layout for professional document printing
+ *
+ * The function serves as an enterprise-grade export solution providing users
+ * with professionally formatted Excel workbooks suitable for financial analysis,
+ * regulatory compliance, and comprehensive portfolio management within the
+ * Stock Simulator platform.
+ *
+ * @example
+ * ```typescript
+ * // Basic Excel export
+ * async function exportToExcel() {
+ *   const transactions = await getTransactionHistory();
+ *   await exportToExcel(transactions, 'portfolio_report');
+ * }
+ *
+ * // Monthly report generation
+ * async function generateMonthlyReport() {
+ *   const transactions = await getMonthlyTransactions();
+ *   const filename = `monthly_report_${new Date().getMonth() + 1}_${new Date().getFullYear()}`;
+ *   await exportToExcel(transactions, filename);
+ * }
+ *
+ * // Year-end tax report
+ * async function generateTaxReport() {
+ *   const transactions = await getYearTransactions(2024);
+ *   await exportToExcel(transactions, 'tax_report_2024');
+ * }
+ *
+ * // Component integration
+ * function ExcelExportButton({ transactions }: { transactions: Transaction[] }) {
+ *   const handleExport = async () => {
+ *     try {
+ *       await exportToExcel(transactions, 'transaction_analysis');
+ *       toast.success('Excel report generated successfully');
+ *     } catch (error) {
+ *       toast.error('Excel export failed');
+ *     }
+ *   };
+ *
+ *   return (
+ *     <button onClick={handleExport} className="excel-export-btn">
+ *       <ExcelIcon />
+ *       Export to Excel
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @param transactions - Array of transaction objects to export to Excel format
+ * @param filename - Base filename for the Excel file (without .xls extension)
+ * @returns Promise that resolves when the Excel export and download is complete
+ *
+ * @throws {Error} When transaction data is malformed or Excel generation fails
+ *
+ * @see {@link Transaction} - TypeScript interface for transaction data structure
+ *
+ * @public
+ */
 export const exportToExcel = async (
   transactions: Transaction[],
   filename: string
