@@ -1,3 +1,9 @@
+/**
+ * @fileoverview TypeScript Type Definitions Export for Stock Simulator Application
+ * @author Tim Vandeput
+ * @since 1.0.0
+ */
+
 export * from "./auth";
 export * from "./user";
 export * from "./navigation";

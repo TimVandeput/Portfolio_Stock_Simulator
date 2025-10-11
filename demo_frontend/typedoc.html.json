@@ -17,11 +17,16 @@
     "**/*.spec.ts",
     "**/__tests__/**",
     ".next/**",
+    "src/hooks/useIsMobile.ts",
+    "src/lib/constants/breakpoints.ts",
+    "src/lib/**/index.ts",
+    "src/types/index.ts",
     "src/app/**/layout.tsx",
     "src/app/**/template.tsx",
     "src/app/**/loading.tsx",
     "src/app/**/error.tsx",
     "src/app/**/not-found.tsx"
   ],
+  "excludeReferences": true,
   "tsconfig": "tsconfig.typedoc.json"
 }
