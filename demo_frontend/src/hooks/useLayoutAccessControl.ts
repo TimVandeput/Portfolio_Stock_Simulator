@@ -1,8 +1,24 @@
+/**
+ * @fileoverview Layout-level access control hook for page authorization.
+ *
+ * This hook provides layout-level access control with modal management
+ * for unauthorized access scenarios and logout flow integration.
+ *
+ * @author Stock Simulator Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAccessControl } from "@/hooks/useAuth";
 import { getPageAccessConfig } from "@/lib/config/pageAccessControl";
 
+/**
+ * Hook for managing layout-level access control and authorization modals.
+ *
+ * @returns Access control state with modal management and logout capabilities
+ */
 export function useLayoutAccessControl() {
   const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);

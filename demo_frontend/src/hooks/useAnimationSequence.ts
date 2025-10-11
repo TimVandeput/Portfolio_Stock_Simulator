@@ -1,14 +1,148 @@
+/**
+ * @fileoverview Advanced animation sequence hook for sophisticated UI transitions.
+ *
+ * This hook provides comprehensive animation orchestration for complex UI sequences,
+ * particularly designed for post-login animations and staggered element entrances.
+ * It manages timing, positioning, and visual effects for multiple animated elements.
+ *
+ * The hook provides:
+ * - Staggered animation sequences with precise timing control
+ * - Random start positions for dynamic entrance effects
+ * - Session-based animation triggering (e.g., after login)
+ * - Individual element animation state tracking
+ * - Smooth transitions with custom easing curves
+ * - Visual effects integration (shadows, opacity, transforms)
+ *
+ * @author Stock Simulator Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 
+/**
+ * Configuration options for animation sequence behavior.
+ *
+ * @interface UseAnimationSequenceOptions
+ */
 interface UseAnimationSequenceOptions {
+  /** Number of items to animate in the sequence */
   itemCount: number;
+  /** Initial delay before starting animations (ms) */
   initialDelay?: number;
+  /** Delay between each item's animation start (ms) */
   stagger?: number;
+  /** Duration of each individual animation (ms) */
   duration?: number;
 }
 
+/**
+ * Hook for creating sophisticated staggered animation sequences.
+ *
+ * Manages complex animation orchestration with multiple elements animating in sequence
+ * from random starting positions to their final positions. Particularly effective for
+ * post-login animations and dashboard element reveals.
+ *
+ * @param options - Animation configuration options
+ * @param options.itemCount - Number of items to animate
+ * @param options.initialDelay - Delay before starting sequence (default: 500ms)
+ * @param options.stagger - Delay between each item (default: 350ms)
+ * @param options.duration - Animation duration per item (default: 1900ms)
+ *
+ * @returns Animation control object with style generators and state
+ *
+ * @remarks
+ * This hook provides sophisticated animation capabilities:
+ * - Detects login-triggered animations via sessionStorage
+ * - Generates random start positions for dynamic effects
+ * - Manages individual element timing and states
+ * - Provides style generators for transforms, opacity, and shadows
+ * - Handles animation lifecycle with proper cleanup
+ * - Supports custom easing curves and transitions
+ *
+ * The animation sequence consists of:
+ * 1. Elements start from random off-screen positions
+ * 2. Each element animates to its final position with staggered timing
+ * 3. Text content fades in after element positioning
+ * 4. Shadow effects are applied after animation completion
+ *
+ * @example
+ * ```tsx
+ * function AnimatedDashboard() {
+ *   const cards = ['Portfolio', 'Market', 'Orders', 'Settings'];
+ *
+ *   const {
+ *     animateFromLogin,
+ *     getItemStyle,
+ *     getTextStyle,
+ *     getShadowStyle
+ *   } = useAnimationSequence({
+ *     itemCount: cards.length,
+ *     initialDelay: 300,
+ *     stagger: 200,
+ *     duration: 1500
+ *   });
+ *
+ *   return (
+ *     <div className="dashboard-grid">
+ *       {cards.map((card, index) => (
+ *         <div
+ *           key={card}
+ *           style={{
+ *             ...getItemStyle(index),
+ *             ...getShadowStyle(index)
+ *           }}
+ *           className="dashboard-card"
+ *         >
+ *           <span style={getTextStyle(index)}>
+ *             {card}
+ *           </span>
+ *         </div>
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Post-login animation sequence
+ * function PostLoginAnimation() {
+ *   const menuItems = ['Home', 'Portfolio', 'Market', 'Help'];
+ *
+ *   const animation = useAnimationSequence({
+ *     itemCount: menuItems.length,
+ *     initialDelay: 500,
+ *     stagger: 300
+ *   });
+ *
+ *   useEffect(() => {
+ *     // Set session flag for animation trigger
+ *     if (userJustLoggedIn) {
+ *       sessionStorage.setItem('fromLogin', 'true');
+ *     }
+ *   }, [userJustLoggedIn]);
+ *
+ *   return (
+ *     <nav className="animated-nav">
+ *       {menuItems.map((item, i) => (
+ *         <button
+ *           key={item}
+ *           style={animation.getItemStyle(i)}
+ *           className="nav-button"
+ *         >
+ *           <span style={animation.getTextStyle(i)}>
+ *             {item}
+ *           </span>
+ *         </button>
+ *       ))}
+ *     </nav>
+ *   );
+ * }
+ * ```
+ */
 export function useAnimationSequence({
   itemCount,
   initialDelay = 500,

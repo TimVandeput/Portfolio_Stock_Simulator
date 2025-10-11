@@ -1,8 +1,24 @@
+/**
+ * @fileoverview Import status tracking hook for symbol data management.
+ *
+ * This hook monitors the status of symbol imports and provides real-time updates
+ * on import progress, completion status, and refresh capabilities for administrative functions.
+ *
+ * @author Stock Simulator Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getImportStatus } from "@/lib/api/symbols";
 import type { ImportStatusDTO } from "@/types/symbol";
 
+/**
+ * Hook for tracking symbol import status and providing refresh capabilities.
+ *
+ * @returns Import status object with current status and refresh function
+ */
 export function useImportStatus() {
   const [status, setStatus] = useState<ImportStatusDTO | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
