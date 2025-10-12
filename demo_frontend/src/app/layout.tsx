@@ -23,9 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
-  other: {
-    "color-scheme": "light dark",
-  },
+  other: {},
 };
 
 export default function RootLayout({
@@ -36,7 +34,28 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light dark" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Simple approach - just apply saved theme quickly
+                function getCookie(name) {
+                  const value = "; " + document.cookie;
+                  const parts = value.split("; " + name + "=");
+                  if (parts.length === 2) return parts.pop().split(";").shift();
+                  return null;
+                }
+                
+                const savedTheme = getCookie("theme") || "light";
+                if (savedTheme === "dark") {
+                  document.documentElement.classList.add("dark");
+                } else {
+                  document.documentElement.classList.remove("dark");
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}

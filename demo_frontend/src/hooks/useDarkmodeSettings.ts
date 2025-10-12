@@ -114,23 +114,15 @@ export function useDarkmodeSettings() {
   const [isDark, setIsDark] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    // Force remove any existing dark class first
-    document.documentElement.classList.remove("dark");
-
-    // Get saved theme, defaulting to light if not set
     const savedTheme = getCookie("theme") || "light";
-
-    // Apply the saved theme, ignoring system preference
     if (savedTheme === "dark") {
       setIsDark(true);
       document.documentElement.classList.add("dark");
     } else {
       setIsDark(false);
-      // Ensure dark class is removed (redundant but explicit)
       document.documentElement.classList.remove("dark");
     }
   }, []);
-
   const toggleTheme = useCallback(() => {
     const style = document.createElement("style");
     style.innerHTML = `
