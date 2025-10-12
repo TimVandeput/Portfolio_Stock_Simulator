@@ -34,15 +34,22 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="normal" />
+        <meta name="color-scheme" content="only light" />
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              /* Block both system AND browser dark mode preferences */
-              :root { color-scheme: normal !important; }
-              html { color-scheme: normal !important; }
+              /* AGGRESSIVE: Block ALL browser auto-theming */
+              * { color-scheme: none !important; }
+              html { color-scheme: none !important; }
+              body { color-scheme: none !important; }
+              :root { color-scheme: none !important; }
+              
+              /* Override prefers-color-scheme media queries */
               @media (prefers-color-scheme: dark) {
-                :root, html { color-scheme: normal !important; }
+                *, html, body, :root { color-scheme: none !important; }
+              }
+              @media (prefers-color-scheme: light) {
+                *, html, body, :root { color-scheme: none !important; }  
               }
             `,
           }}
