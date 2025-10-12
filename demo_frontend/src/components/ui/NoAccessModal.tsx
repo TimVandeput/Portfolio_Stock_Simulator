@@ -15,6 +15,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DynamicIcon from "./DynamicIcon";
+import { serverLogout } from "@/app/actions/logout";
 import type { BaseComponentProps } from "@/types/components";
 
 /**
@@ -232,15 +233,11 @@ export default function NoAccessModal({
 
   const buttonText = closeText || defaultCloseText;
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
     if (accessType === "login") {
       onClose();
-      setTimeout(() => {
-        router.replace("/");
-        if (window.location.pathname === "/") {
-          window.location.reload();
-        }
-      }, 100);
+      // Use server action to clear cookies server-side and redirect
+      await serverLogout();
     } else if (accessType === "role") {
       router.push("/home");
     } else {
