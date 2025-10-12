@@ -19,31 +19,42 @@ html.dark {
 
 /* Completely override and ignore all system preferences */
 @media (prefers-color-scheme: dark) {
-  html, html *, body, body * {
+  html,
+  html *,
+  body,
+  body * {
     color-scheme: none !important;
     background-color: #e0e5ec !important;
     color: #60a5fa !important;
   }
-  
-  html.dark, html.dark *, body.dark, body.dark * {
+
+  html.dark,
+  html.dark *,
+  body.dark,
+  body.dark * {
     background-color: #2a2d3a !important;
     color: #c4b5fd !important;
   }
 }
 
 @media (prefers-color-scheme: light) {
-  html, html *, body, body * {
+  html,
+  html *,
+  body,
+  body * {
     color-scheme: none !important;
   }
 }
 
 /* Force theme on all elements */
-html:not(.dark), html:not(.dark) * {
+html:not(.dark),
+html:not(.dark) * {
   background-color: #e0e5ec !important;
   color: #60a5fa !important;
 }
 
-html.dark, html.dark * {
+html.dark,
+html.dark * {
   background-color: #2a2d3a !important;
   color: #c4b5fd !important;
 }
