@@ -34,11 +34,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="color-scheme" content="light dark" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Simple approach - just apply saved theme quickly
                 function getCookie(name) {
                   const value = "; " + document.cookie;
                   const parts = value.split("; " + name + "=");

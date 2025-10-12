@@ -1,20 +1,5 @@
 @import "tailwindcss";
 
-/* Force override system dark mode preference - AGGRESSIVE */
-* {
-  color-scheme: inherit !important;
-}
-
-html {
-  color-scheme: light !important;
-}
-
-html.dark {
-  color-scheme: dark !important;
-}
-
-/* System color-scheme media queries removed to ignore device theme */
-
 /* Force initial theme before JS loads */
 html:not(.dark) {
   background: #e0e5ec !important;
