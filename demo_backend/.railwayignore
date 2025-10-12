@@ -1,0 +1,42 @@
+# IDE files
+
+.idea/
+.vscode/
+_.iml
+_.ipr
+\*.iws
+
+# Build artifacts (except target/demo-backend-\*.jar)
+
+target/classes/
+target/test-classes/
+target/generated-sources/
+target/generated-test-sources/
+target/maven-archiver/
+target/maven-status/
+target/surefire-reports/
+
+# Keep the JAR file
+
+!target/demo-backend-\*.jar
+
+# Logs
+
+\*.log
+logs/
+
+# OS files
+
+.DS_Store
+Thumbs.db
+
+# Environment files
+
+.env
+.env.local
+.env.production
+
+# Documentation
+
+docs/
+README.md

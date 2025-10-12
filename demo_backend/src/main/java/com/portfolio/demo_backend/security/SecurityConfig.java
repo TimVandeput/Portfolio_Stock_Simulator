@@ -42,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, Environment environment) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource(environment)))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(new RestAuthEntryPoint()))
                 .addFilterBefore(jwtAuthenticationFilter,
@@ -81,10 +81,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource(org.springframework.core.env.Environment env) {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(
-                "http://localhost:3000"));
+        // Read comma-separated origins from env var CORS_ALLOWED_ORIGINS (fallback to
+        // localhost)
+        String originsProp = env.getProperty("CORS_ALLOWED_ORIGINS", "http://localhost:3000");
+        List<String> origins = List.of(originsProp.split(","))
+                .stream().map(String::trim).filter(s -> !s.isEmpty()).toList();
+        // Use patterns to allow wildcards like https://*.up.railway.app
+        cfg.setAllowedOriginPatterns(origins);
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("Location", "Authorization"));
