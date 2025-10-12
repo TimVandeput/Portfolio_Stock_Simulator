@@ -35,6 +35,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light only" />
+        <style dangerouslySetInnerHTML={{
+          __html: `html { color-scheme: light only !important; }`
+        }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
