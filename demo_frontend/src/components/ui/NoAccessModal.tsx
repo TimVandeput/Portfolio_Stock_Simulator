@@ -236,8 +236,12 @@ export default function NoAccessModal({
   const handleButtonClick = async () => {
     if (accessType === "login") {
       onClose();
-      // Use server action to clear cookies server-side and redirect
-      await serverLogout();
+      // Force a hard reload to clear all caches (deployment fix)
+      setTimeout(() => {
+        window.location.href = "/";
+        // Add cache busting to force fresh server-side check
+        window.location.href = "/?t=" + Date.now();
+      }, 100);
     } else if (accessType === "role") {
       router.push("/home");
     } else {

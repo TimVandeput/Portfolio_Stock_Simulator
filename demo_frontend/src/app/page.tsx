@@ -91,7 +91,8 @@ export const metadata: Metadata = {
 export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth.access")?.value;
-  if (token) {
+
+  if (token && token.trim() !== "" && token.includes(".")) {
     redirect("/home");
   }
 

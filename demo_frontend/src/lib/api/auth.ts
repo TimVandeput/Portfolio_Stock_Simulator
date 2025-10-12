@@ -240,4 +240,14 @@ export async function logout(): Promise<void> {
   keysToRemove.forEach((key) => {
     removeCookie(key);
   });
+
+  // CRITICAL: Also clear sessionStorage to remove login flags
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem("fromLogin");
+    // Clear any other session data that might interfere
+    const sessionKeys = ["fromLogin", "authState", "userSession"];
+    sessionKeys.forEach(key => {
+      sessionStorage.removeItem(key);
+    });
+  }
 }
