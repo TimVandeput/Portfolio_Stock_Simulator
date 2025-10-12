@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  other: {
+    "color-scheme": "light dark",
+  },
 };
 
 export default function RootLayout({
@@ -33,12 +36,28 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="color-scheme" content="light" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Prevent system theme from being applied
+                // Force override color-scheme to prevent browser defaults
+                document.documentElement.style.colorScheme = 'light';
+                
+                // Remove any existing theme classes
                 document.documentElement.classList.remove('dark');
+                document.documentElement.className = document.documentElement.className.replace(/dark/g, '');
+                
+                // Override any media query preferences
+                const style = document.createElement('style');
+                style.innerHTML = \`
+                  html { color-scheme: light !important; }
+                  @media (prefers-color-scheme: dark) {
+                    html { color-scheme: light !important; }
+                  }
+                  * { color-scheme: inherit !important; }
+                \`;
+                document.head.appendChild(style);
                 
                 // Get cookie function
                 function getCookie(name) {
@@ -48,13 +67,18 @@ export default function RootLayout({
                   return null;
                 }
                 
-                // Apply saved theme immediately
+                // Apply saved theme immediately and aggressively
                 const savedTheme = getCookie("theme") || "light";
                 if (savedTheme === "dark") {
                   document.documentElement.classList.add("dark");
+                  document.documentElement.style.colorScheme = 'dark';
                 } else {
                   document.documentElement.classList.remove("dark");
+                  document.documentElement.style.colorScheme = 'light';
                 }
+                
+                // Lock in the theme to prevent system override
+                document.documentElement.setAttribute('data-theme', savedTheme);
               })();
             `,
           }}
