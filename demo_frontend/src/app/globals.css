@@ -13,30 +13,7 @@ html.dark {
   color-scheme: dark !important;
 }
 
-/* Block all system preferences */
-@media (prefers-color-scheme: dark) {
-  html:not(.dark) {
-    color-scheme: light !important;
-    background: #e0e5ec !important;
-    color: #60a5fa !important;
-  }
-  
-  html:not(.dark) * {
-    color-scheme: light !important;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  html.dark {
-    color-scheme: dark !important;
-    background: #2a2d3a !important;
-    color: #c4b5fd !important;
-  }
-  
-  html.dark * {
-    color-scheme: dark !important;
-  }
-}
+/* System color-scheme media queries removed to ignore device theme */
 
 /* Force initial theme before JS loads */
 html:not(.dark) {
