@@ -24,7 +24,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   other: {
-    "color-scheme": "light dark",
+    "color-scheme": "none",
+    "theme-color": "#e0e5ec",
   },
 };
 
@@ -36,26 +37,47 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light" />
+        <meta name="color-scheme" content="none" />
+        <meta name="theme-color" content="#e0e5ec" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Force override color-scheme to prevent browser defaults
-                document.documentElement.style.colorScheme = 'light';
+                // NUCLEAR APPROACH - Completely disable browser theme detection
+                document.documentElement.style.colorScheme = 'none';
+                document.body && (document.body.style.colorScheme = 'none');
                 
-                // Remove any existing theme classes
+                // Force light theme colors immediately
+                document.documentElement.style.backgroundColor = '#e0e5ec';
+                document.documentElement.style.color = '#60a5fa';
+                
+                // Remove any existing theme classes aggressively
                 document.documentElement.classList.remove('dark');
-                document.documentElement.className = document.documentElement.className.replace(/dark/g, '');
+                document.documentElement.className = document.documentElement.className.replace(/dark/g, '').trim();
                 
-                // Override any media query preferences
+                // Inject aggressive override styles
                 const style = document.createElement('style');
                 style.innerHTML = \`
-                  html { color-scheme: light !important; }
-                  @media (prefers-color-scheme: dark) {
-                    html { color-scheme: light !important; }
+                  *, *::before, *::after {
+                    color-scheme: none !important;
                   }
-                  * { color-scheme: inherit !important; }
+                  html {
+                    color-scheme: none !important;
+                    background: #e0e5ec !important;
+                    color: #60a5fa !important;
+                  }
+                  body {
+                    color-scheme: none !important;
+                    background: #e0e5ec !important;
+                    color: #60a5fa !important;
+                  }
+                  @media (prefers-color-scheme: dark) {
+                    html, body, * {
+                      color-scheme: none !important;
+                      background-color: #e0e5ec !important;
+                      color: #60a5fa !important;
+                    }
+                  }
                 \`;
                 document.head.appendChild(style);
                 
@@ -67,17 +89,32 @@ export default function RootLayout({
                   return null;
                 }
                 
-                // Apply saved theme immediately and aggressively
+                // Apply saved theme with nuclear approach
                 const savedTheme = getCookie("theme") || "light";
                 if (savedTheme === "dark") {
                   document.documentElement.classList.add("dark");
-                  document.documentElement.style.colorScheme = 'dark';
+                  document.documentElement.style.backgroundColor = '#2a2d3a';
+                  document.documentElement.style.color = '#c4b5fd';
+                  if (document.body) {
+                    document.body.style.backgroundColor = '#2a2d3a';
+                    document.body.style.color = '#c4b5fd';
+                  }
+                  const metaTheme = document.querySelector('meta[name="theme-color"]');
+                  if (metaTheme) metaTheme.content = '#2a2d3a';
                 } else {
                   document.documentElement.classList.remove("dark");
-                  document.documentElement.style.colorScheme = 'light';
+                  document.documentElement.style.backgroundColor = '#e0e5ec';
+                  document.documentElement.style.color = '#60a5fa';
+                  if (document.body) {
+                    document.body.style.backgroundColor = '#e0e5ec';
+                    document.body.style.color = '#60a5fa';
+                  }
+                  const metaTheme = document.querySelector('meta[name="theme-color"]');
+                  if (metaTheme) metaTheme.content = '#e0e5ec';
                 }
                 
-                // Lock in the theme to prevent system override
+                // Prevent any system theme detection
+                document.documentElement.style.colorScheme = 'none';
                 document.documentElement.setAttribute('data-theme', savedTheme);
               })();
             `,

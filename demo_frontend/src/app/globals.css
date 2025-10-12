@@ -1,51 +1,50 @@
 @import "tailwindcss";
 
-/* Force override system dark mode preference - AGGRESSIVE */
+/* NUCLEAR OPTION - Completely disable browser theme detection */
 * {
-  color-scheme: inherit !important;
+  color-scheme: none !important;
 }
 
 html {
-  color-scheme: light !important;
-}
-
-html.dark {
-  color-scheme: dark !important;
-}
-
-/* Block all system preferences */
-@media (prefers-color-scheme: dark) {
-  html:not(.dark) {
-    color-scheme: light !important;
-    background: #e0e5ec !important;
-    color: #60a5fa !important;
-  }
-  
-  html:not(.dark) * {
-    color-scheme: light !important;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  html.dark {
-    color-scheme: dark !important;
-    background: #2a2d3a !important;
-    color: #c4b5fd !important;
-  }
-  
-  html.dark * {
-    color-scheme: dark !important;
-  }
-}
-
-/* Force initial theme before JS loads */
-html:not(.dark) {
+  color-scheme: none !important;
   background: #e0e5ec !important;
   color: #60a5fa !important;
 }
 
 html.dark {
+  color-scheme: none !important;
   background: #2a2d3a !important;
+  color: #c4b5fd !important;
+}
+
+/* Completely override and ignore all system preferences */
+@media (prefers-color-scheme: dark) {
+  html, html *, body, body * {
+    color-scheme: none !important;
+    background-color: #e0e5ec !important;
+    color: #60a5fa !important;
+  }
+  
+  html.dark, html.dark *, body.dark, body.dark * {
+    background-color: #2a2d3a !important;
+    color: #c4b5fd !important;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html, html *, body, body * {
+    color-scheme: none !important;
+  }
+}
+
+/* Force theme on all elements */
+html:not(.dark), html:not(.dark) * {
+  background-color: #e0e5ec !important;
+  color: #60a5fa !important;
+}
+
+html.dark, html.dark * {
+  background-color: #2a2d3a !important;
   color: #c4b5fd !important;
 }
 
