@@ -35,6 +35,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="normal" />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              /* Block both system AND browser dark mode preferences */
+              :root { color-scheme: normal !important; }
+              html { color-scheme: normal !important; }
+              @media (prefers-color-scheme: dark) {
+                :root, html { color-scheme: normal !important; }
+              }
+            `,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
