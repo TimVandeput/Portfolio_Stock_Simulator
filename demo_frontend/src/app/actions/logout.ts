@@ -5,11 +5,11 @@ import { redirect } from "next/navigation";
 
 export async function serverLogout() {
   const cookieStore = await cookies();
-  
+
   // Clear all authentication cookies server-side
   const authCookies = [
     "token",
-    "refreshToken", 
+    "refreshToken",
     "accessToken",
     "auth.token",
     "authToken",
@@ -18,10 +18,10 @@ export async function serverLogout() {
     "auth.refresh",
     "auth.access",
     "auth.as",
-    "auth.userId"
+    "auth.userId",
   ];
 
-  authCookies.forEach(cookieName => {
+  authCookies.forEach((cookieName) => {
     cookieStore.delete(cookieName);
   });
 
