@@ -116,10 +116,10 @@ export function useDarkmodeSettings() {
   useEffect(() => {
     // Force remove any existing dark class first
     document.documentElement.classList.remove("dark");
-    
+
     // Get saved theme, defaulting to light if not set
     const savedTheme = getCookie("theme") || "light";
-    
+
     // Apply the saved theme, ignoring system preference
     if (savedTheme === "dark") {
       setIsDark(true);
