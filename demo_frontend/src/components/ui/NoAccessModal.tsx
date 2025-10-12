@@ -234,7 +234,13 @@ export default function NoAccessModal({
 
   const handleButtonClick = () => {
     if (accessType === "login") {
-      router.push("/");
+      onClose();
+      setTimeout(() => {
+        router.replace("/");
+        if (window.location.pathname === "/") {
+          window.location.reload();
+        }
+      }, 100);
     } else if (accessType === "role") {
       router.push("/home");
     } else {
