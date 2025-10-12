@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Force override system dark mode preference */
+@media (prefers-color-scheme: dark) {
+  html:not(.dark) {
+    color-scheme: light !important;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html.dark {
+    color-scheme: dark !important;
+  }
+}
+
 html,
 body {
   overflow-x: hidden;
