@@ -19,6 +19,10 @@
 import type { Metadata } from "next";
 import HomeClient from "./Client";
 
+// Force dynamic rendering for authentication-sensitive page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * SEO metadata configuration for the dashboard page.
  *

@@ -21,6 +21,10 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import LoginClient from "./Client";
 
+// Force dynamic rendering - prevent static generation/caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /**
  * SEO metadata configuration for the login page.
  *

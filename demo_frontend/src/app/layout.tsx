@@ -10,6 +10,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Force dynamic rendering to prevent caching of authentication state
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     default: "Portfolio Demo",
@@ -35,9 +39,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="light only" />
-        <style dangerouslySetInnerHTML={{
-          __html: `html { color-scheme: light only !important; }`
-        }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `html { color-scheme: light only !important; }`,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
