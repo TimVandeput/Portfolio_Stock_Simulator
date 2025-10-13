@@ -236,12 +236,26 @@ export default function NoAccessModal({
   const handleButtonClick = async () => {
     if (accessType === "login") {
       onClose();
-      // Force a hard reload to clear all caches (deployment fix)
-      setTimeout(() => {
-        window.location.href = "/";
-        // Add cache busting to force fresh server-side check
-        window.location.href = "/?t=" + Date.now();
-      }, 100);
+      const authCookies = [
+        "token",
+        "refreshToken",
+        "accessToken",
+        "auth.token",
+        "authToken",
+        "jwt",
+        "bearerToken",
+        "auth.refresh",
+        "auth.access",
+        "auth.as",
+        "auth.userId",
+      ];
+
+      authCookies.forEach((name) => {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=strict`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+      });
+
+      window.location.replace("/?logout=1&t=" + Date.now());
     } else if (accessType === "role") {
       router.push("/home");
     } else {

@@ -171,7 +171,7 @@ export default function LogoutButton({
       try {
         await logout();
         onShowConfirmation?.(false, true, handleConfirm, handleCancel);
-        router.replace("/");
+        window.location.replace("/?logout=1&t=" + Date.now());
       } catch {
         setIsLoggingOut(false);
         onUpdateConfirmationLoading?.(false);

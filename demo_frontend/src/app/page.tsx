@@ -92,9 +92,36 @@ export const metadata: Metadata = {
  *
  * @public
  */
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ logout?: string; t?: string }>;
+}) {
+  const params = await searchParams;
   const cookieStore = await cookies();
   const token = cookieStore.get("auth.access")?.value;
+
+  if (params.logout === "1") {
+    const authCookieNames = [
+      "token",
+      "refreshToken",
+      "accessToken",
+      "auth.token",
+      "authToken",
+      "jwt",
+      "bearerToken",
+      "auth.refresh",
+      "auth.access",
+      "auth.as",
+      "auth.userId",
+    ];
+
+    authCookieNames.forEach((name) => {
+      cookieStore.delete(name);
+    });
+
+    return <LoginClient />;
+  }
 
   if (token && token.trim() !== "" && token.includes(".")) {
     redirect("/home");
