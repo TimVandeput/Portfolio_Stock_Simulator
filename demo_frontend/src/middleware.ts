@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  // Force no caching for authentication-sensitive routes
   if (
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname === "/home" ||
@@ -17,26 +18,6 @@ export function middleware(request: NextRequest) {
     response.headers.set("Expires", "0");
     response.headers.set("Surrogate-Control", "no-store");
     response.headers.set("CDN-Cache-Control", "no-store");
-  }
-
-  if (request.nextUrl.search.includes("logout=1")) {
-    const authCookieNames = [
-      "token",
-      "refreshToken",
-      "accessToken",
-      "auth.token",
-      "authToken",
-      "jwt",
-      "bearerToken",
-      "auth.refresh",
-      "auth.access",
-      "auth.as",
-      "auth.userId",
-    ];
-
-    authCookieNames.forEach((name) => {
-      response.cookies.delete(name);
-    });
   }
 
   return response;

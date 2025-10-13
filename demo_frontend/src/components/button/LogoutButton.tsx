@@ -171,7 +171,8 @@ export default function LogoutButton({
       try {
         await logout();
         onShowConfirmation?.(false, true, handleConfirm, handleCancel);
-        window.location.replace("/?logout=1&t=" + Date.now());
+        // Use window.location.href for reliable redirect with cache busting
+        window.location.href = "/?t=" + Date.now();
       } catch {
         setIsLoggingOut(false);
         onUpdateConfirmationLoading?.(false);

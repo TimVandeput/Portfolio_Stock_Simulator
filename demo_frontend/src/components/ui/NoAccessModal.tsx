@@ -15,7 +15,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DynamicIcon from "./DynamicIcon";
-import { serverLogout } from "@/app/actions/logout";
 import type { BaseComponentProps } from "@/types/components";
 
 /**
@@ -236,26 +235,8 @@ export default function NoAccessModal({
   const handleButtonClick = async () => {
     if (accessType === "login") {
       onClose();
-      const authCookies = [
-        "token",
-        "refreshToken",
-        "accessToken",
-        "auth.token",
-        "authToken",
-        "jwt",
-        "bearerToken",
-        "auth.refresh",
-        "auth.access",
-        "auth.as",
-        "auth.userId",
-      ];
-
-      authCookies.forEach((name) => {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=strict`;
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-      });
-
-      window.location.replace("/?logout=1&t=" + Date.now());
+      // Force redirect to login with cache busting
+      window.location.href = "/?t=" + Date.now();
     } else if (accessType === "role") {
       router.push("/home");
     } else {
