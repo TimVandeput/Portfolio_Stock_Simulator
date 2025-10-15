@@ -300,64 +300,67 @@ export const exportToPDF = async (
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 50;
-  if (finalY < doc.internal.pageSize.height - 60) {
-    const buyTransactions = transactions.filter((t) => t.type === "BUY");
-    const sellTransactions = transactions.filter((t) => t.type === "SELL");
-    const totalBuyAmount = buyTransactions.reduce(
-      (sum, t) => sum + t.totalAmount,
-      0
+  let summaryY = finalY + 20;
+
+  if (finalY > doc.internal.pageSize.height - 80) {
+    doc.addPage();
+    summaryY = 30;
+  }
+
+  const buyTransactions = transactions.filter((t) => t.type === "BUY");
+  const sellTransactions = transactions.filter((t) => t.type === "SELL");
+  const totalBuyAmount = buyTransactions.reduce(
+    (sum, t) => sum + t.totalAmount,
+    0
+  );
+  const totalSellAmount = sellTransactions.reduce(
+    (sum, t) => sum + t.totalAmount,
+    0
+  );
+
+  const totalProfitLoss = transactions
+    .map((t) => t.profitLoss)
+    .filter((pl) => pl !== null)
+    .reduce((sum, pl) => sum + pl!, 0);
+
+  doc.setFontSize(12);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Transaction Summary", 20, summaryY);
+
+  doc.setFontSize(10);
+  doc.text(
+    `Buy Orders: ${buyTransactions.length} (${formatCurrency(totalBuyAmount)})`,
+    20,
+    summaryY + 10
+  );
+  doc.text(
+    `Sell Orders: ${sellTransactions.length} (${formatCurrency(
+      totalSellAmount
+    )})`,
+    20,
+    summaryY + 17
+  );
+  doc.text(
+    `Net Investment: ${formatCurrency(totalBuyAmount - totalSellAmount)}`,
+    20,
+    summaryY + 24
+  );
+
+  if (sellTransactions.length > 0) {
+    const profitLossColor =
+      totalProfitLoss >= 0 ? [34, 197, 94] : [239, 68, 68];
+    doc.setTextColor(
+      profitLossColor[0],
+      profitLossColor[1],
+      profitLossColor[2]
     );
-    const totalSellAmount = sellTransactions.reduce(
-      (sum, t) => sum + t.totalAmount,
-      0
-    );
-
-    const totalProfitLoss = transactions
-      .map((t) => t.profitLoss)
-      .filter((pl) => pl !== null)
-      .reduce((sum, pl) => sum + pl!, 0);
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Summary", 20, finalY + 20);
-
-    doc.setFontSize(10);
     doc.text(
-      `Buy Orders: ${buyTransactions.length} (${formatCurrency(
-        totalBuyAmount
-      )})`,
+      `Total Profit/Loss: ${totalProfitLoss >= 0 ? "+" : ""}${formatCurrency(
+        totalProfitLoss
+      )}`,
       20,
-      finalY + 30
+      summaryY + 31
     );
-    doc.text(
-      `Sell Orders: ${sellTransactions.length} (${formatCurrency(
-        totalSellAmount
-      )})`,
-      20,
-      finalY + 37
-    );
-    doc.text(
-      `Net Investment: ${formatCurrency(totalBuyAmount - totalSellAmount)}`,
-      20,
-      finalY + 44
-    );
-
-    if (sellTransactions.length > 0) {
-      const profitLossColor =
-        totalProfitLoss >= 0 ? [34, 197, 94] : [239, 68, 68]; // green or red
-      doc.setTextColor(
-        profitLossColor[0],
-        profitLossColor[1],
-        profitLossColor[2]
-      );
-      doc.text(
-        `Total Profit/Loss: ${totalProfitLoss >= 0 ? "+" : ""}${formatCurrency(
-          totalProfitLoss
-        )}`,
-        20,
-        finalY + 51
-      );
-    }
   }
 
   doc.save(`${filename}.pdf`);
