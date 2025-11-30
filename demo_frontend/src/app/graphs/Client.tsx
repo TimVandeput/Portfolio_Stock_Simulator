@@ -28,7 +28,7 @@ import type { GraphData } from "@/lib/api/graphs";
  * This sophisticated client component provides comprehensive charting and
  * analytics capabilities specifically tailored to user portfolio holdings.
  * It implements interactive data visualization, multiple time range analysis,
- * and real-time updates to support informed investment decision-making.
+ * and real-time updates to support informed investment decision-making .
  *
  * @remarks
  * The component delivers advanced analytics features through modern charting:
